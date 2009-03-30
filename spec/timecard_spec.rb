@@ -1,6 +1,23 @@
 require File.join(File.dirname(__FILE__), '..', 'timecard')
 require 'spec'
 
+describe Timecard::CLI do
+  it "should call a valid command" do
+    Timecard::CLI.should_receive(:alter).with('arg_1', 'arg_2')
+    Timecard::CLI.invoke 'alter', 'arg_1', 'arg_2'
+  end
+
+  it "should call a valid command by an abbreviation" do
+    Timecard::CLI.should_receive(:alter).with('arg_1', 'arg_2')
+    Timecard::CLI.invoke 'a', 'arg_1', 'arg_2'
+  end
+
+  it "should not call an invalid command" do
+    Timecard::CLI.should_not_receive(:exec).with('arg_1', 'arg_2')
+    Timecard::CLI.invoke 'exec', 'arg_1', 'arg_2'
+  end
+end
+
 describe Entry do
   before do
     @time = Time.now
