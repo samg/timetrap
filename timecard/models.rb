@@ -18,3 +18,16 @@ class Entry < Sequel::Model
     end
   end
 end
+
+class Meta < Sequel::Model(:meta)
+  if !table_exists?
+    DB.create_table(:meta) do
+      primary_key :id
+      column :key, :string
+      column :value, :string
+    end
+  end
+  unless Meta.find(:key => 'current_sheet')
+    Meta.create(:key => 'current_sheet', :value => 'default')
+  end
+end

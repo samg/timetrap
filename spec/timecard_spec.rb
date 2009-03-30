@@ -16,6 +16,15 @@ describe Timecard::CLI do
     Timecard::CLI.should_not_receive(:exec).with('arg_1', 'arg_2')
     Timecard::CLI.invoke 'exec', 'arg_1', 'arg_2'
   end
+
+  describe 'switch' do
+    it "should switch to a new sheet" do
+      Timecard::CLI.invoke 's', 'sheet1'
+      Timecard.current_sheet.should == 'sheet1'
+      Timecard::CLI.invoke 's', 'sheet2'
+      Timecard.current_sheet.should == 'sheet2'
+    end
+  end
 end
 
 describe Entry do

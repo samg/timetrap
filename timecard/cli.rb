@@ -19,6 +19,15 @@ module Timecard
       invoke_command_if_valid command, *args
     end
 
+    def self.switch sheet = nil
+      if not sheet then say "No sheet specified"; return end
+      say "Switching to sheet " + Timecard.current_sheet = sheet
+    end
+
+    def self.list
+      say "Timesheets", *(Entry.map{|e|e.sheet} << Timecard.current_sheet).uniq.sort
+    end
+
     private
     def self.invoke_command_if_valid command, *args
       case (valid = COMMANDS.keys.select{|name| name =~ %r|^#{command}|}).size
@@ -27,8 +36,8 @@ module Timecard
       else; say "Ambigous command: #{command}"; end
     end
 
-    def self.say something
-      puts something if Timecard.invoked_as_executable?
+    def self.say *something
+      puts *something if Timecard.invoked_as_executable?
     end
   end
 end
