@@ -10,18 +10,36 @@ describe Timecard do
 
   describe 'CLI' do
     it "should call a valid command" do
-      Timecard.should_receive(:alter).with('arg_1', 'arg_2')
-      Timecard.invoke 'alter', 'arg_1', 'arg_2'
+      Timecard::CLI.should_receive(:alter).with('arg_1', 'arg_2')
+      Timecard::CLI.invoke 'alter', 'arg_1', 'arg_2'
     end
 
     it "should call a valid command by an abbreviation" do
-      Timecard.should_receive(:alter).with('arg_1', 'arg_2')
-      Timecard.invoke 'a', 'arg_1', 'arg_2'
+      Timecard::CLI.should_receive(:alter).with('arg_1', 'arg_2')
+      Timecard::CLI.invoke 'a', 'arg_1', 'arg_2'
     end
 
     it "should not call an invalid command" do
-      Timecard.should_not_receive(:exec).with('arg_1', 'arg_2')
-      Timecard.invoke 'exec', 'arg_1', 'arg_2'
+      Timecard::CLI.should_not_receive(:exec).with('arg_1', 'arg_2')
+      Timecard::CLI.invoke 'exec', 'arg_1', 'arg_2'
+    end
+
+    describe "COMMANDS" do
+      describe 'alter' do
+        before do
+          Timecard.start "running entry"
+        end
+        it "should alther the description of the active period" do
+          Timecard.active_entry.note.should == 'running entry'
+          Timecard::CLI.invoke *%w!alter new description!
+          Timecard.active_entry.note.should == 'new description'
+        end
+      end
+
+      describe "display" do
+        it "should display the current timesheet" do
+        end
+      end
     end
   end
 
@@ -97,9 +115,9 @@ describe Timecard do
 
   describe 'switch' do
     it "should switch to a new sheet" do
-      Timecard.invoke 's', 'sheet1'
+      Timecard.switch 'sheet1'
       Timecard.current_sheet.should == 'sheet1'
-      Timecard.invoke 's', 'sheet2'
+      Timecard.switch 'sheet2'
       Timecard.current_sheet.should == 'sheet2'
     end
   end
