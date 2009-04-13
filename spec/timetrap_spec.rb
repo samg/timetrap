@@ -2,19 +2,19 @@ TEST_MODE = true
 require File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap')
 require 'spec'
 
-$stdout = StringIO.new
 OUTPUT_BUFFER = File.new('/tmp/timetrap_spec.out', 'r')
 describe Timetrap do
   before :each do
     Timetrap::Entry.create_table!
     Timetrap::Meta.create_table!
+    $stdout = StringIO.new
   end
 
   describe 'CLI' do
     describe "COMMANDS" do
       describe 'alter' do
         before do
-          Timetrap.start "running entry"
+          Timetrap.start "running entry", nil
         end
         it "should alter the description of the active period" do
           Timetrap.active_entry.note.should == 'running entry'
@@ -86,7 +86,6 @@ Timesheet SpecSheet:
           Timetrap::Entry.order_by(:id).last.start.to_i.should == @time.to_i
         end
 
-
         it "should not start the time if the timetrap is running" do
           Timetrap.stub!(:running?).and_return true
           Timetrap::CLI.parse 'in'
@@ -101,6 +100,37 @@ Timesheet SpecSheet:
           Timetrap::Entry.order_by(:id).last.start.should == Time.parse('2008-10-03 10:00')
         end
       end
+
+      describe "out" do
+        before :each do
+          Timetrap::CLI.parse 'in'
+          Timetrap::CLI.invoke
+          @active = Timetrap.active_entry
+          @now = Time.now
+          Time.stub!(:now).and_return @now
+        end
+        it "should set the stop for the running entry" do
+          @active.refresh.end.should == nil
+          Timetrap::CLI.parse 'out'
+          Timetrap::CLI.invoke
+          @active.refresh.end.to_i.should == @now.to_i
+        end
+
+        it "should not do anything if nothing is running" do
+          lambda do
+            Timetrap::CLI.parse 'out'
+            Timetrap::CLI.invoke
+            Timetrap::CLI.invoke
+          end.should_not raise_error
+        end
+
+        it "should allow the sheet to be stopped at a certain time" do
+          Timetrap::CLI.parse 'out --at "10am 2008-10-03"'
+          Timetrap::CLI.invoke
+          Timetrap::Entry.order_by(:id).last.end.should == Time.parse('2008-10-03 10:00')
+        end
+      end
+
       describe "list" do
         before do
           Timetrap::Entry.create( :sheet => 'Sheet 2', :note => 'entry 1', :start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')

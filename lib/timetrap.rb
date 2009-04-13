@@ -11,60 +11,6 @@ DB = Sequel.sqlite DB_NAME
 module Timetrap
   extend self
 
-  def current_sheet= sheet
-    m = Meta.find_or_create(:key => 'current_sheet')
-    m.value = sheet
-    m.save
-  end
-
-  def current_sheet
-    unless Meta.find(:key => 'current_sheet')
-      Meta.create(:key => 'current_sheet', :value => 'default')
-    end
-    Meta.find(:key => 'current_sheet').value
-  end
-
-  def invoked_as_executable?
-    $0 == __FILE__
-  end
-
-  def entries sheet = nil
-    Entry.filter(:sheet => sheet).order_by(:start)
-  end
-
-  def running?
-    !!active_entry
-  end
-
-  def active_entry
-    Entry.find(:sheet => Timetrap.current_sheet, :end => nil)
-  end
-
-  def stop time = Time.now
-    while a = active_entry
-      a.end = time
-      a.save
-    end
-  end
-
-  def start note, time
-    raise AlreadyRunning if running?
-    time ||= Time.now
-    Entry.create(:sheet => Timetrap.current_sheet, :note => note, :start => time).save
-  rescue => e
-    CLI.say e.message
-  end
-
-  def switch sheet
-    self.current_sheet = sheet
-  end
-
-  class AlreadyRunning < StandardError
-    def message
-      "Timetrap is already running"
-    end
-  end
-
   module CLI
     attr_accessor :args
     extend self
@@ -112,7 +58,7 @@ module Timetrap
     end
 
     def out
-      Timetrap.stop
+      Timetrap.stop args['--at']
     end
 
     def display
@@ -198,6 +144,62 @@ module Timetrap
       puts *something
     end
   end
+
+  def current_sheet= sheet
+    m = Meta.find_or_create(:key => 'current_sheet')
+    m.value = sheet
+    m.save
+  end
+
+  def current_sheet
+    unless Meta.find(:key => 'current_sheet')
+      Meta.create(:key => 'current_sheet', :value => 'default')
+    end
+    Meta.find(:key => 'current_sheet').value
+  end
+
+  def invoked_as_executable?
+    $0 == __FILE__
+  end
+
+  def entries sheet = nil
+    Entry.filter(:sheet => sheet).order_by(:start)
+  end
+
+  def running?
+    !!active_entry
+  end
+
+  def active_entry
+    Entry.find(:sheet => Timetrap.current_sheet, :end => nil)
+  end
+
+  def stop time = nil
+    while a = active_entry
+      time ||= Time.now
+      a.end = time
+      a.save
+    end
+  end
+
+  def start note, time = nil
+    raise AlreadyRunning if running?
+    time ||= Time.now
+    Entry.create(:sheet => Timetrap.current_sheet, :note => note, :start => time).save
+  rescue => e
+    CLI.say e.message
+  end
+
+  def switch sheet
+    self.current_sheet = sheet
+  end
+
+  class AlreadyRunning < StandardError
+    def message
+      "Timetrap is already running"
+    end
+  end
+
 
   class Entry < Sequel::Model
     def start= time
