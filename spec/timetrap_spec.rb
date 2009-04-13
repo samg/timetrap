@@ -37,6 +37,9 @@ describe Timetrap do
 
       describe "display" do
         before do
+          Timetrap::Entry.create( :sheet => 'another',
+            :note => 'entry 4', :start => '2008-10-05 18:00:00'
+          )
           Timetrap::Entry.create( :sheet => 'SpecSheet',
             :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
           )
@@ -79,7 +82,6 @@ Timesheet SpecSheet:
         end
 
         it "should display a non current timesheet based on a partial name match" do
-          pending
           Timetrap.current_sheet = 'another'
           invoke 'display S'
           $stdout.string.should == @desired_output

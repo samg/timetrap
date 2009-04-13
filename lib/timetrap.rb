@@ -61,7 +61,7 @@ module Timetrap
     end
 
     def display
-      sheet = args.unused.join(' ')
+      sheet = sheet_name_from_string(args.unused.join(' '))
       sheet = (sheet =~ /.+/ ? sheet : Timetrap.current_sheet)
       say "Timesheet #{sheet}:"
       say "          Day                Start      End        Duration   Notes"
@@ -153,6 +153,13 @@ module Timetrap
     def format_total entries
       secs = entries.inject(0){|m, e|e_end = e.end || Time.now; m += e_end.to_i - e.start.to_i if e_end && e.start;m}
       "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
+    end
+
+    def sheet_name_from_string string
+      return "" unless string =~ /.+/
+      DB[:entries].filter(:sheet.like("#{string}%")).first[:sheet]
+    rescue
+      ""
     end
 
     public
