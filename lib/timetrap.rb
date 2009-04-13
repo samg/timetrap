@@ -3,7 +3,6 @@ require 'rubygems'
 require 'chronic'
 require 'sequel'
 require 'Getopt/Declare'
-require 'duration'
 # connect to database.  This will create one if it doesn't exist
 DB_NAME = defined?(TEST_MODE) ? nil : "#{ENV['HOME']}/.timetrap.db"
 DB = Sequel.sqlite DB_NAME
