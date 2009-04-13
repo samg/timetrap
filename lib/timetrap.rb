@@ -1,12 +1,14 @@
+#!/usr/bin/env ruby
 require 'rubygems'
 require 'chronic'
 require 'sequel'
 require 'Getopt/Declare'
+require 'duration'
 # connect to database.  This will create one if it doesn't exist
-DB_NAME = defined?(TEST_MODE) ? nil : "#{ENV['HOME']}/.timecard.db"
+DB_NAME = defined?(TEST_MODE) ? nil : "#{ENV['HOME']}/.timetrap.db"
 DB = Sequel.sqlite DB_NAME
 
-module Timecard
+module Timetrap
   extend self
 
   def current_sheet= sheet
@@ -27,7 +29,7 @@ module Timecard
   end
 
   def entries sheet = nil
-    Entry.filter(:sheet => sheet)
+    Entry.filter(:sheet => sheet).order_by(:start)
   end
 
   def running?
@@ -35,7 +37,7 @@ module Timecard
   end
 
   def active_entry
-    Entry.find(:sheet => Timecard.current_sheet, :end => nil)
+    Entry.find(:sheet => Timetrap.current_sheet, :end => nil)
   end
 
   def stop time = Time.now
@@ -45,9 +47,10 @@ module Timecard
     end
   end
 
-  def start note, time = Time.now
+  def start note, time
     raise AlreadyRunning if running?
-    Entry.create :sheet => Timecard.current_sheet, :note => note, :start => time
+    time ||= Time.now
+    Entry.create(:sheet => Timetrap.current_sheet, :note => note, :start => time).save
   rescue => e
     CLI.say e.message
   end
@@ -58,11 +61,12 @@ module Timecard
 
   class AlreadyRunning < StandardError
     def message
-      "Timecard is already running"
+      "Timetrap is already running"
     end
   end
 
   module CLI
+    attr_accessor :args
     extend self
 
     COMMANDS = {
@@ -79,31 +83,37 @@ module Timecard
       "switch" => "switch to a new timesheet"
     }
 
-    def invoke command, *args
-      invoke_command_if_valid(command, *args)
+    def parse arguments
+      args.parse arguments
     end
 
-    def invoke_command_if_valid command, *args
+    def invoke
+      invoke_command_if_valid
+    end
+
+    def invoke_command_if_valid
+      command = args.unused.shift
       case (valid = COMMANDS.keys.select{|name| name =~ %r|^#{command}|}).size
       when 0 then say "Invalid command: #{command}"
-      when 1 then send valid[0], *args
+      when 1 then send valid[0]
       else; say "Ambigous command: #{command}"; end
     end
 
-    def alter *new_note
-      Timecard.active_entry.update :note => new_note.join(' ')
+    def alter
+      Timetrap.active_entry.update :note => args.unused.join(' ')
     end
 
-    def switch sheet = nil
+    def switch
+      sheet = args.unused.join(' ')
       if not sheet then say "No sheet specified"; return end
-      say "Switching to sheet " + Timecard.switch(sheet)
+      say "Switching to sheet " + Timetrap.switch(sheet)
     end
 
     def list
       say "Timesheets:"
-      sheets = Entry.map{|e|e.sheet} << Timecard.current_sheet
+      sheets = Entry.map{|e|e.sheet} << Timetrap.current_sheet
       say(*sheets.uniq.sort.map do |str|
-        if str == Timecard.current_sheet
+        if str == Timetrap.current_sheet
           "  * %s" % str
         else
           "  - %s" % str
@@ -111,20 +121,76 @@ module Timecard
       end)
     end
 
-    def in *d
-      Timecard.start d.join(' ')
+    def in
+      Timetrap.start args.unused.join(' '), args['--at']
     end
 
     def out
-      Timecard.stop
+      Timetrap.stop
     end
 
     def display
-      say DB[:entries].filter(:sheet => Timecard.current_sheet).all
+      say "Timesheet #{Timetrap.current_sheet}:"
+      say "          Day                Start      End        Duration   Notes"
+      last_start = nil
+      days = []
+      (ee = Timetrap.entries(Timetrap.current_sheet)).each do |e|
+
+        if !same_day? e.start, last_start and last_start != nil
+          say "%58s" % format_total(days)
+          days = []
+        else
+          days << e
+        end
+
+        say "%26s%11s -%9s%10s    %s" % [
+          format_date_if_new(e.start, last_start),
+          format_time(e.start),
+          format_time(e.end),
+          format_duration(e.start, e.end),
+          e.note
+        ]
+
+        last_start = e.start
+      end
+      say "          Total%43s" % format_total(ee)
     end
 
+    private
+
+    def format_time time
+      return '' unless time.respond_to?(:strftime)
+      time.strftime('%H:%M:%S')
+    end
+
+    def format_date time
+      return '' unless time.respond_to?(:strftime)
+      time.strftime('%a %b %d, %Y')
+    end
+
+    def format_date_if_new time, last_time
+      return '' unless time.respond_to?(:strftime)
+      same_day?(time, last_time) ? '' : format_date(time)
+    end
+
+    def same_day? time, other_time
+      format_date(time) == format_date(other_time)
+    end
+
+    def format_duration stime, etime
+      return '' unless stime and etime
+      secs = etime.to_i - stime.to_i
+      "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
+    end
+
+    def format_total entries
+      secs = entries.inject(0){|m, e| m += e.end.to_i - e.start.to_i if e.end && e.start;m}
+      "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
+    end
+
+    public
     def say *something
-      puts *something if Timecard.invoked_as_executable?
+      puts *something
     end
   end
 
@@ -156,8 +222,8 @@ module Timecard
     end
     create_table unless table_exists?
   end
-  ARGS = Getopt::Declare.new(<<-'EOF')
-    -a, --at <time:s>        Use this time instead of now
+  CLI.args = Getopt::Declare.new(<<-'EOF')
+    -a, --at <time:qs>        Use this time instead of now
   EOF
-  CLI.invoke(*ARGV) if invoked_as_executable?
+  CLI.invoke if invoked_as_executable?
 end
