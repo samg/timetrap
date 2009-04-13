@@ -12,14 +12,18 @@ describe Timetrap do
 
   describe 'CLI' do
     describe "COMMANDS" do
+      def invoke command
+        Timetrap::CLI.parse command
+        Timetrap::CLI.invoke
+      end
+
       describe 'alter' do
         before do
           Timetrap.start "running entry", nil
         end
         it "should alter the description of the active period" do
           Timetrap.active_entry.note.should == 'running entry'
-          Timetrap::CLI.args.parse %q!alter new description!
-          Timetrap::CLI.invoke
+          invoke 'alter new description'
           Timetrap.active_entry.note.should == 'new description'
         end
       end
@@ -27,8 +31,7 @@ describe Timetrap do
       describe "backend" do
         it "should open an sqlite console to the db" do
           Timetrap::CLI.should_receive(:exec).with("sqlite3 #{DB_NAME}")
-          Timetrap::CLI.args.parse %q!backend!
-          Timetrap::CLI.invoke
+          invoke 'backend'
         end
       end
 
@@ -48,9 +51,8 @@ describe Timetrap do
           )
         end
         it "should display the current timesheet" do
-          Timetrap::CLI.args.parse %q!display!
           Timetrap.current_sheet = 'SpecSheet'
-          Timetrap::CLI.invoke
+          invoke 'display'
           $stdout.string.should == <<-OUTPUT
 Timesheet SpecSheet:
           Day                Start      End        Duration   Notes
@@ -64,70 +66,47 @@ Timesheet SpecSheet:
         end
       end
 
+      describe "format" do
+        it "should export a sheet to a csv format" do
+          pending
+        end
+      end
+
       describe "in" do
         it "should start the time for the current timesheet" do
           lambda do
-            Timetrap::CLI.parse 'in'
-            Timetrap::CLI.invoke
+            invoke 'in'
           end.should change(Timetrap::Entry, :count).by(1)
         end
 
         it "should set the note when starting a new entry" do
-          Timetrap::CLI.parse 'in working on something'
-          Timetrap::CLI.invoke
+          invoke 'in working on something'
           Timetrap::Entry.order_by(:id).last.note.should == 'working on something'
         end
 
         it "should set the start when starting a new entry" do
           @time = Time.now
           Time.stub!(:now).and_return @time
-          Timetrap::CLI.parse 'in working on something'
-          Timetrap::CLI.invoke
+          invoke 'in working on something'
           Timetrap::Entry.order_by(:id).last.start.to_i.should == @time.to_i
         end
 
         it "should not start the time if the timetrap is running" do
           Timetrap.stub!(:running?).and_return true
-          Timetrap::CLI.parse 'in'
           lambda do
-            Timetrap::CLI.invoke
+            invoke 'in'
           end.should_not change(Timetrap::Entry, :count)
         end
 
         it "should allow the sheet to be started at a certain time" do
-          Timetrap::CLI.parse 'in work --at "10am 2008-10-03"'
-          Timetrap::CLI.invoke
+          invoke 'in work --at "10am 2008-10-03"'
           Timetrap::Entry.order_by(:id).last.start.should == Time.parse('2008-10-03 10:00')
         end
       end
 
-      describe "out" do
-        before :each do
-          Timetrap::CLI.parse 'in'
-          Timetrap::CLI.invoke
-          @active = Timetrap.active_entry
-          @now = Time.now
-          Time.stub!(:now).and_return @now
-        end
-        it "should set the stop for the running entry" do
-          @active.refresh.end.should == nil
-          Timetrap::CLI.parse 'out'
-          Timetrap::CLI.invoke
-          @active.refresh.end.to_i.should == @now.to_i
-        end
-
-        it "should not do anything if nothing is running" do
-          lambda do
-            Timetrap::CLI.parse 'out'
-            Timetrap::CLI.invoke
-            Timetrap::CLI.invoke
-          end.should_not raise_error
-        end
-
-        it "should allow the sheet to be stopped at a certain time" do
-          Timetrap::CLI.parse 'out --at "10am 2008-10-03"'
-          Timetrap::CLI.invoke
-          Timetrap::Entry.order_by(:id).last.end.should == Time.parse('2008-10-03 10:00')
+      describe "kill" do
+        it "should delete a timesheet" do
+          pending
         end
       end
 
@@ -138,13 +117,59 @@ Timesheet SpecSheet:
           Timetrap.current_sheet = 'Sheet 2'
         end
         it "should list available timesheets" do
-          Timetrap::CLI.parse 'list'
-          Timetrap::CLI.invoke
+          invoke 'list'
           $stdout.string.should == <<-OUTPUT
 Timesheets:
     Sheet 1
   * Sheet 2
           OUTPUT
+        end
+      end
+
+      describe "now" do
+        it "should show the status of the current timesheet" do
+          pending
+        end
+      end
+
+      describe "out" do
+        before :each do
+          invoke 'in'
+          @active = Timetrap.active_entry
+          @now = Time.now
+          Time.stub!(:now).and_return @now
+        end
+        it "should set the stop for the running entry" do
+          @active.refresh.end.should == nil
+          invoke 'out'
+          @active.refresh.end.to_i.should == @now.to_i
+        end
+
+        it "should not do anything if nothing is running" do
+          lambda do
+            invoke 'out'
+            invoke 'out'
+          end.should_not raise_error
+        end
+
+        it "should allow the sheet to be stopped at a certain time" do
+          invoke 'out --at "10am 2008-10-03"'
+          Timetrap::Entry.order_by(:id).last.end.should == Time.parse('2008-10-03 10:00')
+        end
+      end
+      
+      describe "running" do
+        it "should show all running timesheets" do
+          pending
+        end
+      end
+
+      describe "switch" do
+        it "should switch to a new timesheet" do
+          invoke 'switch sheet 1'
+          Timetrap.current_sheet.should == 'sheet 1'
+          invoke 'switch sheet 2'
+          Timetrap.current_sheet.should == 'sheet 2'
         end
       end
     end
