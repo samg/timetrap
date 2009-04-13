@@ -50,9 +50,41 @@ describe Timetrap do
             :note => 'entry 4', :start => '2008-10-05 18:00:00'
           )
         end
+
         it "should display the current timesheet" do
           Timetrap.current_sheet = 'SpecSheet'
           invoke 'display'
+          $stdout.string.should == <<-OUTPUT
+Timesheet SpecSheet:
+          Day                Start      End        Duration   Notes
+          Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
+                             16:00:00 - 18:00:00   2:00:00    entry 2
+                                                   4:00:00
+          Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
+                             18:00:00 -                       entry 4
+          Total                                    6:00:00
+          OUTPUT
+        end
+
+        it "should display a non current timesheet" do
+          Timetrap.current_sheet = 'another'
+          invoke 'display SpecSheet'
+          $stdout.string.should == <<-OUTPUT
+Timesheet SpecSheet:
+          Day                Start      End        Duration   Notes
+          Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
+                             16:00:00 - 18:00:00   2:00:00    entry 2
+                                                   4:00:00
+          Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
+                             18:00:00 -                       entry 4
+          Total                                    6:00:00
+          OUTPUT
+        end
+
+        it "should display a non current timesheet based on a partial name match" do
+          pending
+          Timetrap.current_sheet = 'another'
+          invoke 'display S'
           $stdout.string.should == <<-OUTPUT
 Timesheet SpecSheet:
           Day                Start      End        Duration   Notes

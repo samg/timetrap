@@ -62,11 +62,13 @@ module Timetrap
     end
 
     def display
-      say "Timesheet #{Timetrap.current_sheet}:"
+      sheet = args.unused.join(' ')
+      sheet = (sheet =~ /.+/ ? sheet : Timetrap.current_sheet)
+      say "Timesheet #{sheet}:"
       say "          Day                Start      End        Duration   Notes"
       last_start = nil
       days = []
-      (ee = Timetrap.entries(Timetrap.current_sheet)).each do |e|
+      (ee = Timetrap.entries(sheet)).each do |e|
 
         if !same_day? e.start, last_start and last_start != nil
           say "%58s" % format_total(days)
