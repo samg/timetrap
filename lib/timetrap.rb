@@ -66,26 +66,31 @@ module Timetrap
       say "Timesheet #{sheet}:"
       say "          Day                Start      End        Duration   Notes"
       last_start = nil
-      days = []
-      (ee = Timetrap.entries(sheet)).each do |e|
+      from_current_day = []
+      (ee = Timetrap.entries(sheet)).each_with_index do |e, i|
 
-        if !same_day? e.start, last_start and last_start != nil
-          say "%58s" % format_total(days)
-          days = []
-        else
-          days << e
-        end
 
+        from_current_day << e
+        e_end = e.end || Time.now
         say "%26s%11s -%9s%10s    %s" % [
           format_date_if_new(e.start, last_start),
           format_time(e.start),
           format_time(e.end),
-          format_duration(e.start, e.end),
+          format_duration(e.start, e_end),
           e.note
         ]
 
+        nxt = Timetrap.entries(sheet).map[i+1]
+        if nxt == nil or !same_day?(e.start, nxt.start)
+          say "%58s" % format_total(from_current_day)
+          from_current_day = []
+        else
+        end
         last_start = e.start
       end
+      say <<-OUT
+          ---------------------------------------------------------
+      OUT
       say "          Total%43s" % format_total(ee)
     end
 
@@ -146,7 +151,7 @@ module Timetrap
     end
 
     def format_total entries
-      secs = entries.inject(0){|m, e| m += e.end.to_i - e.start.to_i if e.end && e.start;m}
+      secs = entries.inject(0){|m, e|e_end = e.end || Time.now; m += e_end.to_i - e.start.to_i if e_end && e.start;m}
       "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
     end
 
