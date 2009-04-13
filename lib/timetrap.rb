@@ -103,22 +103,8 @@ module Timetrap
       Timetrap.active_entry.update :note => args.unused.join(' ')
     end
 
-    def switch
-      sheet = args.unused.join(' ')
-      if not sheet then say "No sheet specified"; return end
-      say "Switching to sheet " + Timetrap.switch(sheet)
-    end
-
-    def list
-      say "Timesheets:"
-      sheets = Entry.map{|e|e.sheet} << Timetrap.current_sheet
-      say(*sheets.uniq.sort.map do |str|
-        if str == Timetrap.current_sheet
-          "  * %s" % str
-        else
-          "  - %s" % str
-        end
-      end)
+    def backend
+      exec "sqlite3 #{DB_NAME}"
     end
 
     def in
@@ -155,6 +141,25 @@ module Timetrap
       end
       say "          Total%43s" % format_total(ee)
     end
+
+    def switch
+      sheet = args.unused.join(' ')
+      if not sheet then say "No sheet specified"; return end
+      say "Switching to sheet " + Timetrap.switch(sheet)
+    end
+
+    def list
+      say "Timesheets:"
+      sheets = Entry.map{|e|e.sheet} << Timetrap.current_sheet
+      say(*sheets.uniq.sort.map do |str|
+        if str == Timetrap.current_sheet
+          "  * %s" % str
+        else
+          "    %s" % str
+        end
+      end)
+    end
+
 
     private
 

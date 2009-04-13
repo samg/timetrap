@@ -24,6 +24,14 @@ describe Timetrap do
         end
       end
 
+      describe "backend" do
+        it "should open an sqlite console to the db" do
+          Timetrap::CLI.should_receive(:exec).with("sqlite3 #{DB_NAME}")
+          Timetrap::CLI.args.parse %q!backend!
+          Timetrap::CLI.invoke
+        end
+      end
+
       describe "display" do
         before do
           Timetrap::Entry.create( :sheet => 'SpecSheet',
@@ -91,6 +99,22 @@ Timesheet SpecSheet:
           Timetrap::CLI.parse 'in work --at "10am 2008-10-03"'
           Timetrap::CLI.invoke
           Timetrap::Entry.order_by(:id).last.start.should == Time.parse('2008-10-03 10:00')
+        end
+      end
+      describe "list" do
+        before do
+          Timetrap::Entry.create( :sheet => 'Sheet 2', :note => 'entry 1', :start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
+          Timetrap::Entry.create( :sheet => 'Sheet 1', :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00')
+          Timetrap.current_sheet = 'Sheet 2'
+        end
+        it "should list available timesheets" do
+          Timetrap::CLI.parse 'list'
+          Timetrap::CLI.invoke
+          $stdout.string.should == <<-OUTPUT
+Timesheets:
+    Sheet 1
+  * Sheet 2
+          OUTPUT
         end
       end
     end
