@@ -71,7 +71,6 @@ Timesheet SpecSheet:
         it "should display the current timesheet" do
           Timetrap.current_sheet = 'SpecSheet'
           invoke 'display'
-          STDOUT.puts $stdout.string
           $stdout.string.should == @desired_output
         end
 
