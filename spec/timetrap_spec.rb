@@ -127,8 +127,34 @@ Timesheets:
       end
 
       describe "now" do
-        it "should show the status of the current timesheet" do
-          pending
+        before do
+          Timetrap.current_sheet = 'current sheet'
+        end
+
+        describe "when the current timesheet isn't running" do
+          it "should show that it isn't running" do
+            invoke 'now'
+            $stdout.string.should == <<-OUTPUT
+current sheet: not running
+            OUTPUT
+          end
+        end
+
+        describe "when the current timesheet is running" do
+          before do
+            invoke 'in a timesheet that is running'
+            @entry = Timetrap.active_entry
+            @entry.stub!(:start).and_return(Time.at(0))
+            Time.stub!(:now).and_return Time.at(60)
+            Timetrap.stub!(:active_entry).and_return @entry
+          end
+
+          it "should show how long the current item is running for" do
+            invoke 'now'
+            $stdout.string.should == <<-OUTPUT
+current sheet: 0:01:00 (a timesheet that is running)
+            OUTPUT
+          end
         end
       end
 
@@ -157,7 +183,7 @@ Timesheets:
           Timetrap::Entry.order_by(:id).last.end.should == Time.parse('2008-10-03 10:00')
         end
       end
-      
+
       describe "running" do
         it "should show all running timesheets" do
           pending

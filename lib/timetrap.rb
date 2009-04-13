@@ -106,6 +106,16 @@ module Timetrap
       end)
     end
 
+    def now
+      if Timetrap.running?
+        out = "#{Timetrap.current_sheet}: #{format_duration(Timetrap.active_entry.start, Time.now)}".gsub(/  /, ' ')
+        out << " (#{Timetrap.active_entry.note})" if Timetrap.active_entry.note =~ /.+/
+        say out
+      else
+        say "#{Timetrap.current_sheet}: not running"
+      end
+    end
+
 
     private
 
