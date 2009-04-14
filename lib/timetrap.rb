@@ -101,15 +101,27 @@ module Timetrap
     end
 
     def list
-      say "Timesheets:"
-      sheets = Entry.map{|e|e.sheet} << Timetrap.current_sheet
-      say(*sheets.uniq.sort.map do |str|
-        if str == Timetrap.current_sheet
-          "  * %s" % str
-        else
-          "    %s" % str
+      sheets = Entry.map{|e|e.sheet}.uniq.sort.map do |sheet|
+        sheet_atts = {:total => 0, :running => 0, :today => 0}
+        DB[:entries].filter(:sheet => sheet).inject(sheet_atts) do |m, e|
+          e_end = e[:end] || Time.now
+          m[:name] ||= sheet
+          m[:total] += (e_end.to_i - e[:start].to_i)
+          m[:running] += (e_end.to_i - e[:start].to_i) unless e[:end]
+          m[:today] += (e_end.to_i - e[:start].to_i) if same_day?(Time.now, e[:start])
+          m
         end
-      end)
+      end
+      width = sheets.sort_by{|h|h[:name].length }.last[:name].length + 4
+      say " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
+      sheets.each do |sheet|
+        star = sheet[:name] == Timetrap.current_sheet ? '*' : ' '
+        say "#{star}%-#{width}s%-12s%-12s%s" % [
+          sheet[:running],
+          sheet[:today],
+          sheet[:total]
+        ].map(&method(:format_seconds)).unshift(sheet[:name])
+      end
     end
 
     def now
@@ -147,6 +159,10 @@ module Timetrap
     def format_duration stime, etime
       return '' unless stime and etime
       secs = etime.to_i - stime.to_i
+      format_seconds secs
+    end
+
+    def format_seconds secs
       "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
     end
 

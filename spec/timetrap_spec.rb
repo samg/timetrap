@@ -4,6 +4,14 @@ require 'spec'
 
 OUTPUT_BUFFER = File.new('/tmp/timetrap_spec.out', 'r')
 describe Timetrap do
+  def create_entry atts = {}
+    Timetrap::Entry.create({
+      :sheet => 's1',
+      :start => Time.now,
+      :end => Time.now,
+      :note => 'note'}.merge(atts))
+  end
+
   before :each do
     Timetrap::Entry.create_table!
     Timetrap::Meta.create_table!
@@ -133,16 +141,25 @@ Timesheet: SpecSheet
 
       describe "list" do
         before do
-          Timetrap::Entry.create( :sheet => 'Sheet 2', :note => 'entry 1', :start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
-          Timetrap::Entry.create( :sheet => 'Sheet 1', :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00')
-          Timetrap.current_sheet = 'Sheet 2'
+          Time.stub!(:now).and_return Time.parse("Oct 5 18:00:00 -0700 2008")
+          create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-03 12:00:00',
+                       :end => '2008-10-03 14:00:00')
+          create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-03 12:00:00',
+                       :end => '2008-10-03 14:00:00')
+          create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-05 12:00:00',
+                       :end => '2008-10-05 14:00:00')
+          create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-05 14:00:00',
+                       :end => nil)
+          create_entry( :sheet => 'Sheet 1', :start => '2008-10-03 16:00:00',
+                       :end => '2008-10-03 18:00:00')
+          Timetrap.current_sheet = 'A Longly Named Sheet 2'
         end
         it "should list available timesheets" do
           invoke 'list'
           $stdout.string.should == <<-OUTPUT
-Timesheets:
-    Sheet 1
-  * Sheet 2
+ Timesheet                 Running     Today       Total Time
+*A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+ Sheet 1                    0:00:00     0:00:00     2:00:00
           OUTPUT
         end
       end
@@ -206,8 +223,13 @@ current sheet: 0:01:00 (a timesheet that is running)
       end
 
       describe "running" do
+        before do
+          create_entry :sheet => 'one', :end => nil
+          create_entry :sheet => 'two', :end => nil
+        end
         it "should show all running timesheets" do
-          pending
+
+
         end
       end
 
@@ -228,13 +250,6 @@ current sheet: 0:01:00 (a timesheet that is running)
       Timetrap.entries('sheet').all.should include(e)
     end
 
-    def create_entry atts = {}
-      Timetrap::Entry.create({
-        :sheet => 's1',
-        :start => Time.now,
-        :end => Time.now,
-        :note => 'note'}.merge(atts))
-    end
   end
 
   describe "start" do
