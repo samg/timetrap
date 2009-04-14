@@ -62,8 +62,8 @@ module Timetrap
 
     def kill
       sheet = args.unused.join(' ')
-      unless Entry.map{|e| e.sheet }.include?(sheet)
-        puts "ain't no sheet #{sheet.inspect}"
+      unless (sheets = Entry.map{|e| e.sheet }.uniq).include?(sheet)
+        say "ain't no sheet #{sheet.inspect}", 'sheets:', *sheets
         return
       end
       victims = Entry.filter(:sheet => sheet).count
@@ -72,7 +72,7 @@ module Timetrap
         Timetrap.kill sheet
         say "killed #{victims} entries"
       else
-        say "kill aborted"
+        say "will not kill"
       end
     end
 
@@ -108,6 +108,10 @@ module Timetrap
            ---------------------------------------------------------
       OUT
       say "           Total%43s" % format_total(ee)
+    end
+
+    def format
+      say "Sorry not implemented yet :-("
     end
 
     def switch
