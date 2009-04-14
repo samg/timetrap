@@ -270,8 +270,24 @@ module Timetrap
     end
     create_table unless table_exists?
   end
-  CLI.args = Getopt::Declare.new(<<-'EOF')
-    -a, --at <time:qs>        Use this time instead of now
+  CLI.args = Getopt::Declare.new(<<-EOF)
+Usage: #{File.basename $0} COMMAND [OPTIONS] [ARGS...]
+
+where COMMAND is one of:
+  alter - alter the description of the active period
+  backend - open an the backend's interactive shell
+  display - display the current timesheet
+  format - export a sheet to csv format
+  in - start the timer for the current timesheet
+  kill - delete a timesheet
+  list - show the available timesheets
+  now - show the status of the current timesheet
+  out - stop the timer for the current timesheet
+  running - show all running timesheets
+  switch - switch to a new timesheet
+
+  COMMAND OPTIONS
+  -a, --at <time:qs>        Use this time instead of now
   EOF
   CLI.invoke if invoked_as_executable?
 end
