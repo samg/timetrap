@@ -325,11 +325,11 @@ where COMMAND is one of:
   --ids                 Print database ids (for use with alter)
 
   options for `in' and `out'
-  -a, --at <time:qs>        Use this time instead of now
+  --at <time:qs>        Use this time instead of now
 
   options for `alter'
-  -i, --id <id:i>           Alter entry with id <id> instead of the running entry
-  -s, --start <time:qs>     Change the start time to <time>
-  -e, --end <time:qs>     Change the end time to <time>
+  --id <id:i>           Alter entry with id <id> instead of the running entry
+  --start <time:qs>     Change the start time to <time>
+  --end <time:qs>       Change the end time to <time>
   EOF
 end
