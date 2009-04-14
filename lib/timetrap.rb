@@ -153,7 +153,7 @@ module Timetrap
       end
     end
 
-    def format
+    def running
       say "Sorry not implemented yet :-("
     end
 
