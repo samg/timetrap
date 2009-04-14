@@ -54,7 +54,7 @@ The first command, ``t switch writing``, switches to the timesheet "writing"
 ago"`` creates a new period in the current timesheet, and annotates it with the
 description "document timetrap". The optional --at flag can be passed to start
 the entry at a time other than the present.  Any Chronic or database parsable
-strings are accepted  Note that this command would be in error if the
+strings are accepted.  Note that this command would be in error if the
 ``writing`` timesheet was already active.  Finally, ``t out`` records the
 current time as the end time for the most recent period in the ``writing``
 timesheet.
