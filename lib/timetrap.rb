@@ -44,8 +44,11 @@ module Timetrap
     end
 
     def alter
-      Timetrap.active_entry.update :start => args['--start'] if args['--start'] =~ /.+/
-      Timetrap.active_entry.update :note => unused_args if unused_args =~ /.+/
+      entry = args['--id'] ? Entry[args['--id']] : Timetrap.active_entry
+      say "can't find entry" && return unless entry
+      entry.update :start => args['--start'] if args['--start'] =~ /.+/
+      entry.update :end => args['--end'] if args['--end'] =~ /.+/
+      entry.update :note => unused_args if unused_args =~ /.+/
     end
 
     def backend
@@ -80,7 +83,8 @@ module Timetrap
       sheet = sheet_name_from_string(unused_args)
       sheet = (sheet =~ /.+/ ? sheet : Timetrap.current_sheet)
       say "Timesheet: #{sheet}"
-      say "           Day                Start      End        Duration   Notes"
+      id_heading = args['--ids'] ? 'Id' : '  '
+      say "       #{id_heading}  Day                Start      End        Duration   Notes"
       last_start = nil
       from_current_day = []
       (ee = Timetrap.entries(sheet)).each_with_index do |e, i|
@@ -88,7 +92,8 @@ module Timetrap
 
         from_current_day << e
         e_end = e.end || Time.now
-        say "%27s%11s -%9s%10s    %s" % [
+        say "%9s%18s%11s -%9s%10s    %s" % [
+          (args['--ids'] ? e.id : ''),
           format_date_if_new(e.start, last_start),
           format_time(e.start),
           format_time(e.end),
@@ -316,11 +321,15 @@ where COMMAND is one of:
   switch - switch to a new timesheet
 
   COMMAND OPTIONS
-  
+  options for `display'
+  --ids                 Print database ids (for use with alter)
+
   options for `in' and `out'
   -a, --at <time:qs>        Use this time instead of now
 
   options for `alter'
+  -i, --id <id:i>           Alter entry with id <id> instead of the running entry
   -s, --start <time:qs>     Change the start time to <time>
+  -e, --end <time:qs>     Change the end time to <time>
   EOF
 end

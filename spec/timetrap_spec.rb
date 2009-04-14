@@ -41,6 +41,21 @@ describe Timetrap do
           Timetrap.active_entry.start.should == Chronic.parse("yesterday 10am")
           Timetrap.active_entry.note.should == 'running entry'
         end
+
+        it "should alter the end time of the active period" do
+          entry = Timetrap.active_entry
+          invoke 'alter --end "yesterday 10am"'
+          entry.refresh.end.should == Chronic.parse("yesterday 10am")
+          entry.refresh.note.should == 'running entry'
+        end
+
+        it "should alter a non running entry based on id" do
+          not_running = Timetrap.active_entry
+          Timetrap.stop
+          Timetrap.start "another entry", nil
+          invoke "alter --id #{not_running.id} a new description"
+          not_running.refresh.note.should == 'a new description'
+        end
       end
 
       describe "backend" do
@@ -81,6 +96,19 @@ Timesheet: SpecSheet
            ---------------------------------------------------------
            Total                                    8:00:00
           OUTPUT
+
+          @desired_output_with_ids = <<-OUTPUT
+Timesheet: SpecSheet
+       Id  Day                Start      End        Duration   Notes
+        3  Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
+        2                     16:00:00 - 18:00:00   2:00:00    entry 2
+                                                    4:00:00
+        4  Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
+        5                     18:00:00 -            2:00:00    entry 4
+                                                    4:00:00
+           ---------------------------------------------------------
+           Total                                    8:00:00
+          OUTPUT
         end
 
         it "should display the current timesheet" do
@@ -99,6 +127,11 @@ Timesheet: SpecSheet
           Timetrap.current_sheet = 'another'
           invoke 'display S'
           $stdout.string.should == @desired_output
+        end
+
+        it "should display a timesheet with ids" do
+          invoke 'display S --ids'
+          $stdout.string.should == @desired_output_with_ids
         end
       end
 
