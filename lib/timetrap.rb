@@ -61,7 +61,19 @@ module Timetrap
     end
 
     def kill
-      Timetrap.kill args.unused.join(' ')
+      sheet = args.unused.join(' ')
+      unless Entry.map{|e| e.sheet }.include?(sheet)
+        puts "ain't no sheet #{sheet.inspect}"
+        return
+      end
+      victims = Entry.filter(:sheet => sheet).count
+      print "are you sure you want to delete #{victims} entries on sheet #{sheet.inspect}? "
+      if $stdin.gets =~ /\Aye?s?\Z/i
+        Timetrap.kill sheet
+        say "killed #{victims} entries"
+      else
+        say "kill aborted"
+      end
     end
 
     def display

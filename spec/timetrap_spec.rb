@@ -15,6 +15,7 @@ describe Timetrap do
     Timetrap::Entry.create_table!
     Timetrap::Meta.create_table!
     $stdout = StringIO.new
+    $stdin = StringIO.new
   end
 
   describe 'CLI' do
@@ -133,9 +134,18 @@ Timesheet: SpecSheet
       end
 
       describe "kill" do
+        it "should give me a chance not to fuck up" do
+          entry = create_entry
+          lambda do
+            $stdin.string = ""
+            invoke "kill #{entry.sheet}"
+          end.should_not change(Timetrap::Entry, :count).by(-1)
+        end
+
         it "should delete a timesheet" do
           entry = create_entry
           lambda do
+            $stdin.string = "yes\n"
             invoke "kill #{entry.sheet}"
           end.should change(Timetrap::Entry, :count).by(-1)
         end
