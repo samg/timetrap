@@ -60,6 +60,10 @@ module Timetrap
       Timetrap.stop args['--at']
     end
 
+    def kill
+      Timetrap.kill args.unused.join(' ')
+    end
+
     def display
       sheet = sheet_name_from_string(args.unused.join(' '))
       sheet = (sheet =~ /.+/ ? sheet : Timetrap.current_sheet)
@@ -231,6 +235,10 @@ module Timetrap
 
   def switch sheet
     self.current_sheet = sheet
+  end
+
+  def kill sheet
+    Entry.filter(:sheet => sheet).destroy
   end
 
   class AlreadyRunning < StandardError

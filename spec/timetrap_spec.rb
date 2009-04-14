@@ -134,7 +134,10 @@ Timesheet: SpecSheet
 
       describe "kill" do
         it "should delete a timesheet" do
-          pending
+          entry = create_entry
+          lambda do
+            invoke "kill #{entry.sheet}"
+          end.should change(Timetrap::Entry, :count).by(-1)
         end
       end
 
