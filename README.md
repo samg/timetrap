@@ -17,7 +17,7 @@ http://bitbucket.org/trevor/timebook/src/
 
 
 Concepts
-~~~~~~~~
+--------
 
 Timetrap maintains a list of *timesheets* -- distinct lists of timed *periods*.
 Each period has a start and end time, with the exception of the most recent
@@ -41,13 +41,13 @@ thus be ambiguous whether a new timesheet ``f`` or switching to the existing
 timesheet ``foo`` was desired).
 
 Usage
-~~~~~
+-----
 
 The basic usage is as follows::
 
-  $ t switch writing
-  $ t in document timetrap --at "10 minutes ago"
-  $ t out
+    $ t switch writing
+    $ t in document timetrap --at "10 minutes ago"
+    $ t out
 
 The first command, ``t switch writing``, switches to the timesheet "writing"
 (or creates it if it does not exist). ``t in document timetrap --at "10 minutes
@@ -61,13 +61,13 @@ timesheet.
 
 To display the current timesheet, invoke the ``t display`` command::
 
-  $ t display
-  Timesheet writing:
-  Day            Start      End        Duration   Notes
-  Mar 14, 2009   19:53:30 - 20:06:15   0:12:45    document timetrap
-                 20:07:02 -            0:00:01    write home about timetrap
-                                       0:12:46
-  Total                                0:12:46
+    $ t display
+    Timesheet writing:
+    Day            Start      End        Duration   Notes
+    Mar 14, 2009   19:53:30 - 20:06:15   0:12:45    document timetrap
+                   20:07:02 -            0:00:01    write home about timetrap
+                                         0:12:46
+    Total                                0:12:46
 
 Each period in the timesheet is listed on a row. If the timesheet is active,
 the final period in the timesheet will have no end time. After each day, the
@@ -76,7 +76,7 @@ computed by summing the durations of the periods beginning in the day. In the
 last row, the total time tracked in the timesheet is shown.
 
 Commands
-~~~~~~~~
+--------
 
 **alter**
   Inserts a note associated with the currently active period in the timesheet.
