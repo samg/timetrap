@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.date = %q{2009-04-14}
   s.description = %q{Command line time tracker}
   s.email = %q{sgrock@gmail.com}
-  s.files = %w[README Rakefile lib/timetrap.rb bin/t spec/timetrap_spec.rb]
+  s.files = %w[README.md LICENSE.txt Rakefile lib/timetrap.rb bin/t spec/timetrap_spec.rb]
   s.has_rdoc = true
   s.homepage = "http://github.com/samg/timetrap/tree/master"
   s.rdoc_options = ["--inline-source", "--charset=UTF-8"]
