@@ -55,16 +55,16 @@ describe Timetrap do
 
           Time.stub!(:now).and_return Time.at(1223254800 + (60*60*2))
           @desired_output = <<-OUTPUT
-Timesheet SpecSheet:
-          Day                Start      End        Duration   Notes
-          Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
-                             16:00:00 - 18:00:00   2:00:00    entry 2
-                                                   4:00:00
-          Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
-                             18:00:00 -            2:00:00    entry 4
-                                                   4:00:00
-          ---------------------------------------------------------
-          Total                                    8:00:00
+Timesheet: SpecSheet
+           Day                Start      End        Duration   Notes
+           Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
+                              16:00:00 - 18:00:00   2:00:00    entry 2
+                                                    4:00:00
+           Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
+                              18:00:00 -            2:00:00    entry 4
+                                                    4:00:00
+           ---------------------------------------------------------
+           Total                                    8:00:00
           OUTPUT
         end
 
