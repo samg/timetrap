@@ -6,8 +6,9 @@ to be a low-overhead way of tracking what you spend time on.  Timetrap
 maintains its state in a sqlite3 database.
 
 To install:
-  $ gem sources -a http://gems.github.com (you only have to do this once)
-  $ sudo gem install samg-timetrap
+
+    $ gem sources -a http://gems.github.com (you only have to do this once)
+    $ sudo gem install samg-timetrap
 
 This will place a ``t`` executable in your path.
 
