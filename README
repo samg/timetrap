@@ -5,11 +5,11 @@ Timetrap is a ruby port of Trevor Caira's Timebook, a small utility which aims
 to be a low-overhead way of tracking what you spend time on.  Timetrap
 maintains its state in a sqlite3 database.
 
-Timetrap is in very early development.  It is necessary to set up your own
-``t`` executable.  This could do the trick:
+To install:
+  $ gem sources -a http://gems.github.com (you only have to do this once)
+  $ sudo gem install samg-timebook
 
-  $ git clone git://github.com/samg/timetrap.git
-  $ sudo ln -s timetrap/lib/timetrap.rb /usr/local/bin/t
+This will place a ``t`` executable in your path.
 
 Original Timebook available at:
 http://bitbucket.org/trevor/timebook/src/

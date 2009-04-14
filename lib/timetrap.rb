@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 require 'rubygems'
 require 'chronic'
 require 'sequel'
@@ -315,5 +314,4 @@ where COMMAND is one of:
   COMMAND OPTIONS
   -a, --at <time:qs>        Use this time instead of now
   EOF
-  CLI.invoke if invoked_as_executable?
 end

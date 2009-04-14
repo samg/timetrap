@@ -1,5 +1,6 @@
 require 'spec/rake/spectask'
 require 'rake/rdoctask'
+require 'rake/gempackagetask'
 
 task :default => :spec
 
