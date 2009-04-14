@@ -15,7 +15,6 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.bindir = "bin"
   s.executables = ['t']
-  s.rubygems_version = %q{1.3.0}
   s.summary = %q{Command line time tracker}
   s.add_dependency("sequel", ">= 2.12.0")
   s.add_dependency("chronic", ">= 0.2.3")
