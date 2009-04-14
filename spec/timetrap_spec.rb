@@ -240,8 +240,7 @@ current sheet: 0:01:00 (a timesheet that is running)
           create_entry :sheet => 'two', :end => nil
         end
         it "should show all running timesheets" do
-
-
+          pending
         end
       end
 
