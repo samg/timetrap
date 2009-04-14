@@ -29,10 +29,17 @@ describe Timetrap do
         before do
           Timetrap.start "running entry", nil
         end
+
         it "should alter the description of the active period" do
           Timetrap.active_entry.note.should == 'running entry'
           invoke 'alter new description'
           Timetrap.active_entry.note.should == 'new description'
+        end
+
+        it "should alter the start time of the active period" do
+          invoke 'alter --start "yesterday 10am"'
+          Timetrap.active_entry.start.should == Chronic.parse("yesterday 10am")
+          Timetrap.active_entry.note.should == 'running entry'
         end
       end
 

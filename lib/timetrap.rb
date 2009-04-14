@@ -44,7 +44,8 @@ module Timetrap
     end
 
     def alter
-      Timetrap.active_entry.update :note => args.unused.join(' ')
+      Timetrap.active_entry.update :start => args['--start'] if args['--start'] =~ /.+/
+      Timetrap.active_entry.update :note => unused_args if unused_args =~ /.+/
     end
 
     def backend
@@ -52,7 +53,7 @@ module Timetrap
     end
 
     def in
-      Timetrap.start args.unused.join(' '), args['--at']
+      Timetrap.start unused_args, args['--at']
     end
 
     def out
@@ -60,7 +61,7 @@ module Timetrap
     end
 
     def kill
-      sheet = args.unused.join(' ')
+      sheet = unused_args
       unless (sheets = Entry.map{|e| e.sheet }.uniq).include?(sheet)
         say "ain't no sheet #{sheet.inspect}", 'sheets:', *sheets
         return
@@ -76,7 +77,7 @@ module Timetrap
     end
 
     def display
-      sheet = sheet_name_from_string(args.unused.join(' '))
+      sheet = sheet_name_from_string(unused_args)
       sheet = (sheet =~ /.+/ ? sheet : Timetrap.current_sheet)
       say "Timesheet: #{sheet}"
       say "           Day                Start      End        Duration   Notes"
@@ -200,6 +201,10 @@ module Timetrap
       ""
     end
 
+    def unused_args
+      args.unused.join(' ')
+    end
+
     public
     def say *something
       puts *something
@@ -311,6 +316,11 @@ where COMMAND is one of:
   switch - switch to a new timesheet
 
   COMMAND OPTIONS
+  
+  options for `in' and `out'
   -a, --at <time:qs>        Use this time instead of now
+
+  options for `alter'
+  -s, --start <time:qs>     Change the start time to <time>
   EOF
 end
