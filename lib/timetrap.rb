@@ -115,7 +115,7 @@ module Timetrap
 
     def switch
       sheet = args.unused.join(' ')
-      if not sheet then say "No sheet specified"; return end
+      if not sheet =~ /.+/ then say "No sheet specified"; return end
       say "Switching to sheet " + Timetrap.switch(sheet)
     end
 
@@ -217,10 +217,6 @@ module Timetrap
       Meta.create(:key => 'current_sheet', :value => 'default')
     end
     Meta.find(:key => 'current_sheet').value
-  end
-
-  def invoked_as_executable?
-    $0 == __FILE__
   end
 
   def entries sheet = nil

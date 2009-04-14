@@ -251,6 +251,12 @@ current sheet: 0:01:00 (a timesheet that is running)
           invoke 'switch sheet 2'
           Timetrap.current_sheet.should == 'sheet 2'
         end
+
+        it "should not switch to an blank timesheet" do
+          invoke 'switch sheet 1'
+          invoke 'switch'
+          Timetrap.current_sheet.should == 'sheet 1'
+        end
       end
     end
   end
