@@ -2,7 +2,6 @@ TEST_MODE = true
 require File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap')
 require 'spec'
 
-OUTPUT_BUFFER = File.new('/tmp/timetrap_spec.out', 'r')
 describe Timetrap do
   before :each do
     Timetrap::Entry.create_table!
