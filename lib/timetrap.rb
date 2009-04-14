@@ -214,6 +214,8 @@ module Timetrap
 
 
   class Entry < Sequel::Model
+    plugin :schema
+
     def start= time
       self[:start]= Chronic.parse(time) || time
     end
@@ -234,6 +236,8 @@ module Timetrap
   end
 
   class Meta < Sequel::Model(:meta)
+    plugin :schema
+
     set_schema do
       primary_key :id
       column :key, :string
