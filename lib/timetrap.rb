@@ -3,7 +3,6 @@ require 'rubygems'
 require 'chronic'
 require 'sequel'
 require 'Getopt/Declare'
-require 'duration'
 # connect to database.  This will create one if it doesn't exist
 DB_NAME = defined?(TEST_MODE) ? nil : "#{ENV['HOME']}/.timetrap.db"
 DB = Sequel.sqlite DB_NAME
@@ -62,32 +61,37 @@ module Timetrap
     end
 
     def display
-      sheet = args.unused.join(' ')
+      sheet = sheet_name_from_string(args.unused.join(' '))
       sheet = (sheet =~ /.+/ ? sheet : Timetrap.current_sheet)
-      say "Timesheet #{sheet}:"
-      say "          Day                Start      End        Duration   Notes"
+      say "Timesheet: #{sheet}"
+      say "           Day                Start      End        Duration   Notes"
       last_start = nil
-      days = []
-      (ee = Timetrap.entries(sheet)).each do |e|
+      from_current_day = []
+      (ee = Timetrap.entries(sheet)).each_with_index do |e, i|
 
-        if !same_day? e.start, last_start and last_start != nil
-          say "%58s" % format_total(days)
-          days = []
-        else
-          days << e
-        end
 
-        say "%26s%11s -%9s%10s    %s" % [
+        from_current_day << e
+        e_end = e.end || Time.now
+        say "%27s%11s -%9s%10s    %s" % [
           format_date_if_new(e.start, last_start),
           format_time(e.start),
           format_time(e.end),
-          format_duration(e.start, e.end),
+          format_duration(e.start, e_end),
           e.note
         ]
 
+        nxt = Timetrap.entries(sheet).map[i+1]
+        if nxt == nil or !same_day?(e.start, nxt.start)
+          say "%59s" % format_total(from_current_day)
+          from_current_day = []
+        else
+        end
         last_start = e.start
       end
-      say "          Total%43s" % format_total(ee)
+      say <<-OUT
+           ---------------------------------------------------------
+      OUT
+      say "           Total%43s" % format_total(ee)
     end
 
     def switch
@@ -97,15 +101,27 @@ module Timetrap
     end
 
     def list
-      say "Timesheets:"
-      sheets = Entry.map{|e|e.sheet} << Timetrap.current_sheet
-      say(*sheets.uniq.sort.map do |str|
-        if str == Timetrap.current_sheet
-          "  * %s" % str
-        else
-          "    %s" % str
+      sheets = Entry.map{|e|e.sheet}.uniq.sort.map do |sheet|
+        sheet_atts = {:total => 0, :running => 0, :today => 0}
+        DB[:entries].filter(:sheet => sheet).inject(sheet_atts) do |m, e|
+          e_end = e[:end] || Time.now
+          m[:name] ||= sheet
+          m[:total] += (e_end.to_i - e[:start].to_i)
+          m[:running] += (e_end.to_i - e[:start].to_i) unless e[:end]
+          m[:today] += (e_end.to_i - e[:start].to_i) if same_day?(Time.now, e[:start])
+          m
         end
-      end)
+      end
+      width = sheets.sort_by{|h|h[:name].length }.last[:name].length + 4
+      say " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
+      sheets.each do |sheet|
+        star = sheet[:name] == Timetrap.current_sheet ? '*' : ' '
+        say "#{star}%-#{width}s%-12s%-12s%s" % [
+          sheet[:running],
+          sheet[:today],
+          sheet[:total]
+        ].map(&method(:format_seconds)).unshift(sheet[:name])
+      end
     end
 
     def now
@@ -143,12 +159,23 @@ module Timetrap
     def format_duration stime, etime
       return '' unless stime and etime
       secs = etime.to_i - stime.to_i
+      format_seconds secs
+    end
+
+    def format_seconds secs
       "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
     end
 
     def format_total entries
-      secs = entries.inject(0){|m, e| m += e.end.to_i - e.start.to_i if e.end && e.start;m}
+      secs = entries.inject(0){|m, e|e_end = e.end || Time.now; m += e_end.to_i - e.start.to_i if e_end && e.start;m}
       "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
+    end
+
+    def sheet_name_from_string string
+      return "" unless string =~ /.+/
+      DB[:entries].filter(:sheet.like("#{string}%")).first[:sheet]
+    rescue
+      ""
     end
 
     public
@@ -245,8 +272,24 @@ module Timetrap
     end
     create_table unless table_exists?
   end
-  CLI.args = Getopt::Declare.new(<<-'EOF')
-    -a, --at <time:qs>        Use this time instead of now
+  CLI.args = Getopt::Declare.new(<<-EOF)
+Usage: #{File.basename $0} COMMAND [OPTIONS] [ARGS...]
+
+where COMMAND is one of:
+  alter - alter the description of the active period
+  backend - open an the backend's interactive shell
+  display - display the current timesheet
+  format - export a sheet to csv format
+  in - start the timer for the current timesheet
+  kill - delete a timesheet
+  list - show the available timesheets
+  now - show the status of the current timesheet
+  out - stop the timer for the current timesheet
+  running - show all running timesheets
+  switch - switch to a new timesheet
+
+  COMMAND OPTIONS
+  -a, --at <time:qs>        Use this time instead of now
   EOF
   CLI.invoke if invoked_as_executable?
 end
