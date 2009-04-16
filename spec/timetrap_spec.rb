@@ -183,10 +183,20 @@ Id  Day                Start      End        Duration   Notes
         end
 
         it "should delete a timesheet" do
+          create_entry
           entry = create_entry
           lambda do
             $stdin.string = "yes\n"
             invoke "kill #{entry.sheet}"
+          end.should change(Timetrap::Entry, :count).by(-2)
+        end
+
+        it "should delete an entry" do
+          create_entry
+          entry = create_entry
+          lambda do
+            $stdin.string = "yes\n"
+            invoke "kill --id #{entry.id}"
           end.should change(Timetrap::Entry, :count).by(-1)
         end
       end

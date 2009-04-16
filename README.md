@@ -91,7 +91,7 @@ Commands
   start or end times.  Defaults to the current time although an ``--id`` flag can
   be passed with the entry's id (see display.)
 
-  usage: ``t alter [--id ID][--start TIME][--end TIME][NOTES...]``
+  usage: ``t alter [--id ID] [--start TIME] [--end TIME] [NOTES]``
 
 **backend**
   Run an interactive database session on the timetrap database. Requires the
@@ -121,12 +121,13 @@ Commands
   may be specified for this period. This is exactly equivalent to
   ``t in; t alter NOTES``. Accepts an optional --at flag.
 
-  usage: ``t in [--at TIME] [NOTES...]``
+  usage: ``t in [--at TIME] [NOTES]``
 
 **kill**
-  Delete a timesheet.
+  Delete a timesheet or an entry.  Entry's are referenced using an ``--id``
+  flag (see display).  Sheets are referenced by name.
 
-  usage: ``t kill TIMESHEET``
+  usage: ``t kill [--id ID] [TIMESHEET]``
 
 **list**
   List the available timesheets.

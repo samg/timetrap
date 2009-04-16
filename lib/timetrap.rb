@@ -64,18 +64,28 @@ module Timetrap
     end
 
     def kill
-      sheet = unused_args
-      unless (sheets = Entry.map{|e| e.sheet }.uniq).include?(sheet)
-        say "ain't no sheet #{sheet.inspect}", 'sheets:', *sheets
-        return
-      end
-      victims = Entry.filter(:sheet => sheet).count
-      print "are you sure you want to delete #{victims} entries on sheet #{sheet.inspect}? "
-      if $stdin.gets =~ /\Aye?s?\Z/i
-        Timetrap.kill sheet
-        say "killed #{victims} entries"
+      if e = Entry[args['--id']]
+        out = "are you sure you want to delete entry #{e.id}? "
+        out << "(#{e.note}) " if e.note.to_s =~ /.+/
+        print out
+        if $stdin.gets =~ /\Aye?s?\Z/i
+          e.destroy
+          say "it's dead"
+        else
+          say "will not kill"
+        end
+      elsif (sheets = Entry.map{|e| e.sheet }.uniq).include?(sheet = unused_args)
+        victims = Entry.filter(:sheet => sheet).count
+        print "are you sure you want to delete #{victims} entries on sheet #{sheet.inspect}? "
+        if $stdin.gets =~ /\Aye?s?\Z/i
+          Timetrap.kill_sheet sheet
+          say "killed #{victims} entries"
+        else
+          say "will not kill"
+        end
       else
-        say "will not kill"
+        victim = args['--id'] ? args['--id'].to_s.inspect : sheet.inspect
+        say "can't find #{victim} to kill", 'sheets:', *sheets
       end
     end
 
@@ -261,7 +271,7 @@ module Timetrap
     self.current_sheet = sheet
   end
 
-  def kill sheet
+  def kill_sheet sheet
     Entry.filter(:sheet => sheet).destroy
   end
 
