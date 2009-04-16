@@ -50,7 +50,7 @@ The basic usage is as follows::
     $ t out
 
 The first command, ``t switch writing``, switches to the timesheet "writing"
-(or creates it if it does not exist). ``t in document timetrap ``--at`` "10 minutes
+(or creates it if it does not exist). ``t in document timetrap --at "10 minutes
 ago"`` creates a new period in the current timesheet, and annotates it with the
 description "document timetrap". The optional ``--at`` flag can be passed to start
 the entry at a time other than the present.  The ``--at`` flag is able to parse
