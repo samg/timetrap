@@ -64,12 +64,18 @@ records the current time as the end time for the most recent period in the
 To display the current timesheet, invoke the ``t display`` command::
 
     $ t display
-    Timesheet writing:
-    Day            Start      End        Duration   Notes
-    Mar 14, 2009   19:53:30 - 20:06:15   0:12:45    document timetrap
-                   20:07:02 -            0:00:01    write home about timetrap
-                                         0:12:46
-    Total                                0:12:46
+    Timesheet: timetrap
+        Day                Start      End        Duration   Notes
+        Mon Apr 13, 2009   15:46:51 - 17:03:50   1:16:59    improved display functionality
+                           17:25:59 - 17:26:02   0:00:03
+                           18:38:07 - 18:38:52   0:00:45    working on list
+                           22:37:38 - 23:38:43   1:01:05    work on kill
+                                                 2:18:52
+        Tue Apr 14, 2009   00:41:16 - 01:40:19   0:59:03    gem packaging
+                           10:20:00 - 10:48:10   0:28:10    enhance alter
+                                                 1:27:13
+        ---------------------------------------------------------
+        Total                                    3:46:05
 
 Each period in the timesheet is listed on a row. If the timesheet is active,
 the final period in the timesheet will have no end time. After each day, the
@@ -81,9 +87,11 @@ Commands
 --------
 
 **alter**
-  Inserts a note associated with the currently active period in the timesheet.
+  Inserts a note associated with the an entry in the timesheet, or alters the
+  start or end times.  Defaults to the current time although an ``--id`` flag can
+  be passed with the entry's id (see display.)
 
-  usage: ``t alter NOTES...``
+  usage: ``t alter [--id ID][--start TIME][--end TIME][NOTES...]``
 
 **backend**
   Run an interactive database session on the timetrap database. Requires the
@@ -93,9 +101,11 @@ Commands
 
 **display**
   Display a given timesheet. If no timesheet is specified, show the current
-  timesheet.
+  timesheet. Accepts an optional ``--ids`` flag which will include the entries'
+  ids in the output.  This is useful when editing an non running entry with
+  ``alter``.
 
-  usage: ``t display [TIMESHEET]``
+  usage: ``t display [--ids] [TIMESHEET]``
 
 **format**
   Export the current sheet as a comma-separated value format spreadsheet.  If
@@ -109,15 +119,14 @@ Commands
 **in**
   Start the timer for the current timesheet. Must be called before out.  Notes
   may be specified for this period. This is exactly equivalent to
-  ``t in; t alter NOTES``
+  ``t in; t alter NOTES``. Accepts an optional --at flag.
 
   usage: ``t in [--at TIME] [NOTES...]``
 
 **kill**
-  Delete a timesheet. If no timesheet is specified, delete the current
-  timesheet and switch to the default timesheet.
+  Delete a timesheet.
 
-  usage: ``t kill [TIMESHEET]``
+  usage: ``t kill TIMESHEET``
 
 **list**
   List the available timesheets.
@@ -128,15 +137,13 @@ Commands
   Print the current sheet, whether it's active, and if so, how long it has been
   active and what notes are associated with the current period.
 
-  If a specific timesheet is given, display the same information for that
-  timesheet instead.
-
   usage: ``t now``
 
 **out**
-  Stop the timer for the current timesheet. Must be called after in.
+  Stop the timer for the current timesheet. Must be called after in. Accepts an
+  optional --at flag.
 
-  usage: ``t in [--at TIME]``
+  usage: ``t out [--at TIME]``
 
 **running**
   Print all active sheets and any messages associated with them.
