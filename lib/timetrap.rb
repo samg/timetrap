@@ -84,7 +84,7 @@ module Timetrap
       sheet = (sheet =~ /.+/ ? sheet : Timetrap.current_sheet)
       say "Timesheet: #{sheet}"
       id_heading = args['--ids'] ? 'Id' : '  '
-      say "       #{id_heading}  Day                Start      End        Duration   Notes"
+      say "#{id_heading}  Day                Start      End        Duration   Notes"
       last_start = nil
       from_current_day = []
       (ee = Timetrap.entries(sheet)).each_with_index do |e, i|
@@ -92,7 +92,7 @@ module Timetrap
 
         from_current_day << e
         e_end = e.end || Time.now
-        say "%9s%18s%11s -%9s%10s    %s" % [
+        say "%-4s%16s%11s -%9s%10s    %s" % [
           (args['--ids'] ? e.id : ''),
           format_date_if_new(e.start, last_start),
           format_time(e.start),
@@ -103,16 +103,16 @@ module Timetrap
 
         nxt = Timetrap.entries(sheet).map[i+1]
         if nxt == nil or !same_day?(e.start, nxt.start)
-          say "%59s" % format_total(from_current_day)
+          say "%52s" % format_total(from_current_day)
           from_current_day = []
         else
         end
         last_start = e.start
       end
       say <<-OUT
-           ---------------------------------------------------------
+    ---------------------------------------------------------
       OUT
-      say "           Total%43s" % format_total(ee)
+      say "    Total%43s" % format_total(ee)
     end
 
     def format

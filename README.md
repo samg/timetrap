@@ -53,11 +53,13 @@ The first command, ``t switch writing``, switches to the timesheet "writing"
 (or creates it if it does not exist). ``t in document timetrap --at "10 minutes
 ago"`` creates a new period in the current timesheet, and annotates it with the
 description "document timetrap". The optional --at flag can be passed to start
-the entry at a time other than the present.  Any Chronic or database parsable
-strings are accepted.  Note that this command would be in error if the
-``writing`` timesheet was already active.  Finally, ``t out`` records the
-current time as the end time for the most recent period in the ``writing``
-timesheet.
+the entry at a time other than the present.  The --at flag is able to parse
+natural language times (via Chronic: http://chronic.rubyforge.org/) and will
+understand 'friday 13:00', 'mon 2:35', '4pm', etc. (also true of the ``alter``
+command's ``--start`` and ``--end`` flags.)  Note that this command would be in
+error if the ``writing`` timesheet was already active.  Finally, ``t out``
+records the current time as the end time for the most recent period in the
+``writing`` timesheet.
 
 To display the current timesheet, invoke the ``t display`` command::
 
