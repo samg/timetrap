@@ -20,12 +20,12 @@ Timetrap - Simple Time Tracking
 Usage: #{File.basename $0} COMMAND [OPTIONS] [ARGS...]
 
 where COMMAND is one of:
-  * alter - alter the description of the active period
+  * alter - alter an entry's note, start, or end time. Defaults to the active entry
     usage: t alter [--id ID] [--start TIME] [--end TIME] [NOTES]
     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
     -s, --start <time:qs>     Change the start time to <time>
     -e, --end <time:qs>       Change the end time to <time>
-  * backend - open an the backend's interactive shell
+  * backend - open an sqlite shell to the database
     usage: t backend
   * display - display the current timesheet
     usage: t display [--ids] [TIMESHEET]
