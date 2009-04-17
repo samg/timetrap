@@ -13,41 +13,72 @@ module Timetrap
     attr_accessor :args
     extend self
 
-    COMMANDS = {
-      "alter" => "alter the description of the active period",
-      "backend" => "open an the backend's interactive shell",
-      "display" => "display the current timesheet",
-      "format" => "export a sheet to csv format",
-      "in" => "start the timer for the current timesheet",
-      "kill" => "delete a timesheet",
-      "list" => "show the available timesheets",
-      "now" => "show the status of the current timesheet",
-      "out" => "stop the timer for the current timesheet",
-      "running" => "show all running timesheets",
-      "switch" => "switch to a new timesheet"
-    }
+    USAGE = <<-EOF
+
+Timetrap - Simple Time Tracking
+
+Usage: #{File.basename $0} COMMAND [OPTIONS] [ARGS...]
+
+where COMMAND is one of:
+  * alter - alter the description of the active period
+    usage: t alter [--id ID] [--start TIME] [--end TIME] [NOTES]
+    -i, --id <id:i>           Alter entry with id <id> instead of the running entry
+    -s, --start <time:qs>     Change the start time to <time>
+    -e, --end <time:qs>       Change the end time to <time>
+  * backend - open an the backend's interactive shell
+    usage: t backend
+  * display - display the current timesheet
+    usage: t display [--ids] [TIMESHEET]
+    -v, --ids                 Print database ids (for use with alter)
+  * format - export a sheet to csv format
+    NOT IMPLEMENTED
+  * in - start the timer for the current timesheet
+    usage: t in [--at TIME] [NOTES]
+    -a, --at <time:qs>        Use this time instead of now
+  * kill - delete a timesheet
+    usage: t kill [--id ID] [TIMESHEET]
+    -i, --id <id:i>           Alter entry with id <id> instead of the running entry
+  * list - show the available timesheets
+    usage: t list
+  * now - show the status of the current timesheet
+    usage: t now
+  * out - stop the timer for the current timesheet
+    usage: t out [--at TIME]
+    -a, --at <time:qs>        Use this time instead of now
+  * running - show all running timesheets
+    NOT IMPLEMENTED
+  * switch - switch to a new timesheet
+    usage: t switch TIMESHEET
+
+    OTHER OPTIONS
+    -h, --help     Display this help
+    EOF
 
     def parse arguments
       args.parse arguments
     end
 
     def invoke
-      invoke_command_if_valid
+      args['-h'] ? say(USAGE) : invoke_command_if_valid
+    end
+
+    def commands
+      Timetrap::CLI::USAGE.scan(/\* \w+/).map{|s| s.gsub(/\* /, '')}
     end
 
     def invoke_command_if_valid
       command = args.unused.shift
-      case (valid = COMMANDS.keys.select{|name| name =~ %r|^#{command}|}).size
+      case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
       when 0 then say "Invalid command: #{command}"
       when 1 then send valid[0]
       else; say "Ambigous command: #{command}"; end
     end
 
     def alter
-      entry = args['--id'] ? Entry[args['--id']] : Timetrap.active_entry
+      entry = args['-i'] ? Entry[args['-i']] : Timetrap.active_entry
       say "can't find entry" && return unless entry
-      entry.update :start => args['--start'] if args['--start'] =~ /.+/
-      entry.update :end => args['--end'] if args['--end'] =~ /.+/
+      entry.update :start => args['-s'] if args['-s'] =~ /.+/
+      entry.update :end => args['-e'] if args['-e'] =~ /.+/
       entry.update :note => unused_args if unused_args =~ /.+/
     end
 
@@ -56,15 +87,15 @@ module Timetrap
     end
 
     def in
-      Timetrap.start unused_args, args['--at']
+      Timetrap.start unused_args, args['-a']
     end
 
     def out
-      Timetrap.stop args['--at']
+      Timetrap.stop args['-a']
     end
 
     def kill
-      if e = Entry[args['--id']]
+      if e = Entry[args['-i']]
         out = "are you sure you want to delete entry #{e.id}? "
         out << "(#{e.note}) " if e.note.to_s =~ /.+/
         print out
@@ -84,7 +115,7 @@ module Timetrap
           say "will not kill"
         end
       else
-        victim = args['--id'] ? args['--id'].to_s.inspect : sheet.inspect
+        victim = args['-i'] ? args['-i'].to_s.inspect : sheet.inspect
         say "can't find #{victim} to kill", 'sheets:', *sheets
       end
     end
@@ -93,7 +124,7 @@ module Timetrap
       sheet = sheet_name_from_string(unused_args)
       sheet = (sheet =~ /.+/ ? sheet : Timetrap.current_sheet)
       say "Timesheet: #{sheet}"
-      id_heading = args['--ids'] ? 'Id' : '  '
+      id_heading = args['-v'] ? 'Id' : '  '
       say "#{id_heading}  Day                Start      End        Duration   Notes"
       last_start = nil
       from_current_day = []
@@ -103,7 +134,7 @@ module Timetrap
         from_current_day << e
         e_end = e.end || Time.now
         say "%-4s%16s%11s -%9s%10s    %s" % [
-          (args['--ids'] ? e.id : ''),
+          (args['-v'] ? e.id : ''),
           format_date_if_new(e.start, last_start),
           format_time(e.start),
           format_time(e.end),
@@ -315,31 +346,6 @@ module Timetrap
     create_table unless table_exists?
   end
   CLI.args = Getopt::Declare.new(<<-EOF)
-Usage: #{File.basename $0} COMMAND [OPTIONS] [ARGS...]
-
-where COMMAND is one of:
-  alter - alter the description of the active period
-  backend - open an the backend's interactive shell
-  display - display the current timesheet
-  format - export a sheet to csv format
-  in - start the timer for the current timesheet
-  kill - delete a timesheet
-  list - show the available timesheets
-  now - show the status of the current timesheet
-  out - stop the timer for the current timesheet
-  running - show all running timesheets
-  switch - switch to a new timesheet
-
-  COMMAND OPTIONS
-  options for `display'
-  --ids                 Print database ids (for use with alter)
-
-  options for `in' and `out'
-  --at <time:qs>        Use this time instead of now
-
-  options for `alter'
-  --id <id:i>           Alter entry with id <id> instead of the running entry
-  --start <time:qs>     Change the start time to <time>
-  --end <time:qs>       Change the end time to <time>
+    #{CLI::USAGE}
   EOF
 end
