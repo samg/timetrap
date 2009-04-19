@@ -5,7 +5,7 @@ require 'spec'
 describe Timetrap do
   def create_entry atts = {}
     Timetrap::Entry.create({
-      :sheet => 's1',
+      :sheet => 'default',
       :start => Time.now,
       :end => Time.now,
       :note => 'note'}.merge(atts))
@@ -136,8 +136,42 @@ Id  Day                Start      End        Duration   Notes
       end
 
       describe "format" do
-        it "should export a sheet to a csv format" do
-          pending
+        describe 'ical' do
+          before do
+            create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
+            create_entry(:start => 'two days from now', :end => 'two days from now')
+          end
+
+          it "should filter events by the passed dates" do
+            invoke 'format ical --start "2008-10-03" --end "2008-10-03"'
+            $stdout.string.scan(/BEGIN:VEVENT/).should have(1).item
+          end
+
+          it "should not filter events by date when none are passed" do
+            invoke 'format ical'
+            $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
+          end
+
+          it "should export a sheet to an ical format" do
+            invoke 'format ical --start "2008-10-03" --end "2008-10-03"'
+            desired = <<-EOF
+BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+PRODID:iCalendar-Ruby
+BEGIN:VEVENT
+SEQUENCE:0
+DTEND:20081003T140000
+SUMMARY:note
+DTSTART:20081003T120000
+END:VEVENT
+END:VCALENDAR
+            EOF
+            desired.each_line do |line|
+              $stdout.string.should =~ /#{line.chomp}/
+            end
+          end
         end
       end
 
