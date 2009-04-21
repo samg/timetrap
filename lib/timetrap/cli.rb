@@ -19,10 +19,15 @@ where COMMAND is one of:
   * backend - open an sqlite shell to the database
     usage: t backend
   * display - display the current timesheet
-    usage: t display [--ids] [TIMESHEET]
+    usage: t display [--ids] [--start DATE] [--end DATE] [TIMESHEET]
     -v, --ids                 Print database ids (for use with alter)
+    -s, --start <date:qs>     Include entries that start on this date or later
+    -e, --end <date:qs>       Include entries that start on this date or earlier
   * format - export a sheet to csv format
-    NOT IMPLEMENTED
+    usage: t format [--ids] [--start DATE] [--end DATE] FORMATTER
+    FORMATTER                 Currently only supports 'ical'
+    -s, --start <date:qs>     Include entries that start on this date or later
+    -e, --end <date:qs>       Include entries that start on this date or earlier
   * in - start the timer for the current timesheet
     usage: t in [--at TIME] [NOTES]
     -a, --at <time:qs>        Use this time instead of now
@@ -123,7 +128,10 @@ where COMMAND is one of:
       say "#{id_heading}  Day                Start      End        Duration   Notes"
       last_start = nil
       from_current_day = []
-      (ee = Timetrap.entries(sheet)).each_with_index do |e, i|
+      ee = Timetrap::Entry.filter(:sheet => sheet).order(:start)
+      ee = ee.filter(:end >= Date.parse(args['-s'])) if args['-s']
+      ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
+      ee.each_with_index do |e, i|
 
 
         from_current_day << e
@@ -137,7 +145,7 @@ where COMMAND is one of:
           e.note
         ]
 
-        nxt = Timetrap.entries(sheet).map[i+1]
+        nxt = ee.map[i+1]
         if nxt == nil or !same_day?(e.start, nxt.start)
           say "%52s" % format_total(from_current_day)
           from_current_day = []
@@ -151,6 +159,7 @@ where COMMAND is one of:
       say "    Total%43s" % format_total(ee)
     end
 
+    # TODO: Consolidate display and format
     def format
       begin
         fmt_klass = Timetrap::Formatters.const_get("#{unused_args.classify}")
@@ -158,7 +167,10 @@ where COMMAND is one of:
         say "Invalid format specified `#{unused_args}'"
         return
       end
-      say Timetrap.format(fmt_klass, Timetrap.entries(Timetrap.current_sheet))
+      ee = Timetrap::Entry.filter(:sheet => Timetrap.current_sheet)
+      ee = ee.filter(:end >= Date.parse(args['-s'])) if args['-s']
+      ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
+      say Timetrap.format(fmt_klass,ee.all)
     end
 
     def switch
