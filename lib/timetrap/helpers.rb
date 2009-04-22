@@ -35,6 +35,7 @@ module Timetrap
     end
 
     def sheet_name_from_string string
+      return "all" if string =~ /^\W*all\W*$/
       return "" unless string =~ /.+/
       DB[:entries].filter(:sheet.like("#{string}%")).first[:sheet]
     rescue

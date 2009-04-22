@@ -1,3 +1,7 @@
 #!/usr/bin/env ruby
-require 'timetrap'
+begin
+  require 'timetrap'
+rescue LoadError
+  require File.dirname(File.readlink(__FILE__)) + '/../lib/timetrap'
+end
 Timetrap::CLI.invoke

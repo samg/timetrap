@@ -109,6 +109,28 @@ Id  Day                Start      End        Duration   Notes
     ---------------------------------------------------------
     Total                                    8:00:00
           OUTPUT
+
+          @desired_output_for_all = <<-OUTPUT
+Timesheet: SpecSheet
+    Day                Start      End        Duration   Notes
+    Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
+                       16:00:00 - 18:00:00   2:00:00    entry 2
+                                             4:00:00
+    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
+                       18:00:00 -            2:00:00    entry 4
+                                             4:00:00
+    ---------------------------------------------------------
+    Total                                    8:00:00
+
+Timesheet: another
+    Day                Start      End        Duration   Notes
+    Sun Oct 05, 2008   18:00:00 -            2:00:00    entry 4
+                                             2:00:00
+    ---------------------------------------------------------
+    Total                                    2:00:00
+-------------------------------------------------------------
+Grand Total                                 10:00:00
+          OUTPUT
         end
 
         it "should display the current timesheet" do
@@ -132,6 +154,12 @@ Id  Day                Start      End        Duration   Notes
         it "should display a timesheet with ids" do
           invoke 'display S --ids'
           $stdout.string.should == @desired_output_with_ids
+        end
+
+        it "should display all timesheets" do
+          Timetrap.current_sheet = 'another'
+          invoke 'display all'
+          $stdout.string.should == @desired_output_for_all
         end
       end
 
@@ -419,44 +447,58 @@ current sheet: 0:01:00 (a timesheet that is running)
 end
 
 describe Timetrap::Entry do
-  before do
-    @time = Time.now
-    @entry = Timetrap::Entry.new
+  describe "with an instance" do
+    before do
+      @time = Time.now
+      @entry = Timetrap::Entry.new
+    end
+
+    describe 'attributes' do
+      it "should have a note" do
+        @entry.note = "world takeover"
+        @entry.note.should == "world takeover"
+      end
+
+      it "should have a start" do
+        @entry.start = @time
+        @entry.start.should == @time
+      end
+
+      it "should have a end" do
+        @entry.end = @time
+        @entry.end.should == @time
+      end
+
+      it "should have a sheet" do
+        @entry.sheet= 'name'
+        @entry.sheet.should == 'name'
+      end
+    end
+
+    describe "parsing natural language times" do
+      it "should set start time using english" do
+        @entry.start = "yesterday 10am"
+        @entry.start.should_not be_nil
+        @entry.start.should == Chronic.parse("yesterday 10am")
+      end
+
+      it "should set end time using english" do
+        @entry.end = "tomorrow 1pm"
+        @entry.end.should_not be_nil
+        @entry.end.should == Chronic.parse("tomorrow 1pm")
+      end
+    end
   end
 
-  describe 'attributes' do
-    it "should have a note" do
-      @entry.note = "world takeover"
-      @entry.note.should == "world takeover"
-    end
-
-    it "should have a start" do
-      @entry.start = @time
-      @entry.start.should == @time
-    end
-
-    it "should have a end" do
-      @entry.end = @time
-      @entry.end.should == @time
-    end
-
-    it "should have a sheet" do
-      @entry.sheet= 'name'
-      @entry.sheet.should == 'name'
-    end
-  end
-
-  describe "parsing natural language times" do
-    it "should set start time using english" do
-      @entry.start = "yesterday 10am"
-      @entry.start.should_not be_nil
-      @entry.start.should == Chronic.parse("yesterday 10am")
-    end
-
-    it "should set end time using english" do
-      @entry.end = "tomorrow 1pm"
-      @entry.end.should_not be_nil
-      @entry.end.should == Chronic.parse("tomorrow 1pm")
+  describe '::sheets' do
+    it "should output a list of all the available sheets" do
+      Timetrap::Entry.create( :sheet => 'another',
+        :note => 'entry 4', :start => '2008-10-05 18:00:00'
+      )
+      Timetrap::Entry.create( :sheet => 'SpecSheet',
+        :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
+      )
+      Timetrap::Entry.sheets.should == %w(another SpecSheet).sort
     end
   end
 end

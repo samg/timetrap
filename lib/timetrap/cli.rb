@@ -121,42 +121,58 @@ where COMMAND is one of:
     end
 
     def display
-      sheet = sheet_name_from_string(unused_args)
-      sheet = (sheet =~ /.+/ ? sheet : Timetrap.current_sheet)
-      say "Timesheet: #{sheet}"
-      id_heading = args['-v'] ? 'Id' : '  '
-      say "#{id_heading}  Day                Start      End        Duration   Notes"
-      last_start = nil
-      from_current_day = []
-      ee = Timetrap::Entry.filter(:sheet => sheet).order(:start)
-      ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
-      ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
-      ee.each_with_index do |e, i|
-
-
-        from_current_day << e
-        e_end = e.end || Time.now
-        say "%-4s%16s%11s -%9s%10s    %s" % [
-          (args['-v'] ? e.id : ''),
-          format_date_if_new(e.start, last_start),
-          format_time(e.start),
-          format_time(e.end),
-          format_duration(e.start, e_end),
-          e.note
-        ]
-
-        nxt = ee.map[i+1]
-        if nxt == nil or !same_day?(e.start, nxt.start)
-          say "%52s" % format_total(from_current_day)
-          from_current_day = []
-        else
-        end
-        last_start = e.start
+      sheets = if (sheet = sheet_name_from_string(unused_args)) == 'all'
+        Timetrap::Entry.sheets
+      elsif sheet =~ /.+/
+        [sheet]
+      else
+        [Timetrap.current_sheet]
       end
-      say <<-OUT
+      entries = []
+      sheets.each do |sheet|
+        say "Timesheet: #{sheet}"
+        id_heading = args['-v'] ? 'Id' : '  '
+        say "#{id_heading}  Day                Start      End        Duration   Notes"
+        last_start = nil
+        from_current_day = []
+        ee = Timetrap::Entry.filter(:sheet => sheet).order(:start)
+        ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
+        ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
+        entries += ee.all
+        ee.each_with_index do |e, i|
+
+
+          from_current_day << e
+          e_end = e.end || Time.now
+          say "%-4s%16s%11s -%9s%10s    %s" % [
+            (args['-v'] ? e.id : ''),
+            format_date_if_new(e.start, last_start),
+            format_time(e.start),
+            format_time(e.end),
+            format_duration(e.start, e_end),
+            e.note
+          ]
+
+          nxt = ee.map[i+1]
+          if nxt == nil or !same_day?(e.start, nxt.start)
+            say "%52s" % format_total(from_current_day)
+            from_current_day = []
+          else
+          end
+          last_start = e.start
+        end
+        say <<-OUT
     ---------------------------------------------------------
-      OUT
-      say "    Total%43s" % format_total(ee)
+        OUT
+        say "    Total%43s" % format_total(ee)
+        say "\n" unless sheet == sheets.last
+      end
+      if sheets.size > 1
+        say <<-OUT
+-------------------------------------------------------------
+        OUT
+        say "Grand Total%41s" % format_total(entries)
+      end
     end
 
     # TODO: Consolidate display and format
@@ -180,7 +196,7 @@ where COMMAND is one of:
     end
 
     def list
-      sheets = Entry.map{|e|e.sheet}.uniq.sort.map do |sheet|
+      sheets = Entry.sheets.map do |sheet|
         sheet_atts = {:total => 0, :running => 0, :today => 0}
         DB[:entries].filter(:sheet => sheet).inject(sheet_atts) do |m, e|
           e_end = e[:end] || Time.now

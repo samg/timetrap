@@ -10,6 +10,10 @@ module Timetrap
       self[:end]= Chronic.parse(time) || time
     end
 
+    def self.sheets
+      map{|e|e.sheet}.uniq.sort
+    end
+
     # do a quick pseudo migration.  This should only get executed on the first run
     set_schema do
       primary_key :id
