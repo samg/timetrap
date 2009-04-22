@@ -24,7 +24,7 @@ where COMMAND is one of:
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier
   * format - export a sheet to csv format
-    usage: t format [--ids] [--start DATE] [--end DATE] FORMATTER
+    usage: t format [--start DATE] [--end DATE] FORMATTER
     FORMATTER                 Currently only supports 'ical'
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier

@@ -105,16 +105,15 @@ Commands
   ids in the output.  This is useful when editing an non running entry with
   ``alter``.
 
-  usage: ``t display [--ids] [TIMESHEET]``
+  usage: ``t display [--ids] [--start DATE] [--end DATE] [TIMESHEET]``
 
 **format**
   Export the current sheet as a comma-separated value format spreadsheet.  If
   the final entry is active, it is ignored.
 
-  If a specific timesheet is given, display the same information for that
-  timesheet instead.
+  Currently must pass 'ical' as FORMATTER
 
-  usage: ``t format [--start DATE] [--end DATE] [TIMESHEET]``
+  usage: ``t format [--start DATE] [--end DATE] FORMATTER``
 
 **in**
   Start the timer for the current timesheet. Must be called before out.  Notes
