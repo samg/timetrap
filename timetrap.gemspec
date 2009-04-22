@@ -1,14 +1,15 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |s|
   s.name = %q{timetrap}
-  s.version = "0.0.7"
+  s.version = "0.0.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Sam Goldstein"]
   s.date = %q{2009-04-14}
   s.description = %q{Command line time tracker}
   s.email = %q{sgrock@gmail.com}
-  s.files = %w[README.md LICENSE.txt Rakefile lib/timetrap.rb bin/t spec/timetrap_spec.rb]
+  s.files = %w[LICENSE.txt Rakefile README.md bin/dev_t bin/t lib/timetrap lib/timetrap.rb spec/timetrap_spec.rb lib/timetrap/cli.rb
+    lib/timetrap/formatters lib/timetrap/helpers.rb lib/timetrap/models.rb]
   s.has_rdoc = true
   s.homepage = "http://github.com/samg/timetrap/tree/master"
   s.rdoc_options = ["--inline-source", "--charset=UTF-8"]
