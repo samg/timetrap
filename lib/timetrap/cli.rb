@@ -129,7 +129,7 @@ where COMMAND is one of:
       last_start = nil
       from_current_day = []
       ee = Timetrap::Entry.filter(:sheet => sheet).order(:start)
-      ee = ee.filter(:end >= Date.parse(args['-s'])) if args['-s']
+      ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
       ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
       ee.each_with_index do |e, i|
 
@@ -168,7 +168,7 @@ where COMMAND is one of:
         return
       end
       ee = Timetrap::Entry.filter(:sheet => Timetrap.current_sheet)
-      ee = ee.filter(:end >= Date.parse(args['-s'])) if args['-s']
+      ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
       ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
       say Timetrap.format(fmt_klass,ee.all)
     end
