@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+# Executable with absolute path to lib for hacking and development
+require File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap')
+Timetrap::CLI.invoke
