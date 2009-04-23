@@ -18,8 +18,9 @@ where COMMAND is one of:
     -e, --end <time:qs>       Change the end time to <time>
   * backend - open an sqlite shell to the database
     usage: t backend
-  * display - display the current timesheet
-    usage: t display [--ids] [--start DATE] [--end DATE] [TIMESHEET]
+  * display - display the current timesheet or a specific. Pass `all' as
+      timesheet to display all sheets.
+    usage: t display [--ids] [--start DATE] [--end DATE] [TIMESHEET | all ]
     -v, --ids                 Print database ids (for use with alter)
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier

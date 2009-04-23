@@ -101,9 +101,9 @@ Commands
 
 **display**
   Display a given timesheet. If no timesheet is specified, show the current
-  timesheet. Accepts an optional ``--ids`` flag which will include the entries'
-  ids in the output.  This is useful when editing an non running entry with
-  ``alter``.
+  timesheet. If ``all`` is passed as timesheet display all timesheets. Accepts
+  an optional ``--ids`` flag which will include the entries' ids in the output.
+  This is useful when editing an non running entry with ``alter``.
 
   usage: ``t display [--ids] [--start DATE] [--end DATE] [TIMESHEET]``
 
