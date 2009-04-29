@@ -101,19 +101,18 @@ Commands
 
 **display**
   Display a given timesheet. If no timesheet is specified, show the current
-  timesheet. If ``all`` is passed as timesheet display all timesheets. Accepts
+  timesheet. If ``all`` is passed as SHEET display all timesheets. Accepts
   an optional ``--ids`` flag which will include the entries' ids in the output.
   This is useful when editing an non running entry with ``alter``.
 
-  usage: ``t display [--ids] [--start DATE] [--end DATE] [TIMESHEET]``
+  Display is designed to support a variety of export formats that can be
+  specified by passing the ``--format`` flag.  This currently defaults to
+  text.  iCal output is also supported.
+
+  usage: ``t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]``
 
 **format**
-  Export the current sheet as a comma-separated value format spreadsheet.  If
-  the final entry is active, it is ignored.
-
-  Currently must pass 'ical' as FORMATTER
-
-  usage: ``t format [--start DATE] [--end DATE] FORMATTER``
+  Alias for display
 
 **in**
   Start the timer for the current timesheet. Must be called before out.  Notes

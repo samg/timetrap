@@ -19,16 +19,14 @@ where COMMAND is one of:
   * backend - open an sqlite shell to the database
     usage: t backend
   * display - display the current timesheet or a specific. Pass `all' as
-      timesheet to display all sheets.
-    usage: t display [--ids] [--start DATE] [--end DATE] [TIMESHEET | all ]
+      SHEET to display all sheets.
+    usage: t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]
     -v, --ids                 Print database ids (for use with alter)
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier
-  * format - export a sheet to csv format
-    usage: t format [--start DATE] [--end DATE] FORMATTER
-    FORMATTER                 Currently only supports 'ical'
-    -s, --start <date:qs>     Include entries that start on this date or later
-    -e, --end <date:qs>       Include entries that start on this date or earlier
+    -f, --format <format>     The output format.  Currently supports ical and
+                                text (default).
+  * format - alias for display
   * in - start the timer for the current timesheet
     usage: t in [--at TIME] [NOTES]
     -a, --at <time:qs>        Use this time instead of now
@@ -43,7 +41,7 @@ where COMMAND is one of:
     usage: t out [--at TIME]
     -a, --at <time:qs>        Use this time instead of now
   * running - show all running timesheets
-    NOT IMPLEMENTED
+    usage: t running
   * switch - switch to a new timesheet
     usage: t switch TIMESHEET
 
@@ -122,72 +120,46 @@ where COMMAND is one of:
     end
 
     def display
-      sheets = if (sheet = sheet_name_from_string(unused_args)) == 'all'
-        Timetrap::Entry.sheets
-      elsif sheet =~ /.+/
-        [sheet]
-      else
-        [Timetrap.current_sheet]
-      end
-      entries = []
-      sheets.each do |sheet|
-        say "Timesheet: #{sheet}"
-        id_heading = args['-v'] ? 'Id' : '  '
-        say "#{id_heading}  Day                Start      End        Duration   Notes"
-        last_start = nil
-        from_current_day = []
-        ee = Timetrap::Entry.filter(:sheet => sheet).order(:start)
-        ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
-        ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
-        entries += ee.all
-        ee.each_with_index do |e, i|
-
-
-          from_current_day << e
-          e_end = e.end || Time.now
-          say "%-4s%16s%11s -%9s%10s    %s" % [
-            (args['-v'] ? e.id : ''),
-            format_date_if_new(e.start, last_start),
-            format_time(e.start),
-            format_time(e.end),
-            format_duration(e.start, e_end),
-            e.note
-          ]
-
-          nxt = ee.map[i+1]
-          if nxt == nil or !same_day?(e.start, nxt.start)
-            say "%52s" % format_total(from_current_day)
-            from_current_day = []
-          else
-          end
-          last_start = e.start
+      begin
+        fmt_klass = if args['-f']
+          Timetrap::Formatters.const_get("#{args['-f'].classify}")
+        else
+          Timetrap::Formatters::Text
         end
-        say <<-OUT
-    ---------------------------------------------------------
-        OUT
-        say "    Total%43s" % format_total(ee)
-        say "\n" unless sheet == sheets.last
+      rescue
+        say "Invalid format specified `#{args['-f']}'"
+        return
       end
-      if sheets.size > 1
-        say <<-OUT
--------------------------------------------------------------
-        OUT
-        say "Grand Total%41s" % format_total(entries)
+      ee = if (sheet = sheet_name_from_string(unused_args)) == 'all'
+        Timetrap::Entry
+      elsif sheet =~ /.+/
+        Timetrap::Entry.filter(:sheet => sheet)
+      else
+        Timetrap::Entry.filter(:sheet => Timetrap.current_sheet)
       end
+      ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
+      ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
+      say Timetrap.format(fmt_klass, ee.order(:start).all)
     end
 
     # TODO: Consolidate display and format
     def format
       begin
-        fmt_klass = Timetrap::Formatters.const_get("#{unused_args.classify}")
+        fmt_klass = Timetrap::Formatters.const_get("#{args['-f'].classify}")
       rescue
-        say "Invalid format specified `#{unused_args}'"
+        say "Invalid format specified `#{args['-f']}'"
         return
       end
-      ee = Timetrap::Entry.filter(:sheet => Timetrap.current_sheet)
+      ee = if (sheet = sheet_name_from_string(unused_args)) == 'all'
+        Timetrap::Entry
+      elsif sheet =~ /.+/
+        Timetrap::Entry.filter(:sheet => sheet)
+      else
+        Timetrap::Entry.filter(:sheet => Timetrap.current_sheet)
+      end
       ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
       ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
-      say Timetrap.format(fmt_klass,ee.all)
+      say Timetrap.format(fmt_klass, ee.all)
     end
 
     def switch
@@ -231,7 +203,8 @@ where COMMAND is one of:
     end
 
     def running
-      say "Sorry not implemented yet :-("
+      say "Running Timesheets:"
+      say Timetrap::Entry.filter(:end => nil).map{|e| "  #{e.sheet}: #{e.note}"}.uniq.sort
     end
 
     private

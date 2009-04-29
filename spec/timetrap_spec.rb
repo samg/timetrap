@@ -171,17 +171,17 @@ Grand Total                                 10:00:00
           end
 
           it "should filter events by the passed dates" do
-            invoke 'format ical --start 2008-10-03 --end 2008-10-03'
+            invoke 'format --format ical --start 2008-10-03 --end 2008-10-03'
             $stdout.string.scan(/BEGIN:VEVENT/).should have(1).item
           end
 
           it "should not filter events by date when none are passed" do
-            invoke 'format ical'
+            invoke 'format --format ical'
             $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
           end
 
           it "should export a sheet to an ical format" do
-            invoke 'format ical --start 2008-10-03 --end 2008-10-03'
+            invoke 'format --format ical --start 2008-10-03 --end 2008-10-03'
             desired = <<-EOF
 BEGIN:VCALENDAR
 VERSION:2.0
@@ -347,12 +347,16 @@ current sheet: 0:01:00 (a timesheet that is running)
       end
 
       describe "running" do
-        before do
+        it "should show all running timesheets" do
           create_entry :sheet => 'one', :end => nil
           create_entry :sheet => 'two', :end => nil
+          create_entry :sheet => 'three'
+          invoke 'running'
+          $stdout.string.should == "Running Timesheets:\n  one: note\n  two: note\n"
         end
-        it "should show all running timesheets" do
-          pending
+        it "should show no runnig timesheets" do
+          invoke 'running'
+          $stdout.string.should == "Running Timesheets:\n"
         end
       end
 
@@ -444,6 +448,7 @@ current sheet: 0:01:00 (a timesheet that is running)
       Timetrap.current_sheet.should == 'sheet2'
     end
   end
+
 end
 
 describe Timetrap::Entry do
