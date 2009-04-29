@@ -3,7 +3,7 @@ Timetrap
 
 Timetrap is a ruby port of Trevor Caira's Timebook, a small utility which aims
 to be a low-overhead way of tracking what you spend time on.  It contains
-several enhancement over Timebook notable the ability to parse natural language
+several enhancement over Timebook notably the ability to parse natural language
 time strings.  This makes commands such as ``t in --at "30 minutes ago"``
 possible.  Timetrap maintains its state in a sqlite3 database.
 
