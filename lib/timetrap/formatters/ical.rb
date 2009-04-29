@@ -18,6 +18,7 @@ module Timetrap
             dtstart DateTime.parse(e.start.to_s)
             dtend DateTime.parse(e.end.to_s)
             summary e.note
+            description e.note
           end
         end
         calendar.publish
