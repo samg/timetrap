@@ -44,6 +44,8 @@ where COMMAND is one of:
     usage: t running
   * switch - switch to a new timesheet
     usage: t switch TIMESHEET
+  * week - shortcut for display with start date set to monday of this week
+    usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
 
     OTHER OPTIONS
     -h, --help     Display this help
@@ -205,6 +207,11 @@ where COMMAND is one of:
     def running
       say "Running Timesheets:"
       say Timetrap::Entry.filter(:end => nil).map{|e| "  #{e.sheet}: #{e.note}"}.uniq.sort
+    end
+
+    def week
+      args['-s'] = Date.today.wday == 1 ? Date.today.to_s : Date.parse(Chronic.parse(%q(last monday)).to_s).to_s
+      display
     end
 
     private

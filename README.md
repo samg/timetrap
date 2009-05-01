@@ -157,3 +157,8 @@ Commands
 
   usage: ``t switch TIMESHEET``
 
+**week**
+  Shortcut for display with start date set to monday of this week
+
+  usage: ``t week [--ids] [--end DATE] [--format FMT] [SHEET | all]``
+
