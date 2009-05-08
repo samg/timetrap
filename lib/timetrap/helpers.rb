@@ -1,5 +1,19 @@
 module Timetrap
   module Helpers
+
+    def selected_entries
+      ee = if (sheet = sheet_name_from_string(unused_args)) == 'all'
+        Timetrap::Entry.filter('sheet not like ? escape "!"', '!_%')
+      elsif sheet =~ /.+/
+        Timetrap::Entry.filter('sheet = ?', sheet)
+      else
+        Timetrap::Entry.filter('sheet = ?', Timetrap.current_sheet)
+      end
+      ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
+      ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
+      ee
+    end
+
     def format_time time
       return '' unless time.respond_to?(:strftime)
       time.strftime('%H:%M:%S')

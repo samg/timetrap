@@ -11,6 +11,11 @@ Timetrap - Simple Time Tracking
 Usage: #{File.basename $0} COMMAND [OPTIONS] [ARGS...]
 
 where COMMAND is one of:
+  * archive - move entries to a hidden sheet (by default named '_<SHEET>') so
+      they're out of the way.
+    usage: t archive [--start DATE] [--end DATE] [SHEET]
+    -s, --start <date:qs>     Include entries that start on this date or later
+    -e, --end <date:qs>       Include entries that start on this date or earlier
   * backend - open an sqlite shell to the database
     usage: t backend
   * display - display the current timesheet or a specific. Pass `all' as
@@ -75,6 +80,19 @@ where COMMAND is one of:
       else; say "Ambigous command: #{command}"; end
     end
 
+    def archive
+      ee = selected_entries
+      out = "Archive #{ee.count} entries? "
+      print out
+      if $stdin.gets =~ /\Aye?s?\Z/i
+        ee.all.each do |e|
+          e.update :sheet => "_#{e.sheet}"
+        end
+      else
+        say "archive aborted!"
+      end
+    end
+
     def edit
       entry = args['-i'] ? Entry[args['-i']] : Timetrap.active_entry
       say "can't find entry" && return unless entry
@@ -132,16 +150,7 @@ where COMMAND is one of:
         say "Invalid format specified `#{args['-f']}'"
         return
       end
-      ee = if (sheet = sheet_name_from_string(unused_args)) == 'all'
-        Timetrap::Entry
-      elsif sheet =~ /.+/
-        Timetrap::Entry.filter(:sheet => sheet)
-      else
-        Timetrap::Entry.filter(:sheet => Timetrap.current_sheet)
-      end
-      ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
-      ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
-      say Timetrap.format(fmt_klass, ee.order(:start).all)
+      say Timetrap.format(fmt_klass, selected_entries.order(:start).all)
     end
 
     # TODO: Consolidate display and format
@@ -152,16 +161,7 @@ where COMMAND is one of:
         say "Invalid format specified `#{args['-f']}'"
         return
       end
-      ee = if (sheet = sheet_name_from_string(unused_args)) == 'all'
-        Timetrap::Entry
-      elsif sheet =~ /.+/
-        Timetrap::Entry.filter(:sheet => sheet)
-      else
-        Timetrap::Entry.filter(:sheet => Timetrap.current_sheet)
-      end
-      ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
-      ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
-      say Timetrap.format(fmt_klass, ee.all)
+      say Timetrap.format(fmt_klass, selected_entries.order(:start).all)
     end
 
     def switch

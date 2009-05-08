@@ -57,7 +57,7 @@ ago"`` creates a new period in the current timesheet, and annotates it with the
 description "document timetrap". The optional ``--at`` flag can be passed to start
 the entry at a time other than the present.  The ``--at`` flag is able to parse
 natural language times (via Chronic: http://chronic.rubyforge.org/) and will
-understand 'friday 13:00', 'mon 2:35', '4pm', etc. (also true of the ``alter``
+understand 'friday 13:00', 'mon 2:35', '4pm', etc. (also true of the ``edit``
 command's ``--start`` and ``--end`` flags.)  Note that this command would be in
 error if the ``writing`` timesheet was already active.  Finally, ``t out``
 records the current time as the end time for the most recent period in the
@@ -74,7 +74,7 @@ To display the current timesheet, invoke the ``t display`` command::
                            22:37:38 - 23:38:43   1:01:05    work on kill
                                                  2:18:52
         Tue Apr 14, 2009   00:41:16 - 01:40:19   0:59:03    gem packaging
-                           10:20:00 - 10:48:10   0:28:10    enhance alter
+                           10:20:00 - 10:48:10   0:28:10    enhance edit
                                                  1:27:13
         ---------------------------------------------------------
         Total                                    3:46:05
@@ -87,13 +87,9 @@ last row, the total time tracked in the timesheet is shown.
 
 Commands
 --------
-
-**alter**
-  Inserts a note associated with the an entry in the timesheet, or alters the
-  start or end times.  Defaults to the current time although an ``--id`` flag can
-  be passed with the entry's id (see display.)
-
-  usage: ``t alter [--id ID] [--start TIME] [--end TIME] [NOTES]``
+**archives**
+  Archives the selected entries (by moving them to a sheet called _<SHEET>)
+  usage: ``t archive [--start DATE] [--end DATE] [SHEET]``
 
 **backend**
   Run an interactive database session on the timetrap database. Requires the
@@ -105,7 +101,7 @@ Commands
   Display a given timesheet. If no timesheet is specified, show the current
   timesheet. If ``all`` is passed as SHEET display all timesheets. Accepts
   an optional ``--ids`` flag which will include the entries' ids in the output.
-  This is useful when editing an non running entry with ``alter``.
+  This is useful when editing an non running entry with ``edit``.
 
   Display is designed to support a variety of export formats that can be
   specified by passing the ``--format`` flag.  This currently defaults to
@@ -113,13 +109,20 @@ Commands
 
   usage: ``t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]``
 
+**edit**
+  Inserts a note associated with the an entry in the timesheet, or edits the
+  start or end times.  Defaults to the current time although an ``--id`` flag can
+  be passed with the entry's id (see display.)
+
+  usage: ``t edit [--id ID] [--start TIME] [--end TIME] [NOTES]``
+
 **format**
   Alias for display
 
 **in**
   Start the timer for the current timesheet. Must be called before out.  Notes
   may be specified for this period. This is exactly equivalent to
-  ``t in; t alter NOTES``. Accepts an optional --at flag.
+  ``t in; t edit NOTES``. Accepts an optional --at flag.
 
   usage: ``t in [--at TIME] [NOTES]``
 

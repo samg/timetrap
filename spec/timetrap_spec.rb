@@ -25,6 +25,22 @@ describe Timetrap do
         Timetrap::CLI.invoke
       end
 
+      describe 'archive' do
+        before do
+          3.times do |i|
+            create_entry
+          end
+        end
+
+        it "should put the entries in a hidden sheet" do
+          $stdin.string = "yes\n"
+          invoke 'archive'
+          Timetrap::Entry.each do |e|
+            e.sheet.should == '_default'
+          end
+        end
+      end
+
       describe 'edit' do
         before do
           Timetrap.start "running entry", nil
@@ -160,6 +176,14 @@ Grand Total                                 10:00:00
           Timetrap.current_sheet = 'another'
           invoke 'display all'
           $stdout.string.should == @desired_output_for_all
+        end
+
+        it "should not display archived for all timesheets" do
+          $stdin.string = "yes\n"
+          invoke 'archive SpecSheet'
+          $stdout.string = ''
+          invoke 'display all'
+          $stdout.string.should_not =~ /_SpecSheet/
         end
       end
 
