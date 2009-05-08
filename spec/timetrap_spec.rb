@@ -25,35 +25,35 @@ describe Timetrap do
         Timetrap::CLI.invoke
       end
 
-      describe 'alter' do
+      describe 'edit' do
         before do
           Timetrap.start "running entry", nil
         end
 
-        it "should alter the description of the active period" do
+        it "should edit the description of the active period" do
           Timetrap.active_entry.note.should == 'running entry'
-          invoke 'alter new description'
+          invoke 'edit new description'
           Timetrap.active_entry.note.should == 'new description'
         end
 
-        it "should alter the start time of the active period" do
-          invoke 'alter --start "yesterday 10am"'
+        it "should edit the start time of the active period" do
+          invoke 'edit --start "yesterday 10am"'
           Timetrap.active_entry.start.should == Chronic.parse("yesterday 10am")
           Timetrap.active_entry.note.should == 'running entry'
         end
 
-        it "should alter the end time of the active period" do
+        it "should edit the end time of the active period" do
           entry = Timetrap.active_entry
-          invoke 'alter --end "yesterday 10am"'
+          invoke 'edit --end "yesterday 10am"'
           entry.refresh.end.should == Chronic.parse("yesterday 10am")
           entry.refresh.note.should == 'running entry'
         end
 
-        it "should alter a non running entry based on id" do
+        it "should edit a non running entry based on id" do
           not_running = Timetrap.active_entry
           Timetrap.stop
           Timetrap.start "another entry", nil
-          invoke "alter --id #{not_running.id} a new description"
+          invoke "edit --id #{not_running.id} a new description"
           not_running.refresh.note.should == 'a new description'
         end
       end

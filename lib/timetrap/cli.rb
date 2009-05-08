@@ -11,21 +11,21 @@ Timetrap - Simple Time Tracking
 Usage: #{File.basename $0} COMMAND [OPTIONS] [ARGS...]
 
 where COMMAND is one of:
-  * alter - alter an entry's note, start, or end time. Defaults to the active entry
-    usage: t alter [--id ID] [--start TIME] [--end TIME] [NOTES]
-    -i, --id <id:i>           Alter entry with id <id> instead of the running entry
-    -s, --start <time:qs>     Change the start time to <time>
-    -e, --end <time:qs>       Change the end time to <time>
   * backend - open an sqlite shell to the database
     usage: t backend
   * display - display the current timesheet or a specific. Pass `all' as
       SHEET to display all sheets.
     usage: t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]
-    -v, --ids                 Print database ids (for use with alter)
+    -v, --ids                 Print database ids (for use with edit)
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier
     -f, --format <format>     The output format.  Currently supports ical and
                                 text (default).
+  * edit - alter an entry's note, start, or end time. Defaults to the active entry
+    usage: t edit [--id ID] [--start TIME] [--end TIME] [NOTES]
+    -i, --id <id:i>           Alter entry with id <id> instead of the running entry
+    -s, --start <time:qs>     Change the start time to <time>
+    -e, --end <time:qs>       Change the end time to <time>
   * format - alias for display
   * in - start the timer for the current timesheet
     usage: t in [--at TIME] [NOTES]
@@ -75,7 +75,7 @@ where COMMAND is one of:
       else; say "Ambigous command: #{command}"; end
     end
 
-    def alter
+    def edit
       entry = args['-i'] ? Entry[args['-i']] : Timetrap.active_entry
       say "can't find entry" && return unless entry
       entry.update :start => args['-s'] if args['-s'] =~ /.+/
