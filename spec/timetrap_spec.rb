@@ -194,6 +194,12 @@ Grand Total                                 10:00:00
             create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
           end
 
+          it "should not export running items" do
+            invoke 'in'
+            invoke 'format --format ical'
+            $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
+          end
+
           it "should filter events by the passed dates" do
             invoke 'format --format ical --start 2008-10-03 --end 2008-10-03'
             $stdout.string.scan(/BEGIN:VEVENT/).should have(1).item

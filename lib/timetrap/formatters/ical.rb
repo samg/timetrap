@@ -14,6 +14,7 @@ module Timetrap
 
       def initialize entries
         entries.each do |e|
+          next unless e.end
           calendar.event do
             dtstart DateTime.parse(e.start.to_s)
             dtend DateTime.parse(e.end.to_s)
