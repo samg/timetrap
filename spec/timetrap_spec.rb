@@ -294,27 +294,36 @@ END:VCALENDAR
       end
 
       describe "list" do
-        before do
-          Time.stub!(:now).and_return Time.parse("Oct 5 18:00:00 -0700 2008")
-          create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-03 12:00:00',
-                       :end => '2008-10-03 14:00:00')
-          create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-03 12:00:00',
-                       :end => '2008-10-03 14:00:00')
-          create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-05 12:00:00',
-                       :end => '2008-10-05 14:00:00')
-          create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-05 14:00:00',
-                       :end => nil)
-          create_entry( :sheet => 'Sheet 1', :start => '2008-10-03 16:00:00',
-                       :end => '2008-10-03 18:00:00')
-          Timetrap.current_sheet = 'A Longly Named Sheet 2'
+        describe "with no sheets defined" do
+          it "should say that there are no sheets" do
+            invoke 'list'
+            $stdout.string.chomp.should == 'No sheets found'
+          end
         end
-        it "should list available timesheets" do
-          invoke 'list'
-          $stdout.string.should == <<-OUTPUT
+
+        describe "with sheets defined" do
+          before do
+            Time.stub!(:now).and_return Time.parse("Oct 5 18:00:00 -0700 2008")
+            create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-03 12:00:00',
+                         :end => '2008-10-03 14:00:00')
+            create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-03 12:00:00',
+                         :end => '2008-10-03 14:00:00')
+            create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-05 12:00:00',
+                         :end => '2008-10-05 14:00:00')
+            create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-05 14:00:00',
+                         :end => nil)
+            create_entry( :sheet => 'Sheet 1', :start => '2008-10-03 16:00:00',
+                         :end => '2008-10-03 18:00:00')
+            Timetrap.current_sheet = 'A Longly Named Sheet 2'
+          end
+          it "should list available timesheets" do
+            invoke 'list'
+            $stdout.string.should == <<-OUTPUT
  Timesheet                 Running     Today       Total Time
 *A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
  Sheet 1                    0:00:00     0:00:00     2:00:00
-          OUTPUT
+            OUTPUT
+          end
         end
       end
 

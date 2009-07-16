@@ -77,7 +77,10 @@ where COMMAND is one of:
       case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
       when 0 then say "Invalid command: #{command}"
       when 1 then send valid[0]
-      else; say "Ambigous command: #{command}"; end
+      else
+        say "Ambiguous command: #{command}" if command
+        say(USAGE)
+      end
     end
 
     def archive
@@ -182,6 +185,7 @@ where COMMAND is one of:
           m
         end
       end
+      if sheets.empty? then say "No sheets found"; return end
       width = sheets.sort_by{|h|h[:name].length }.last[:name].length + 4
       say " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
       sheets.each do |sheet|
