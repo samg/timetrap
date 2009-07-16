@@ -155,17 +155,8 @@ where COMMAND is one of:
       end
       say Timetrap.format(fmt_klass, selected_entries.order(:start).all)
     end
+    alias_method :format, :display
 
-    # TODO: Consolidate display and format
-    def format
-      begin
-        fmt_klass = Timetrap::Formatters.const_get("#{args['-f'].classify}")
-      rescue
-        say "Invalid format specified `#{args['-f']}'"
-        return
-      end
-      say Timetrap.format(fmt_klass, selected_entries.order(:start).all)
-    end
 
     def switch
       sheet = unused_args
