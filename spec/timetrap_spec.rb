@@ -188,11 +188,41 @@ Grand Total                                 10:00:00
       end
 
       describe "format" do
-        describe 'ical' do
-          before do
-            create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
-            create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
+        before do
+          create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
+          create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
+        end
+        describe 'csv' do
+
+          it "should not export running items" do
+            invoke 'in'
+            invoke 'format --format csv'
+            $stdout.string.should == <<-EOF
+start,end,note
+"2008-10-03 12:00:00","2008-10-03 14:00:00","note"
+"2008-10-05 12:00:00","2008-10-05 14:00:00","note"
+            EOF
           end
+
+          it "should filter events by the passed dates" do
+            invoke 'format --format csv --start 2008-10-03 --end 2008-10-03'
+            $stdout.string.should == <<-EOF
+start,end,note
+"2008-10-03 12:00:00","2008-10-03 14:00:00","note"
+            EOF
+          end
+
+          it "should not filter events by date when none are passed" do
+            invoke 'format --format csv'
+            $stdout.string.should == <<-EOF
+start,end,note
+"2008-10-03 12:00:00","2008-10-03 14:00:00","note"
+"2008-10-05 12:00:00","2008-10-05 14:00:00","note"
+            EOF
+          end
+        end
+
+        describe 'ical' do
 
           it "should not export running items" do
             invoke 'in'

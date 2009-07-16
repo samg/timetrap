@@ -1,11 +1,14 @@
 Timetrap
 ========
 
-Timetrap is a ruby port of Trevor Caira's Timebook, a small utility which aims
-to be a low-overhead way of tracking what you spend time on.  It contains
-several enhancement over Timebook notably the ability to parse natural language
-time strings.  This makes commands such as ``t in --at "30 minutes ago"``
-possible.  Timetrap maintains its state in a sqlite3 database.
+Timetrap is a utility which provides an easy to use command line interface for
+tracking what you spend your time on.  It is a ruby port of Trevor Caira's
+Timebook, a small python utility.  It contains several enhancement over
+Timebook notably the ability to parse natural language time strings.  This
+makes commands such as ``t in --at "30 minutes ago"`` possible.  Timetrap is
+also able to export entries to several formats (e.g. ical, csv) and is designed
+to be easily extended to support additional export formats.
+Timetrap maintains its state in a sqlite3 database.
 
 To install:
 
@@ -45,7 +48,7 @@ timesheet ``foo`` was desired).
 Usage
 -----
 
-The basic usage is as follows::
+The basic usage is as follows:
 
     $ t switch writing
     $ t in document timetrap --at "10 minutes ago"
@@ -88,7 +91,7 @@ last row, the total time tracked in the timesheet is shown.
 Commands
 --------
 **archives**
-  Archives the selected entries (by moving them to a sheet called _<SHEET>)
+  Archives the selected entries (by moving them to a sheet called ``_[SHEET]``)
   usage: ``t archive [--start DATE] [--end DATE] [SHEET]``
 
 **backend**
@@ -105,7 +108,7 @@ Commands
 
   Display is designed to support a variety of export formats that can be
   specified by passing the ``--format`` flag.  This currently defaults to
-  text.  iCal output is also supported.
+  text.  iCal and csv output are also supported.
 
   usage: ``t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]``
 
@@ -117,6 +120,7 @@ Commands
   usage: ``t edit [--id ID] [--start TIME] [--end TIME] [NOTES]``
 
 **format**
+  Deprecated
   Alias for display
 
 **in**

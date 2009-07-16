@@ -24,14 +24,14 @@ where COMMAND is one of:
     -v, --ids                 Print database ids (for use with edit)
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier
-    -f, --format <format>     The output format.  Currently supports ical and
+    -f, --format <format>     The output format.  Currently supports ical, csv, and
                                 text (default).
   * edit - alter an entry's note, start, or end time. Defaults to the active entry
     usage: t edit [--id ID] [--start TIME] [--end TIME] [NOTES]
     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
     -s, --start <time:qs>     Change the start time to <time>
     -e, --end <time:qs>       Change the end time to <time>
-  * format - alias for display
+  * format - deprecated: alias for display
   * in - start the timer for the current timesheet
     usage: t in [--at TIME] [NOTES]
     -a, --at <time:qs>        Use this time instead of now
