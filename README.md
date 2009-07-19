@@ -92,7 +92,7 @@ Commands
 --------
 **archives**
   Archives the selected entries (by moving them to a sheet called ``_[SHEET]``)
-  These entries can be seen by running @t display _[SHEET]@.
+  These entries can be seen by running ``t display _[SHEET]``.
   usage: ``t archive [--start DATE] [--end DATE] [SHEET]``
 
 **backend**
