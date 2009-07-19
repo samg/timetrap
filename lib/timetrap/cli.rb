@@ -11,7 +11,7 @@ Timetrap - Simple Time Tracking
 Usage: #{File.basename $0} COMMAND [OPTIONS] [ARGS...]
 
 where COMMAND is one of:
-  * archive - move entries to a hidden sheet (by default named '_<SHEET>') so
+  * archive - move entries to a hidden sheet (by default named '_[SHEET]') so
       they're out of the way.
     usage: t archive [--start DATE] [--end DATE] [SHEET]
     -s, --start <date:qs>     Include entries that start on this date or later
