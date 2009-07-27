@@ -39,6 +39,13 @@ describe Timetrap do
             e.sheet.should == '_default'
           end
         end
+
+        it "should leave the running entry alone" do
+          invoke "in"
+          $stdin.string = "yes\n"
+          invoke 'archive'
+          Timetrap::Entry.order(:id).last.sheet.should == 'default'
+        end
       end
 
       describe 'edit' do

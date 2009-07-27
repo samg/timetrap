@@ -89,6 +89,7 @@ where COMMAND is one of:
       print out
       if $stdin.gets =~ /\Aye?s?\Z/i
         ee.all.each do |e|
+          next unless e.end
           e.update :sheet => "_#{e.sheet}"
         end
       else
