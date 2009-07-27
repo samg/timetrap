@@ -2,6 +2,13 @@ module Timetrap
   class Entry < Sequel::Model
     plugin :schema
 
+    class << self
+    # a class level instance variable that controls whether or not all entries
+    # should respond to #start and #end with times rounded to 15 minute
+    # increments.
+      attr_accessor :round
+    end
+
     def start= time
       self[:start]= Chronic.parse(time) || time
     end
@@ -9,6 +16,35 @@ module Timetrap
     def end= time
       self[:end]= Chronic.parse(time) || time
     end
+
+    def start
+      self.class.round ? rounded_start : self[:start]
+    end
+
+    def end
+      self.class.round ? rounded_end : self[:end]
+    end
+
+    def rounded_start
+      round(self[:start])
+    end
+
+    def rounded_end
+      round(self[:end])
+    end
+
+    private
+    def round time
+      return nil unless time
+      Time.at(
+        if (r = time.to_i % 900) < 450
+          time.to_i - r
+        else
+          time.to_i + (900 - r)
+        end
+      )
+    end
+    public
 
     def self.sheets
       map{|e|e.sheet}.uniq.sort

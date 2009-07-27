@@ -54,6 +54,7 @@ where COMMAND is one of:
 
     OTHER OPTIONS
     -h, --help     Display this help
+    -r, --round    Round output  to 15 minute start and end times.
     EOF
 
     def parse arguments
@@ -74,6 +75,7 @@ where COMMAND is one of:
 
     def invoke_command_if_valid
       command = args.unused.shift
+      set_global_options
       case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
       when 0 then say "Invalid command: #{command}"
       when 1 then send valid[0]
@@ -81,6 +83,11 @@ where COMMAND is one of:
         say "Ambiguous command: #{command}" if command
         say(USAGE)
       end
+    end
+
+    # currently just sets whether output should be rounded to 15 min intervals
+    def set_global_options
+      Timetrap::Entry.round = true if args['-r']
     end
 
     def archive

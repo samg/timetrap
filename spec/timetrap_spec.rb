@@ -554,6 +554,43 @@ describe Timetrap::Entry do
         @entry.sheet= 'name'
         @entry.sheet.should == 'name'
       end
+
+      def with_global_round_set_to val
+        old_val = Timetrap::Entry.round
+        begin
+          Timetrap::Entry.round = val
+          block_return_value = yield
+        ensure
+          Timetrap::Entry.round = old_val
+        end
+      end
+
+      it "should use round start if the global round attribute is set" do
+        with_global_round_set_to true do
+          @time = Chronic.parse("12:55am")
+          @entry.start = @time
+          @entry.start.should == Chronic.parse("1am")
+        end
+      end
+
+      it "should use round start if the global round attribute is set" do
+        with_global_round_set_to true do
+          @time = Chronic.parse("12:50am")
+          @entry.start = @time
+          @entry.start.should == Chronic.parse("12:45am")
+        end
+      end
+
+      it "should have a rounded start" do
+        @time = Chronic.parse("12:50am")
+        @entry.start = @time
+        @entry.rounded_start.should == Chronic.parse("12:45am")
+      end
+
+      it "should not round nil times" do
+        @entry.start = nil
+        @entry.rounded_start.should be_nil
+      end
     end
 
     describe "parsing natural language times" do
