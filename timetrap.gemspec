@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{timetrap}
-  s.version = "1.1.0"
+  s.version = "1.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Sam Goldstein"]
-  s.date = %q{2009-07-16}
+  s.date = %q{2009-07-28}
   s.default_executable = %q{t}
   s.description = %q{Command line time tracker}
   s.email = %q{sgrock@gmail.com}
