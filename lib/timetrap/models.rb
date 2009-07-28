@@ -9,6 +9,10 @@ module Timetrap
       attr_accessor :round
     end
 
+    def round?
+      !!self.class.round
+    end
+
     def start= time
       self[:start]= Chronic.parse(time) || time
     end
@@ -18,11 +22,15 @@ module Timetrap
     end
 
     def start
-      self.class.round ? rounded_start : self[:start]
+      round? ? rounded_start : self[:start]
     end
 
     def end
-      self.class.round ? rounded_end : self[:end]
+      round? ? rounded_end : self[:end]
+    end
+
+    def end_or_now
+      self.end || (round? ? round(Time.now) : Time.now)
     end
 
     def rounded_start
@@ -33,7 +41,6 @@ module Timetrap
       round(self[:end])
     end
 
-    private
     def round time
       return nil unless time
       Time.at(
@@ -44,7 +51,6 @@ module Timetrap
         end
       )
     end
-    public
 
     def self.sheets
       map{|e|e.sheet}.uniq.sort

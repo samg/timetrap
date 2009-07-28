@@ -44,7 +44,7 @@ module Timetrap
     end
 
     def format_total entries
-      secs = entries.inject(0){|m, e|e_end = e.end || Time.now; m += e_end.to_i - e.start.to_i if e_end && e.start;m}
+      secs = entries.inject(0){|m, e|e_end = e.end_or_now; m += e_end.to_i - e.start.to_i if e_end && e.start;m}
       "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
     end
 

@@ -175,12 +175,12 @@ where COMMAND is one of:
     def list
       sheets = Entry.sheets.map do |sheet|
         sheet_atts = {:total => 0, :running => 0, :today => 0}
-        DB[:entries].filter(:sheet => sheet).inject(sheet_atts) do |m, e|
-          e_end = e[:end] || Time.now
+        Timetrap::Entry.filter(:sheet => sheet).inject(sheet_atts) do |m, e|
+          e_end = e.end_or_now
           m[:name] ||= sheet
-          m[:total] += (e_end.to_i - e[:start].to_i)
-          m[:running] += (e_end.to_i - e[:start].to_i) unless e[:end]
-          m[:today] += (e_end.to_i - e[:start].to_i) if same_day?(Time.now, e[:start])
+          m[:total] += (e_end.to_i - e.start.to_i)
+          m[:running] += (e_end.to_i - e.start.to_i) unless e.end
+          m[:today] += (e_end.to_i - e.start.to_i) if same_day?(Time.now, e.start)
           m
         end
       end
@@ -199,7 +199,7 @@ where COMMAND is one of:
 
     def now
       if Timetrap.running?
-        out = "#{Timetrap.current_sheet}: #{format_duration(Timetrap.active_entry.start, Time.now)}".gsub(/  /, ' ')
+        out = "#{Timetrap.current_sheet}: #{format_duration(Timetrap.active_entry.start, Timetrap.active_entry.end_or_now)}".gsub(/  /, ' ')
         out << " (#{Timetrap.active_entry.note})" if Timetrap.active_entry.note =~ /.+/
         say out
       else
