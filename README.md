@@ -111,7 +111,10 @@ Commands
   specified by passing the ``--format`` flag.  This currently defaults to
   text.  iCal and csv output are also supported.
 
-  usage: ``t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]``
+  Display also allows the use of a ``--round`` or ``-r`` flag which will round
+  all times to 15 minute increments. See global options below.
+
+  usage: ``t display [--ids] [--round] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]``
 
 **edit**
   Inserts a note associated with the an entry in the timesheet, or edits the
@@ -170,3 +173,11 @@ Commands
 
   usage: ``t week [--ids] [--end DATE] [--format FMT] [SHEET | all]``
 
+Global Options
+--------
+
+**rounding**
+  passing a ``--round`` or ``-r`` flag to any command will round entry start
+  and end times to the closest 15 minute increment.  This flag only affects the
+  display commands (e.g. display, list, week, etc.) and is non-destructive.
+  The actual start and end time stored by Timetrap are unaffected.
