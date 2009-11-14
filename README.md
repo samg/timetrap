@@ -10,10 +10,11 @@ also able to export entries to several formats (e.g. ical, csv) and is designed
 to be easily extended to support additional export formats.
 Timetrap maintains its state in a sqlite3 database.
 
+Timetrap is available as a gem on gemcutter (http://gemcutter.org/gems/timetrap)
+
 To install:
 
-    $ gem sources -a http://gems.github.com (you only have to do this once)
-    $ sudo gem install samg-timetrap
+    $ gem install timetrap
 
 This will place a ``t`` executable in your path.
 
