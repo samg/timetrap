@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.authors = ["Sam Goldstein"]
   s.date = %q{2009-11-27}
   s.default_executable = %q{t}
-  s.description = %q{Command line time tracker}
+  s.description = %q{Timetrap is a lightweight command line time tracker, written in ruby.  See http://github.com/samg/timetrap for more details}
   s.email = %q{sgrock@gmail.com}
   s.executables = ["t"]
   s.extra_rdoc_files = [
