@@ -205,26 +205,26 @@ Grand Total                                 10:00:00
             invoke 'in'
             invoke 'format --format csv'
             $stdout.string.should == <<-EOF
-start,end,note
-"2008-10-03 12:00:00","2008-10-03 14:00:00","note"
-"2008-10-05 12:00:00","2008-10-05 14:00:00","note"
+start,end,note,sheet
+"2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
+"2008-10-05 12:00:00","2008-10-05 14:00:00","note","default"
             EOF
           end
 
           it "should filter events by the passed dates" do
             invoke 'format --format csv --start 2008-10-03 --end 2008-10-03'
             $stdout.string.should == <<-EOF
-start,end,note
-"2008-10-03 12:00:00","2008-10-03 14:00:00","note"
+start,end,note,sheet
+"2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
             EOF
           end
 
           it "should not filter events by date when none are passed" do
             invoke 'format --format csv'
             $stdout.string.should == <<-EOF
-start,end,note
-"2008-10-03 12:00:00","2008-10-03 14:00:00","note"
-"2008-10-05 12:00:00","2008-10-05 14:00:00","note"
+start,end,note,sheet
+"2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
+"2008-10-05 12:00:00","2008-10-05 14:00:00","note","default"
             EOF
           end
         end
