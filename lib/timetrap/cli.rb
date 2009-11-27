@@ -55,6 +55,8 @@ where COMMAND is one of:
     OTHER OPTIONS
     -h, --help     Display this help
     -r, --round    Round output  to 15 minute start and end times.
+
+    Submit bugs and feature requests to http://github.com/samg/timetrap/issues
     EOF
 
     def parse arguments

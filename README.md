@@ -182,3 +182,7 @@ Global Options
   and end times to the closest 15 minute increment.  This flag only affects the
   display commands (e.g. display, list, week, etc.) and is non-destructive.
   The actual start and end time stored by Timetrap are unaffected.
+
+Bugs and Feature Requests
+--------
+Submit to http://github.com/samg/timetrap/issues
