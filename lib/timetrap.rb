@@ -3,15 +3,17 @@ require 'chronic'
 require 'sequel'
 require 'sequel/extensions/inflector'
 require 'Getopt/Declare'
+require File.join(File.dirname(__FILE__), 'timetrap', 'config')
 require File.join(File.dirname(__FILE__), 'timetrap', 'helpers')
 require File.join(File.dirname(__FILE__), 'timetrap', 'cli')
-DB_NAME = defined?(TEST_MODE) ? nil : "#{ENV['HOME']}/.timetrap.db"
+DB_NAME = defined?(TEST_MODE) ? nil : Timetrap::Config['database_file']
 # connect to database.  This will create one if it doesn't exist
 DB = Sequel.sqlite DB_NAME
 require File.join(File.dirname(__FILE__), 'timetrap', 'models')
 Dir["#{File.dirname(__FILE__)}/timetrap/formatters/*.rb"].each do |path|
   require path
 end
+
 module Timetrap
   extend self
 

@@ -102,6 +102,13 @@ Commands
 
   usage: ``t backend``
 
+**configure**
+  Creates a config file at  ~/.timetrap.yml or ENV['TIMETRAP_CONFIG_FILE'] if
+  one doesn't exist.  Prints path to config file.  Currently allows configuration
+  of path to database file.
+
+  usage: ``t configure``
+
 **display**
   Display a given timesheet. If no timesheet is specified, show the current
   timesheet. If ``all`` is passed as SHEET display all timesheets. Accepts

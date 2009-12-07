@@ -1,6 +1,7 @@
 TEST_MODE = true
 require File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap')
 require 'spec'
+require 'fakefs/safe'
 
 describe Timetrap do
   def create_entry atts = {}
@@ -45,6 +46,25 @@ describe Timetrap do
           $stdin.string = "yes\n"
           invoke 'archive'
           Timetrap::Entry.order(:id).last.sheet.should == 'default'
+        end
+      end
+
+      describe 'config' do
+        it "should write a config file" do
+          FakeFS do
+            FileUtils.mkdir_p(ENV['HOME'])
+            FileUtils.rm(ENV['HOME'] + '/.timetrap.yml')
+            File.exist?(ENV['HOME'] + '/.timetrap.yml').should be_false
+            invoke "configure"
+            File.exist?(ENV['HOME'] + '/.timetrap.yml').should be_true
+          end
+        end
+
+        it "should descirve config file" do
+          FakeFS do
+            invoke "configure"
+            $stdout.string.should == "Config file is at \"#{ENV['HOME']}/.timetrap.yml\"\n"
+          end
         end
       end
 

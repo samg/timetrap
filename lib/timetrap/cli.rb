@@ -18,6 +18,7 @@ where COMMAND is one of:
     -e, --end <date:qs>       Include entries that start on this date or earlier
   * backend - open an sqlite shell to the database
     usage: t backend
+  * configure - write out a config file. print path to config file.
   * display - display the current timesheet or a specific. Pass `all' as
       SHEET to display all sheets.
     usage: t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]
@@ -104,6 +105,11 @@ where COMMAND is one of:
       else
         say "archive aborted!"
       end
+    end
+
+    def configure
+      Config.configure!
+      say "Config file is at #{Config::PATH.inspect}"
     end
 
     def edit
