@@ -5,13 +5,13 @@
 
 Gem::Specification.new do |s|
   s.name = %q{timetrap}
-  s.version = "1.1.3"
+  s.version = "1.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Sam Goldstein"]
-  s.date = %q{2009-11-27}
+  s.date = %q{2009-12-06}
   s.default_executable = %q{t}
-  s.description = %q{Timetrap is a lightweight command line time tracker, written in ruby.  See http://github.com/samg/timetrap for more details}
+  s.description = %q{Command line time tracker}
   s.email = %q{sgrock@gmail.com}
   s.executables = ["t"]
   s.extra_rdoc_files = [
@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".gitignore",
+     "CONTRIBUTORS",
      "LICENSE.txt",
      "README.md",
      "Rakefile",
@@ -28,6 +29,7 @@ Gem::Specification.new do |s|
      "bin/t",
      "lib/timetrap.rb",
      "lib/timetrap/cli.rb",
+     "lib/timetrap/config.rb",
      "lib/timetrap/formatters/csv.rb",
      "lib/timetrap/formatters/ical.rb",
      "lib/timetrap/formatters/text.rb",
