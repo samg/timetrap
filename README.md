@@ -103,7 +103,7 @@ Commands
   usage: ``t backend``
 
 **configure**
-  Creates a config file at  ~/.timetrap.yml or ENV['TIMETRAP_CONFIG_FILE'] if
+  Creates a config file at  ``~/.timetrap.yml`` or ``ENV['TIMETRAP_CONFIG_FILE']`` if
   one doesn't exist.  Prints path to config file.  Currently allows configuration
   of path to database file.
 
