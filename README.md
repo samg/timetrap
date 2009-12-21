@@ -190,6 +190,15 @@ Global Options
   display commands (e.g. display, list, week, etc.) and is non-destructive.
   The actual start and end time stored by Timetrap are unaffected.
 
+Configuration
+--------
+
+Configuration of TimeTrap's behavior can be done through a YAML config file.
+See ``t configure`` for details.  Currently supported options are:
+
+ round_in_seconds: The duration of time to use for rounding with the -r flag
+ database_file: The file path of the sqlite databese
+
 Bugs and Feature Requests
 --------
 Submit to http://github.com/samg/timetrap/issues
