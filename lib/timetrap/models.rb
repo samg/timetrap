@@ -44,10 +44,10 @@ module Timetrap
     def round time
       return nil unless time
       Time.at(
-        if (r = time.to_i % 900) < 450
+        if (r = time.to_i % Timetrap::Config['round_in_seconds']) < 450
           time.to_i - r
         else
-          time.to_i + (900 - r)
+          time.to_i + (Timetrap::Config['round_in_seconds'] - r)
         end
       )
     end

@@ -3,6 +3,14 @@ require File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap')
 require 'spec'
 require 'fakefs/safe'
 
+module Timetrap::StubConfig
+  def with_stubbed_config options
+    options.each do |k, v|
+      Timetrap::Config.stub(:[]).with(k).and_return v
+    end
+  end
+end
+
 describe Timetrap do
   def create_entry atts = {}
     Timetrap::Entry.create({
@@ -11,6 +19,7 @@ describe Timetrap do
       :end => Time.now,
       :note => 'note'}.merge(atts))
   end
+
 
   before :each do
     Timetrap::Entry.create_table!
@@ -548,6 +557,8 @@ current sheet: 0:01:00 (a timesheet that is running)
 end
 
 describe Timetrap::Entry do
+
+  include Timetrap::StubConfig
   describe "with an instance" do
     before do
       @time = Time.now
@@ -575,10 +586,10 @@ describe Timetrap::Entry do
         @entry.sheet.should == 'name'
       end
 
-      def with_global_round_set_to val
+      def with_rounding_on
         old_val = Timetrap::Entry.round
         begin
-          Timetrap::Entry.round = val
+          Timetrap::Entry.round = true
           block_return_value = yield
         ensure
           Timetrap::Entry.round = old_val
@@ -586,25 +597,31 @@ describe Timetrap::Entry do
       end
 
       it "should use round start if the global round attribute is set" do
-        with_global_round_set_to true do
-          @time = Chronic.parse("12:55am")
-          @entry.start = @time
-          @entry.start.should == Chronic.parse("1am")
+        with_rounding_on do
+          with_stubbed_config('round_in_seconds' => 900) do
+            @time = Chronic.parse("12:55am")
+            @entry.start = @time
+            @entry.start.should == Chronic.parse("1am")
+          end
         end
       end
 
       it "should use round start if the global round attribute is set" do
-        with_global_round_set_to true do
-          @time = Chronic.parse("12:50am")
-          @entry.start = @time
-          @entry.start.should == Chronic.parse("12:45am")
+        with_rounding_on do
+          with_stubbed_config('round_in_seconds' => 900) do
+            @time = Chronic.parse("12:50am")
+            @entry.start = @time
+            @entry.start.should == Chronic.parse("12:45am")
+          end
         end
       end
 
       it "should have a rounded start" do
-        @time = Chronic.parse("12:50am")
-        @entry.start = @time
-        @entry.rounded_start.should == Chronic.parse("12:45am")
+        with_stubbed_config('round_in_seconds' => 900) do
+          @time = Chronic.parse("12:50am")
+          @entry.start = @time
+          @entry.rounded_start.should == Chronic.parse("12:45am")
+        end
       end
 
       it "should not round nil times" do

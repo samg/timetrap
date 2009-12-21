@@ -3,9 +3,18 @@ module Timetrap
     extend self
     PATH = ENV['TIMETRAP_CONFIG_FILE'] || File.join(ENV['HOME'], '.timetrap.yml')
 
+    # Application defaults.
+    #
+    # These are written to a config file by invoking:
+    # <code>
+    # t configure
+    # </code>
     def defaults
       {
-        'database_file' => "#{ENV['HOME']}/.timetrap.db"
+        # Path to the sqlite db
+        'database_file' => "#{ENV['HOME']}/.timetrap.db",
+        # Unit of time for rounding (-r) in seconds
+        'round_in_seconds' => 900
       }
     end
 
