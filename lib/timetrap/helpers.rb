@@ -9,8 +9,8 @@ module Timetrap
       else
         Timetrap::Entry.filter('sheet = ?', Timetrap.current_sheet)
       end
-      ee = ee.filter(:start >= Date.parse(args['-s'])) if args['-s']
-      ee = ee.filter(:start <= Date.parse(args['-e']) + 1) if args['-e']
+      ee = ee.filter('start >= ?', Date.parse(args['-s'])) if args['-s']
+      ee = ee.filter('start <= ?', Date.parse(args['-e']) + 1) if args['-e']
       ee
     end
 

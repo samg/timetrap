@@ -16,6 +16,14 @@ module Timetrap
         entries.each do |e|
           next unless e.end
           calendar.event do
+
+            # hack around an issue in ical gem in ruby 1.9
+            unless respond_to? :<=>
+              def <=> other
+                dtstart > other.dtstart ? 1 : 0
+              end
+            end
+
             dtstart DateTime.parse(e.start.to_s)
             dtend DateTime.parse(e.end.to_s)
             summary e.note

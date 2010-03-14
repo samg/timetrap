@@ -29,7 +29,7 @@ module Timetrap
               e.note
             ]
 
-            nxt = sheets[sheet].map[i+1]
+            nxt = sheets[sheet].to_a[i+1]
             if nxt == nil or !same_day?(e.start, nxt.start)
               self.output <<  "%52s\n" % format_total(from_current_day)
               from_current_day = []
