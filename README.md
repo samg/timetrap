@@ -40,7 +40,7 @@ time sheet may only have one period running at once.
 Interactions with timetrap are performed through the ``t`` command on the
 command line. ``t`` is followed by one of timetrap's subcommands.  Often used
 subcommands include ``in``, ``out``, ``switch``, ``now``, ``list`` and
-``display``. Commands may be abbreviated as long as they are unambiguous: thus
+``display``. *Commands may be abbreviated as long as they are unambiguous.* thus
 ``t switch foo`` and ``t s foo`` are identical.  With the default command set,
 no two commands share the first same letter, thus it is only necessary to type
 the first letter of a command.  Likewise, commands which display timesheets
