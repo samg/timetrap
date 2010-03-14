@@ -2,12 +2,17 @@ Timetrap
 ========
 
 Timetrap is a utility which provides an easy to use command line interface for
-tracking what you spend your time on.  It is a ruby port of Trevor Caira's
-Timebook, a small python utility.  It contains several enhancement over
-Timebook notably the ability to parse natural language time strings.  This
-makes commands such as ``t in --at "30 minutes ago"`` possible.  Timetrap is
-also able to export entries to several formats (e.g. ical, csv) and is designed
-to be easily extended to support additional export formats.
+tracking what you spend your time on.
+
+It began as a ruby port of Trevor Caira's Timebook, a small python utility.  It
+contains several enhancement over Timebook, notably the ability to parse
+natural language times (e.g. "30 minutes ago"), additional commands such as
+`archive` and `configure`, and support for rounding.
+
+Timetrap is also able to export entries to several formats (e.g. ical, csv) and
+is designed to be easily extended to support additional export formats, by
+creating a new formatter class (in ruby.)
+
 Timetrap maintains its state in a sqlite3 database.
 
 Timetrap is available as a gem on gemcutter (http://gemcutter.org/gems/timetrap)
@@ -105,7 +110,8 @@ Commands
 **configure**
   Creates a config file at  ``~/.timetrap.yml`` or ``ENV['TIMETRAP_CONFIG_FILE']`` if
   one doesn't exist.  Prints path to config file.  Currently allows configuration
-  of path to database file.
+  of path to database file, and the number of seconds used when the `--round`
+  flag is set (defaults to 15 minutes.)
 
   usage: ``t configure``
 
@@ -120,7 +126,7 @@ Commands
   text.  iCal and csv output are also supported.
 
   Display also allows the use of a ``--round`` or ``-r`` flag which will round
-  all times to 15 minute increments. See global options below.
+  all times in the output. See global options below.
 
   usage: ``t display [--ids] [--round] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]``
 
@@ -189,6 +195,8 @@ Global Options
   and end times to the closest 15 minute increment.  This flag only affects the
   display commands (e.g. display, list, week, etc.) and is non-destructive.
   The actual start and end time stored by Timetrap are unaffected.
+
+  See `configure` command to change rounding increment from 15 minutes.
 
 Configuration
 --------
