@@ -1,8 +1,8 @@
 Timetrap
 ========
 
-Timetrap is a utility which provides an easy to use command line interface for
-tracking what you spend your time on.
+Timetrap is a simple command line time tracker written in ruby. It provides an
+easy to use command line interface for tracking what you spend your time on.
 
 It began as a ruby port of Trevor Caira's Timebook, a small python utility.  It
 contains several enhancement over Timebook, notably the ability to parse
