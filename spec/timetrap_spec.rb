@@ -357,6 +357,14 @@ END:VCALENDAR
             invoke "kill --id #{entry.id}"
           end.should change(Timetrap::Entry, :count).by(-1)
         end
+
+        it "should not prompt the user if the --yes flag is passed" do
+          create_entry
+          entry = create_entry
+          lambda do
+            invoke "kill --id #{entry.id} --yes"
+          end.should change(Timetrap::Entry, :count).by(-1)
+        end
       end
 
       describe "list" do

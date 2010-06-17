@@ -54,8 +54,9 @@ where COMMAND is one of:
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
 
     OTHER OPTIONS
-    -h, --help     Display this help
-    -r, --round    Round output  to 15 minute start and end times.
+    -h, --help              Display this help
+    -r, --round             Round output to 15 minute start and end times.
+    -y, --yes               Noninteractive, assume yes as answer to all prompts
 
     Submit bugs and feature requests to http://github.com/samg/timetrap/issues
     EOF
@@ -95,9 +96,7 @@ where COMMAND is one of:
 
     def archive
       ee = selected_entries
-      out = "Archive #{ee.count} entries? "
-      print out
-      if $stdin.gets =~ /\Aye?s?\Z/i
+      if ask_user "Archive #{ee.count} entries? "
         ee.all.each do |e|
           next unless e.end
           e.update :sheet => "_#{e.sheet}"
@@ -136,8 +135,7 @@ where COMMAND is one of:
       if e = Entry[args['-i']]
         out = "are you sure you want to delete entry #{e.id}? "
         out << "(#{e.note}) " if e.note.to_s =~ /.+/
-        print out
-        if $stdin.gets =~ /\Aye?s?\Z/i
+        if ask_user out
           e.destroy
           say "it's dead"
         else
@@ -145,8 +143,7 @@ where COMMAND is one of:
         end
       elsif (sheets = Entry.map{|e| e.sheet }.uniq).include?(sheet = unused_args)
         victims = Entry.filter(:sheet => sheet).count
-        print "are you sure you want to delete #{victims} entries on sheet #{sheet.inspect}? "
-        if $stdin.gets =~ /\Aye?s?\Z/i
+        if ask_user "are you sure you want to delete #{victims} entries on sheet #{sheet.inspect}? "
           Timetrap.kill_sheet sheet
           say "killed #{victims} entries"
         else
@@ -229,6 +226,12 @@ where COMMAND is one of:
 
     def unused_args
       args.unused.join(' ')
+    end
+
+    def ask_user question
+      return true if args['-y']
+      print question
+      $stdin.gets =~ /\Aye?s?\Z/i
     end
 
   end
