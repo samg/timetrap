@@ -19,7 +19,6 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |s|
     s.name = %q{timetrap}
-    s.version = "0.1.2"
 
     s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
     s.authors = ["Sam Goldstein"]
@@ -35,7 +34,7 @@ begin
     s.summary = %q{Command line time tracker}
     s.add_dependency("sequel", ">= 3.9.0")
     s.add_dependency("sqlite3-ruby", ">= 1.2.5")
-    s.add_dependency("chronic", ">= 0.2.3")
+    s.add_dependency("chronic", "~> 0.3.0")
     s.add_dependency("getopt-declare", ">= 1.28")
     s.add_dependency("icalendar", ">= 1.1.2")
   end
