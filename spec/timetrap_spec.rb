@@ -581,12 +581,12 @@ describe Timetrap::Entry do
 
       it "should have a start" do
         @entry.start = @time
-        @entry.start.should == @time
+        @entry.start.to_i.should == @time.to_i
       end
 
       it "should have a end" do
         @entry.end = @time
-        @entry.end.should == @time
+        @entry.end.to_i.should == @time.to_i
       end
 
       it "should have a sheet" do

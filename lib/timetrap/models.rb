@@ -14,11 +14,11 @@ module Timetrap
     end
 
     def start= time
-      self[:start]= Chronic.parse(time) || time
+      self[:start]= Chronic.parse(time.to_s) || time
     end
 
     def end= time
-      self[:end]= Chronic.parse(time) || time
+      self[:end]= Chronic.parse(time.to_s) || time
     end
 
     def start
