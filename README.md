@@ -208,6 +208,8 @@ See ``t configure`` for details.  Currently supported options are:
 
  database_file: The file path of the sqlite databese
 
+ append_notes_delimiter: delimiter used when appending notes via ``t edit --append``
+
 Bugs and Feature Requests
 --------
 Submit to http://github.com/samg/timetrap/issues
