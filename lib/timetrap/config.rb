@@ -14,7 +14,9 @@ module Timetrap
         # Path to the sqlite db
         'database_file' => "#{ENV['HOME']}/.timetrap.db",
         # Unit of time for rounding (-r) in seconds
-        'round_in_seconds' => 900
+        'round_in_seconds' => 900,
+        # delimiter used when appending notes with `t edit --append`
+        'append_notes_delimiter' => ' '
       }
     end
 
@@ -28,10 +30,13 @@ module Timetrap
     end
 
     def configure!
-      unless File.exist?(PATH)
-        File.open(PATH, 'w') do |fh|
-          fh.puts(defaults.to_yaml)
-        end
+      configs = if File.exist?(PATH)
+        defaults.merge(YAML.load_file(PATH))
+      else
+        defaults
+      end
+      File.open(PATH, 'w') do |fh|
+        fh.puts(configs.to_yaml)
       end
     end
   end

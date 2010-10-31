@@ -69,7 +69,7 @@ describe Timetrap do
           end
         end
 
-        it "should descirve config file" do
+        it "should describe config file" do
           FakeFS do
             invoke "configure"
             $stdout.string.should == "Config file is at \"#{ENV['HOME']}/.timetrap.yml\"\n"
@@ -86,6 +86,15 @@ describe Timetrap do
           Timetrap.active_entry.note.should == 'running entry'
           invoke 'edit new description'
           Timetrap.active_entry.note.should == 'new description'
+        end
+
+        it "should allow appending to the description of the active period" do
+          Timetrap::Config.stub(:[]).with('append_notes_delimiter').and_return('//')
+          Timetrap.active_entry.note.should == 'running entry'
+          invoke 'edit --append new'
+          Timetrap.active_entry.note.should == 'running entry//new'
+          invoke 'edit -z more'
+          Timetrap.active_entry.note.should == 'running entry//new//more'
         end
 
         it "should edit the start time of the active period" do

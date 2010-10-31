@@ -28,10 +28,13 @@ where COMMAND is one of:
     -f, --format <format>     The output format.  Currently supports ical, csv, and
                                 text (default).
   * edit - alter an entry's note, start, or end time. Defaults to the active entry
-    usage: t edit [--id ID] [--start TIME] [--end TIME] [NOTES]
+    usage: t edit [--id ID] [--start TIME] [--end TIME] [--append] [NOTES]
     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
     -s, --start <time:qs>     Change the start time to <time>
     -e, --end <time:qs>       Change the end time to <time>
+    -z, --append              Append to the current note instead of replacing it
+                                the delimiter between appended notes is
+                                configurable (see configure)
   * format - deprecated: alias for display
   * in - start the timer for the current timesheet
     usage: t in [--at TIME] [NOTES]
@@ -116,7 +119,13 @@ where COMMAND is one of:
       say "can't find entry" && return unless entry
       entry.update :start => args['-s'] if args['-s'] =~ /.+/
       entry.update :end => args['-e'] if args['-e'] =~ /.+/
-      entry.update :note => unused_args if unused_args =~ /.+/
+      if unused_args =~ /.+/
+        note = unused_args
+        if args['-z']
+          note = [entry.note, note].join(Config['append_notes_delimiter'])
+        end
+        entry.update :note => note
+      end
     end
 
     def backend

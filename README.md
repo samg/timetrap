@@ -135,7 +135,7 @@ Commands
   start or end times.  Defaults to the current time although an ``--id`` flag can
   be passed with the entry's id (see display.)
 
-  usage: ``t edit [--id ID] [--start TIME] [--end TIME] [NOTES]``
+  usage: ``t edit [--id ID] [--start TIME] [--end TIME] [--append] [NOTES]``
 
 **format**
   Deprecated
