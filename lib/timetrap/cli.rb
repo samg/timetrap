@@ -30,7 +30,7 @@ COMMAND is one of:
                               the -r flag
       database_file:          The file path of the sqlite database
       append_notes_delimiter: delimiter used when appending notes via
-                              t edit --append``
+                              t edit --append
 
   * display - Display the current timesheet or a specific. Pass `all' as
       SHEET to display all sheets.
