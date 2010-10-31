@@ -10,16 +10,29 @@ Timetrap - Simple Time Tracking
 
 Usage: #{File.basename $0} COMMAND [OPTIONS] [ARGS...]
 
-where COMMAND is one of:
-  * archive - move entries to a hidden sheet (by default named '_[SHEET]') so
+COMMAND can be abbreviated. For example `t in` and `t i` are equivalent.
+
+COMMAND is one of:
+
+  * archive - Move entries to a hidden sheet (by default named '_[SHEET]') so
       they're out of the way.
     usage: t archive [--start DATE] [--end DATE] [SHEET]
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier
-  * backend - open an sqlite shell to the database
+
+  * backend - Open an sqlite shell to the database.
     usage: t backend
-  * configure - write out a config file. print path to config file.
-  * display - display the current timesheet or a specific. Pass `all' as
+
+  * configure - Write out a config file. print path to config file.
+    usage: t configure
+    Currently supported options are:
+      round_in_seconds:       The duration of time to use for rounding with
+                              the -r flag
+      database_file:          The file path of the sqlite database
+      append_notes_delimiter: delimiter used when appending notes via
+                              t edit --append``
+
+  * display - Display the current timesheet or a specific. Pass `all' as
       SHEET to display all sheets.
     usage: t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]
     -v, --ids                 Print database ids (for use with edit)
@@ -27,7 +40,8 @@ where COMMAND is one of:
     -e, --end <date:qs>       Include entries that start on this date or earlier
     -f, --format <format>     The output format.  Currently supports ical, csv, and
                                 text (default).
-  * edit - alter an entry's note, start, or end time. Defaults to the active entry
+
+  * edit - Alter an entry's note, start, or end time. Defaults to the active entry.
     usage: t edit [--id ID] [--start TIME] [--end TIME] [--append] [NOTES]
     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
     -s, --start <time:qs>     Change the start time to <time>
@@ -35,33 +49,42 @@ where COMMAND is one of:
     -z, --append              Append to the current note instead of replacing it
                                 the delimiter between appended notes is
                                 configurable (see configure)
-  * format - deprecated: alias for display
-  * in - start the timer for the current timesheet
+
+  * format - Deprecated: alias for display.
+
+  * in - Start the timer for the current timesheet.
     usage: t in [--at TIME] [NOTES]
     -a, --at <time:qs>        Use this time instead of now
-  * kill - delete a timesheet
+
+  * kill - Delete a timesheet or an entry.
     usage: t kill [--id ID] [TIMESHEET]
     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
-  * list - show the available timesheets
+
+  * list - Show the available timesheets.
     usage: t list
-  * now - show the status of the current timesheet
+
+  * now - Show the status of the current timesheet.
     usage: t now
-  * out - stop the timer for the current timesheet
+
+  * out - Stop the timer for the current timesheet.
     usage: t out [--at TIME]
     -a, --at <time:qs>        Use this time instead of now
-  * running - show all running timesheets
+
+  * running - Show all running timesheets.
     usage: t running
-  * switch - switch to a new timesheet
+
+  * switch - Switch to a new timesheet.
     usage: t switch TIMESHEET
-  * week - shortcut for display with start date set to monday of this week
+
+  * week - Shortcut for display with start date set to monday of this week.
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
 
-    OTHER OPTIONS
-    -h, --help              Display this help
-    -r, --round             Round output to 15 minute start and end times.
-    -y, --yes               Noninteractive, assume yes as answer to all prompts
+  OTHER OPTIONS
+  -h, --help              Display this help.
+  -r, --round             Round output to 15 minute start and end times.
+  -y, --yes               Noninteractive, assume yes as answer to all prompts.
 
-    Submit bugs and feature requests to http://github.com/samg/timetrap/issues
+  Submit bugs and feature requests to http://github.com/samg/timetrap/issues
     EOF
 
     def parse arguments
