@@ -198,6 +198,11 @@ Global Options
 
   See `configure` command to change rounding increment from 15 minutes.
 
+**non-interactive**
+  passing a ``--yes`` or ``-y`` flag will cause any command that requires
+  confirmation (such as ``kill``) to assume an affirmative response to any
+  prompt. This is useful when timetrap is used in a scripted environment.
+
 Configuration
 --------
 
