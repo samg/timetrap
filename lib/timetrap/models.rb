@@ -67,8 +67,7 @@ module Timetrap
         elsif safe_for_time_parse?(time) and parsed = Time.parse(time)
           parsed
         else
-          CLI.say "Could not parse #{time.inspect}, defaulting to now"
-          Time.now
+          raise ArgumentError, "Could not parse #{time.inspect}, entry not updated"
         end
       end
     end

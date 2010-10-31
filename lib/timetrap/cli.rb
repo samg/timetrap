@@ -70,6 +70,8 @@ where COMMAND is one of:
 
     def invoke
       args['-h'] ? say(USAGE) : invoke_command_if_valid
+    rescue => e
+      say e.message
     end
 
     def commands

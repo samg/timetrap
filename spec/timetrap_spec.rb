@@ -339,18 +339,20 @@ END:VCALENDAR
           Timetrap::Entry.order_by(:id).last.start.should == Time.parse('2008-10-03 10:00')
         end
 
-        it "should default to now for misformatted cli options it can't parse" do
+        it "should fail with a warning for misformatted cli options it can't parse" do
           now = Time.now
           Time.stub!(:now).and_return now
           invoke 'in work --at="18 minutes ago"'
-          Timetrap::Entry.order_by(:id).last.start.should == now
+          Timetrap::Entry.order_by(:id).last.should be_nil
+          $stdout.string.should =~ /\w+/
         end
 
-        it "should default total garbage times to now" do
+        it "should fail with a time argurment of total garbage" do
           now = Time.now
           Time.stub!(:now).and_return now
           invoke 'in work --at "total garbage"'
-          Timetrap::Entry.order_by(:id).last.start.should == now
+          Timetrap::Entry.order_by(:id).last.should be_nil
+          $stdout.string.should =~ /\w+/
         end
       end
 
