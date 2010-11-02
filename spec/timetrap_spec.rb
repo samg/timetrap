@@ -88,6 +88,29 @@ describe Timetrap do
           Timetrap.active_entry.note.should == 'new description'
         end
 
+        it "should allow you to move an entry to another sheet" do
+          invoke 'edit --move blahblah'
+          Timetrap.active_entry[:sheet].should == 'blahblah'
+          invoke 'edit -m blahblahblah'
+          Timetrap.active_entry[:sheet].should == 'blahblahblah'
+        end
+
+        it "should change the current sheet if the current entry's sheet is changed" do
+          Timetrap.current_sheet.should_not == 'blahblahblah'
+          invoke 'edit -m blahblahblah'
+          Timetrap.active_entry[:sheet].should == 'blahblahblah'
+          Timetrap.current_sheet.should == 'blahblahblah'
+        end
+
+        it "should change the current sheet if a non current entry's sheet is changed" do
+          sheet = Timetrap.current_sheet
+          id = Timetrap.active_entry[:id]
+          invoke 'out'
+          invoke "edit -m blahblahblah -i #{id}"
+          Timetrap.current_sheet.should == sheet
+          Timetrap::Entry[id][:sheet].should == 'blahblahblah'
+        end
+
         it "should allow appending to the description of the active period" do
           Timetrap::Config.stub(:[]).with('append_notes_delimiter').and_return('//')
           Timetrap.active_entry.note.should == 'running entry'

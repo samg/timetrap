@@ -49,6 +49,7 @@ COMMAND is one of:
     -z, --append              Append to the current note instead of replacing it
                                 the delimiter between appended notes is
                                 configurable (see configure)
+    -m, --move <sheet>        Move to another sheet
 
   * format - Deprecated: alias for display.
 
@@ -145,6 +146,16 @@ COMMAND is one of:
       say "can't find entry" && return unless entry
       entry.update :start => args['-s'] if args['-s'] =~ /.+/
       entry.update :end => args['-e'] if args['-e'] =~ /.+/
+
+      # update sheet
+      if args['-m'] =~ /.+/
+        if entry == Timetrap.active_entry
+          Timetrap.current_sheet = args['-m']
+        end
+        entry.update :sheet => args['-m']
+      end
+
+      # update notes
       if unused_args =~ /.+/
         note = unused_args
         if args['-z']
