@@ -12,6 +12,7 @@ module Timetrap::StubConfig
 end
 
 describe Timetrap do
+  include Timetrap::StubConfig
   def create_entry atts = {}
     Timetrap::Entry.create({
       :sheet => 'default',
@@ -112,7 +113,7 @@ describe Timetrap do
         end
 
         it "should allow appending to the description of the active period" do
-          Timetrap::Config.stub(:[]).with('append_notes_delimiter').and_return('//')
+          with_stubbed_config('append_notes_delimiter' => '//')
           Timetrap.active_entry.note.should == 'running entry'
           invoke 'edit --append new'
           Timetrap.active_entry.note.should == 'running entry//new'
