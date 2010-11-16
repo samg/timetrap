@@ -56,9 +56,17 @@ Usage
 
 The basic usage is as follows:
 
+    $ # create the "writing" timesheet
     $ t switch writing
+
+    $ # check in 5 minutes ago
     $ t in document timetrap --at "10 minutes ago"
+
+    $ # check out
     $ t out
+
+    $ # view current timesheet
+    $ t display
 
 The first command, ``t switch writing``, switches to the timesheet "writing"
 (or creates it if it does not exist). ``t in document timetrap --at "10 minutes

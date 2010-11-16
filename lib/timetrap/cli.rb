@@ -81,9 +81,24 @@ COMMAND is one of:
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
 
   OTHER OPTIONS
+
   -h, --help              Display this help.
   -r, --round             Round output to 15 minute start and end times.
   -y, --yes               Noninteractive, assume yes as answer to all prompts.
+
+  EXAMPLES
+
+  # create the "MyTimesheet" timesheet
+  $ t switch MyTimesheet
+
+  # check in 5 minutes ago with a note
+  $ t in --at '5 minutes ago' doing some stuff
+
+  # check out
+  $ t out
+
+  # view current timesheet
+  $ t display
 
   Submit bugs and feature requests to http://github.com/samg/timetrap/issues
     EOF
