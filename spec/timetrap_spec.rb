@@ -418,9 +418,9 @@ END:VCALENDAR
 
       describe "list" do
         describe "with no sheets defined" do
-          it "should say that there are no sheets" do
+          it "should list the default sheet" do
             invoke 'list'
-            $stdout.string.chomp.should == 'No sheets found'
+            $stdout.string.chomp.should == " Timesheet  Running     Today       Total Time\n*default     0:00:00     0:00:00     0:00:00"
           end
         end
 
@@ -444,6 +444,18 @@ END:VCALENDAR
             $stdout.string.should == <<-OUTPUT
  Timesheet                 Running     Today       Total Time
 *A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+ Sheet 1                    0:00:00     0:00:00     2:00:00
+            OUTPUT
+          end
+
+          it "should include the active timesheet even if it has no entries" do
+            invoke 'switch empty sheet'
+            $stdout.string = ''
+            invoke 'list'
+            $stdout.string.should == <<-OUTPUT
+ Timesheet                 Running     Today       Total Time
+ A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+*empty sheet                0:00:00     0:00:00     0:00:00
  Sheet 1                    0:00:00     0:00:00     2:00:00
             OUTPUT
           end

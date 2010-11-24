@@ -239,18 +239,22 @@ COMMAND is one of:
     end
 
     def list
-      sheets = Entry.sheets.map do |sheet|
+      sheets = ([Timetrap.current_sheet] | Entry.sheets).map do |sheet|
         sheet_atts = {:total => 0, :running => 0, :today => 0}
-        Timetrap::Entry.filter(:sheet => sheet).inject(sheet_atts) do |m, e|
-          e_end = e.end_or_now
-          m[:name] ||= sheet
-          m[:total] += (e_end.to_i - e.start.to_i)
-          m[:running] += (e_end.to_i - e.start.to_i) unless e.end
-          m[:today] += (e_end.to_i - e.start.to_i) if same_day?(Time.now, e.start)
-          m
+        entries = Timetrap::Entry.filter(:sheet => sheet)
+        if entries.empty?
+          sheet_atts.merge(:name => sheet)
+        else
+          entries.inject(sheet_atts) do |m, e|
+            e_end = e.end_or_now
+            m[:name] ||= sheet
+            m[:total] += (e_end.to_i - e.start.to_i)
+            m[:running] += (e_end.to_i - e.start.to_i) unless e.end
+            m[:today] += (e_end.to_i - e.start.to_i) if same_day?(Time.now, e.start)
+            m
+          end
         end
-      end
-      if sheets.empty? then say "No sheets found"; return end
+      end.sort_by{|sheet| sheet[:name].downcase}
       width = sheets.sort_by{|h|h[:name].length }.last[:name].length + 4
       say " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
       sheets.each do |sheet|
