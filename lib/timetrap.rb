@@ -65,10 +65,6 @@ module Timetrap
     Entry.filter(:sheet => sheet).destroy
   end
 
-  def format format_klass, entries
-    format_klass.new(entries).output
-  end
-
   class AlreadyRunning < StandardError
     def message
       "Timetrap is already running"

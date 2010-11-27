@@ -225,13 +225,17 @@ COMMAND is one of:
           Timetrap::Formatters::Text
         end
       rescue
-        warn "Invalid format specified `#{args['-f']}'"
+        warn "Invalid format #{args['-f'].inspect} specified."
         return
       end
-      puts Timetrap.format(fmt_klass, selected_entries.order(:start).all)
+      entries = selected_entries.order(:start).all
+      if entries == []
+        warn "No entries were selected to display."
+      else
+        puts fmt_klass.new(entries).output
+      end
     end
     alias_method :format, :display
-
 
     def switch
       sheet = unused_args
