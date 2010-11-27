@@ -49,11 +49,12 @@ module Timetrap
     end
 
     def sheet_name_from_string string
+      string = string.strip
       return "all" if string =~ /^\W*all\W*$/
       return "" unless string =~ /.+/
-      DB[:entries].filter(:sheet.like("#{string}%")).first[:sheet]
-    rescue
-      ""
+      entry = DB[:entries].filter(:sheet.like("#{string}")).first ||
+        DB[:entries].filter(:sheet.like("#{string}%")).first
+      entry ? entry[:sheet] : ''
     end
   end
 end

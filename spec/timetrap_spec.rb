@@ -237,6 +237,15 @@ Grand Total                                 10:00:00
           $stdout.string.should == @desired_output
         end
 
+        it "should display an exact match of a named sheet to a partial match" do
+          Timetrap.current_sheet = 'Spec'
+          Timetrap::Entry.create( :sheet => 'Spec',
+            :note => 'entry 5', :start => '2008-10-05 18:00:00'
+          )
+          invoke 'display Spec'
+          $stdout.string.should include("entry 5")
+        end
+
         it "should display a timesheet with ids" do
           invoke 'display S --ids'
           $stdout.string.should == @desired_output_with_ids
