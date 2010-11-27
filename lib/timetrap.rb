@@ -44,7 +44,7 @@ module Timetrap
   end
 
   def stop time = nil
-    while a = active_entry
+    if a = active_entry
       time ||= Time.now
       a.end = time
       a.save

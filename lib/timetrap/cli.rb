@@ -125,8 +125,8 @@ COMMAND is one of:
       when 0 then puts "Invalid command: #{command}"
       when 1 then send valid[0]
       else
-        puts "Ambiguous command: #{command}" if command
-        puts(USAGE)
+        warn "Ambiguous command: #{command}" if command
+        warn(USAGE)
       end
     end
 
@@ -154,7 +154,7 @@ COMMAND is one of:
 
     def edit
       entry = args['-i'] ? Entry[args['-i']] : Timetrap.active_entry
-      puts "can't find entry" && return unless entry
+      warn "can't find entry" && return unless entry
       entry.update :start => args['-s'] if args['-s'] =~ /.+/
       entry.update :end => args['-e'] if args['-e'] =~ /.+/
 
@@ -182,10 +182,15 @@ COMMAND is one of:
 
     def in
       Timetrap.start unused_args, args['-a']
+      warn "Checked into sheet #{Timetrap.current_sheet.inspect}."
     end
 
     def out
-      Timetrap.stop args['-a']
+      if Timetrap.stop args['-a']
+        warn "Checked out of sheet #{Timetrap.current_sheet.inspect}."
+      else
+        warn "Timetrap is not running."
+      end
     end
 
     def kill
@@ -194,21 +199,21 @@ COMMAND is one of:
         out << "(#{e.note}) " if e.note.to_s =~ /.+/
         if ask_user out
           e.destroy
-          puts "it's dead"
+          warn "it's dead"
         else
-          puts "will not kill"
+          warn "will not kill"
         end
       elsif (sheets = Entry.map{|e| e.sheet }.uniq).include?(sheet = unused_args)
         victims = Entry.filter(:sheet => sheet).count
         if ask_user "are you sure you want to delete #{victims} entries on sheet #{sheet.inspect}? "
           Timetrap.kill_sheet sheet
-          puts "killed #{victims} entries"
+          warn "killed #{victims} entries"
         else
-          puts "will not kill"
+          warn "will not kill"
         end
       else
         victim = args['-i'] ? args['-i'].to_s.inspect : sheet.inspect
-        puts "can't find #{victim} to kill", 'sheets:', *sheets
+        warn "can't find #{victim} to kill", 'sheets:', *sheets
       end
     end
 
@@ -220,7 +225,7 @@ COMMAND is one of:
           Timetrap::Formatters::Text
         end
       rescue
-        puts "Invalid format specified `#{args['-f']}'"
+        warn "Invalid format specified `#{args['-f']}'"
         return
       end
       puts Timetrap.format(fmt_klass, selected_entries.order(:start).all)
@@ -231,7 +236,7 @@ COMMAND is one of:
     def switch
       sheet = unused_args
       if not sheet =~ /.+/ then puts "No sheet specified"; return end
-      puts "Switching to sheet " + Timetrap.switch(sheet)
+      warn "Switching to sheet " + Timetrap.switch(sheet)
     end
 
     def list
@@ -291,7 +296,7 @@ COMMAND is one of:
 
     def ask_user question
       return true if args['-y']
-      print question
+      $stderr.print question
       $stdin.gets =~ /\Aye?s?\Z/i
     end
 
