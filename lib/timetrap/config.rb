@@ -24,8 +24,8 @@ module Timetrap
       overrides = File.exist?(PATH) ? YAML.load(File.read(PATH)) : {}
       defaults.merge(overrides)[key]
     rescue => e
-      puts "invalid config file"
-      puts e.message
+      warn "invalid config file"
+      warn e.message
       defaults[key]
     end
 
