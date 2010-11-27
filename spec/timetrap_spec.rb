@@ -27,6 +27,7 @@ describe Timetrap do
     Timetrap::Meta.create_table!
     $stdout = StringIO.new
     $stdin = StringIO.new
+    $stderr = StringIO.new
   end
 
   describe 'CLI' do
@@ -368,7 +369,7 @@ END:VCALENDAR
           Time.stub!(:now).and_return now
           invoke 'in work --at="18 minutes ago"'
           Timetrap::Entry.order_by(:id).last.should be_nil
-          $stdout.string.should =~ /\w+/
+          $stderr.string.should =~ /\w+/
         end
 
         it "should fail with a time argurment of total garbage" do
@@ -376,7 +377,7 @@ END:VCALENDAR
           Time.stub!(:now).and_return now
           invoke 'in work --at "total garbage"'
           Timetrap::Entry.order_by(:id).last.should be_nil
-          $stdout.string.should =~ /\w+/
+          $stderr.string.should =~ /\w+/
         end
       end
 
@@ -578,11 +579,11 @@ current sheet: 0:01:00 (a timesheet that is running)
       Timetrap.should be_running
     end
 
-    it "should raise and error if it is already running" do
+    it "should raise an error if it is already running" do
       lambda do
         Timetrap.start 'some work', @time
         Timetrap.start 'some work', @time
-      end.should change(Timetrap::Entry, :count).by(1)
+      end.should raise_error(Timetrap::AlreadyRunning)
     end
   end
 

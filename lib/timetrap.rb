@@ -55,8 +55,6 @@ module Timetrap
     raise AlreadyRunning if running?
     time ||= Time.now
     Entry.create(:sheet => Timetrap.current_sheet, :note => note, :start => time).save
-  rescue => e
-    CLI.say e.message
   end
 
   def switch sheet

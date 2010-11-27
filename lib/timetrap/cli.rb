@@ -108,29 +108,25 @@ COMMAND is one of:
     end
 
     def invoke
-      args['-h'] ? say(USAGE) : invoke_command_if_valid
+      args['-h'] ? puts(USAGE) : invoke_command_if_valid
     rescue => e
-      say e.message
-      exit 1
+      warn e.message
+      exit 1 unless defined? TEST_MODE
     end
 
     def commands
       Timetrap::CLI::USAGE.scan(/\* \w+/).map{|s| s.gsub(/\* /, '')}
     end
 
-    def say *something
-      puts *something
-    end
-
     def invoke_command_if_valid
       command = args.unused.shift
       set_global_options
       case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
-      when 0 then say "Invalid command: #{command}"
+      when 0 then puts "Invalid command: #{command}"
       when 1 then send valid[0]
       else
-        say "Ambiguous command: #{command}" if command
-        say(USAGE)
+        puts "Ambiguous command: #{command}" if command
+        puts(USAGE)
       end
     end
 
@@ -147,18 +143,18 @@ COMMAND is one of:
           e.update :sheet => "_#{e.sheet}"
         end
       else
-        say "archive aborted!"
+        puts "archive aborted!"
       end
     end
 
     def configure
       Config.configure!
-      say "Config file is at #{Config::PATH.inspect}"
+      puts "Config file is at #{Config::PATH.inspect}"
     end
 
     def edit
       entry = args['-i'] ? Entry[args['-i']] : Timetrap.active_entry
-      say "can't find entry" && return unless entry
+      puts "can't find entry" && return unless entry
       entry.update :start => args['-s'] if args['-s'] =~ /.+/
       entry.update :end => args['-e'] if args['-e'] =~ /.+/
 
@@ -198,21 +194,21 @@ COMMAND is one of:
         out << "(#{e.note}) " if e.note.to_s =~ /.+/
         if ask_user out
           e.destroy
-          say "it's dead"
+          puts "it's dead"
         else
-          say "will not kill"
+          puts "will not kill"
         end
       elsif (sheets = Entry.map{|e| e.sheet }.uniq).include?(sheet = unused_args)
         victims = Entry.filter(:sheet => sheet).count
         if ask_user "are you sure you want to delete #{victims} entries on sheet #{sheet.inspect}? "
           Timetrap.kill_sheet sheet
-          say "killed #{victims} entries"
+          puts "killed #{victims} entries"
         else
-          say "will not kill"
+          puts "will not kill"
         end
       else
         victim = args['-i'] ? args['-i'].to_s.inspect : sheet.inspect
-        say "can't find #{victim} to kill", 'sheets:', *sheets
+        puts "can't find #{victim} to kill", 'sheets:', *sheets
       end
     end
 
@@ -224,18 +220,18 @@ COMMAND is one of:
           Timetrap::Formatters::Text
         end
       rescue
-        say "Invalid format specified `#{args['-f']}'"
+        puts "Invalid format specified `#{args['-f']}'"
         return
       end
-      say Timetrap.format(fmt_klass, selected_entries.order(:start).all)
+      puts Timetrap.format(fmt_klass, selected_entries.order(:start).all)
     end
     alias_method :format, :display
 
 
     def switch
       sheet = unused_args
-      if not sheet =~ /.+/ then say "No sheet specified"; return end
-      say "Switching to sheet " + Timetrap.switch(sheet)
+      if not sheet =~ /.+/ then puts "No sheet specified"; return end
+      puts "Switching to sheet " + Timetrap.switch(sheet)
     end
 
     def list
@@ -256,10 +252,10 @@ COMMAND is one of:
         end
       end.sort_by{|sheet| sheet[:name].downcase}
       width = sheets.sort_by{|h|h[:name].length }.last[:name].length + 4
-      say " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
+      puts " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
       sheets.each do |sheet|
         star = sheet[:name] == Timetrap.current_sheet ? '*' : ' '
-        say "#{star}%-#{width}s%-12s%-12s%s" % [
+        puts "#{star}%-#{width}s%-12s%-12s%s" % [
           sheet[:running],
           sheet[:today],
           sheet[:total]
@@ -271,15 +267,15 @@ COMMAND is one of:
       if Timetrap.running?
         out = "#{Timetrap.current_sheet}: #{format_duration(Timetrap.active_entry.start, Timetrap.active_entry.end_or_now)}".gsub(/  /, ' ')
         out << " (#{Timetrap.active_entry.note})" if Timetrap.active_entry.note =~ /.+/
-        say out
+        puts out
       else
-        say "#{Timetrap.current_sheet}: not running"
+        puts "#{Timetrap.current_sheet}: not running"
       end
     end
 
     def running
-      say "Running Timesheets:"
-      say Timetrap::Entry.filter(:end => nil).map{|e| "  #{e.sheet}: #{e.note}"}.uniq.sort
+      puts "Running Timesheets:"
+      puts Timetrap::Entry.filter(:end => nil).map{|e| "  #{e.sheet}: #{e.note}"}.uniq.sort
     end
 
     def week
