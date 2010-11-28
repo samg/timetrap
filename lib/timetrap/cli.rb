@@ -73,8 +73,10 @@ COMMAND is one of:
 
   * running - Deprecated: alias for now.
 
-  * switch - Switch to a new timesheet.
-    usage: t switch TIMESHEET
+  * sheet - Switch to a timesheet creating it if necessary.
+    usage: t sheet TIMESHEET
+
+  * switch - Deprecated: renamed to sheet.
 
   * week - Shortcut for display with start date set to monday of this week.
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
@@ -89,7 +91,7 @@ COMMAND is one of:
   EXAMPLES
 
   # create the "MyTimesheet" timesheet
-  $ t switch MyTimesheet
+  $ t sheet MyTimesheet
 
   # check in 5 minutes ago with a note
   $ t in --at '5 minutes ago' doing some stuff
@@ -124,10 +126,8 @@ COMMAND is one of:
       set_global_options
       case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
       when 0 then puts "Invalid command: #{command}"
-      when 1 then send valid[0]
       else
-        warn "Ambiguous command: #{command}" if command
-        puts(USAGE)
+        send valid[0]
       end
     end
 
@@ -244,7 +244,7 @@ COMMAND is one of:
     end
     alias_method :format, :display
 
-    def switch
+    def sheet
       sheet = unused_args
       unless sheet =~ /.+/
         warn "No sheet specified"
@@ -253,6 +253,8 @@ COMMAND is one of:
         warn "Switching to sheet #{sheet.inspect}"
       end
     end
+
+    alias_method :switch, :sheet
 
     def list
       sheets = ([Timer.current_sheet] | Entry.sheets).map do |sheet|

@@ -459,7 +459,7 @@ END:VCALENDAR
           end
 
           it "should include the active timesheet even if it has no entries" do
-            invoke 'switch empty sheet'
+            invoke 'sheet empty sheet'
             $stdout.string = ''
             invoke 'list'
             $stdout.string.should == <<-OUTPUT
@@ -504,7 +504,7 @@ END:VCALENDAR
 
           describe "and another timesheet is running too" do
             before do
-              invoke 'switch another-sheet'
+              invoke 'sheet another-sheet'
               invoke 'in also running'
               @entry = Timetrap::Timer.active_entry
               @entry.start = Time.at(0)
@@ -549,7 +549,7 @@ END:VCALENDAR
         end
 
         it "should allow you to check out of a non active sheet" do
-          invoke 'switch SomeOtherSheet'
+          invoke 'sheet SomeOtherSheet'
           invoke 'in'
           @new_active = Timetrap::Timer.active_entry
           @active.should_not == @new_active
@@ -559,17 +559,17 @@ END:VCALENDAR
         end
       end
 
-      describe "switch" do
+      describe "sheet" do
         it "should switch to a new timesheet" do
-          invoke 'switch sheet 1'
+          invoke 'sheet sheet 1'
           Timetrap::Timer.current_sheet.should == 'sheet 1'
-          invoke 'switch sheet 2'
+          invoke 'sheet sheet 2'
           Timetrap::Timer.current_sheet.should == 'sheet 2'
         end
 
         it "should not switch to an blank timesheet" do
-          invoke 'switch sheet 1'
-          invoke 'switch'
+          invoke 'sheet sheet 1'
+          invoke 'sheet'
           Timetrap::Timer.current_sheet.should == 'sheet 1'
         end
       end

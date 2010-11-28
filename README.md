@@ -21,12 +21,12 @@ This will place a ``t`` executable in your path.
 Timetrap maintains a list of *timesheets*.
 
     $ # create the "coding" timesheet
-    $ t switch coding
+    $ t sheet coding
     Switching to sheet coding
 
 All commands can be abbreviated.
 
-    $ # same as "t switch coding"
+    $ # same as "t sheet coding"
     $ t s coding
     Switching to sheet coding
 
@@ -205,11 +205,11 @@ Commands
   Deprecated
   Alias for now
 
-**switch**
-  Switch to a new timesheet. This causes all future operation (except switch)
-  to operate on that timesheet. The default timesheet is called "default".
+**sheet**
+  Switch to a timesheet creating it if necessary. The default timesheet is
+  called "default".
 
-  usage: ``t switch TIMESHEET``
+  usage: ``t sheet TIMESHEET``
 
 **week**
   Shortcut for display with start date set to monday of this week
