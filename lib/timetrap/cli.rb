@@ -85,6 +85,7 @@ COMMAND is one of:
   -h, --help              Display this help.
   -r, --round             Round output to 15 minute start and end times.
   -y, --yes               Noninteractive, assume yes as answer to all prompts.
+  --debug                 Display stack traces for errors.
 
   EXAMPLES
 
@@ -110,6 +111,7 @@ COMMAND is one of:
     def invoke
       args['-h'] ? puts(USAGE) : invoke_command_if_valid
     rescue => e
+      raise e if args['--debug']
       warn e.message
       exit 1 unless defined? TEST_MODE
     end
