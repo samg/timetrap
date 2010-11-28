@@ -127,7 +127,7 @@ COMMAND is one of:
       when 1 then send valid[0]
       else
         warn "Ambiguous command: #{command}" if command
-        warn(USAGE)
+        puts(USAGE)
       end
     end
 
