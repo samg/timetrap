@@ -167,10 +167,6 @@ Commands
 
   usage: ``t edit [--id ID] [--start TIME] [--end TIME] [--append] [NOTES]``
 
-**format**
-  Deprecated
-  Alias for display
-
 **in**
   Start the timer for the current timesheet. Must be called before out.  Notes
   may be specified for this period. This is exactly equivalent to
@@ -200,10 +196,6 @@ Commands
   running, non-current sheet.
 
   usage: ``t out [--at TIME] [TIMESHEET]``
-
-**running**
-  Deprecated
-  Alias for now
 
 **sheet**
   Switch to a timesheet creating it if necessary. The default timesheet is
