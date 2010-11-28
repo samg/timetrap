@@ -154,15 +154,15 @@ COMMAND is one of:
     end
 
     def edit
-      entry = args['-i'] ? Entry[args['-i']] : Timetrap.active_entry
+      entry = args['-i'] ? Entry[args['-i']] : Timer.active_entry
       warn "can't find entry" && return unless entry
       entry.update :start => args['-s'] if args['-s'] =~ /.+/
       entry.update :end => args['-e'] if args['-e'] =~ /.+/
 
       # update sheet
       if args['-m'] =~ /.+/
-        if entry == Timetrap.active_entry
-          Timetrap.current_sheet = args['-m']
+        if entry == Timer.active_entry
+          Timer.current_sheet = args['-m']
         end
         entry.update :sheet => args['-m']
       end
@@ -182,13 +182,13 @@ COMMAND is one of:
     end
 
     def in
-      Timetrap.start unused_args, args['-a']
-      warn "Checked into sheet #{Timetrap.current_sheet.inspect}."
+      Timer.start unused_args, args['-a']
+      warn "Checked into sheet #{Timer.current_sheet.inspect}."
     end
 
     def out
       sheet = sheet_name_from_string(unused_args)
-      if Timetrap.stop sheet, args['-a']
+      if Timer.stop sheet, args['-a']
         warn "Checked out of sheet #{sheet.inspect}."
       else
         warn "No running entry on sheet #{sheet.inspect}."
@@ -244,13 +244,13 @@ COMMAND is one of:
       unless sheet =~ /.+/
         warn "No sheet specified"
       else
-        Timetrap.current_sheet = sheet
+        Timer.current_sheet = sheet
         warn "Switching to sheet #{sheet.inspect}"
       end
     end
 
     def list
-      sheets = ([Timetrap.current_sheet] | Entry.sheets).map do |sheet|
+      sheets = ([Timer.current_sheet] | Entry.sheets).map do |sheet|
         sheet_atts = {:total => 0, :running => 0, :today => 0}
         entries = Timetrap::Entry.filter(:sheet => sheet)
         if entries.empty?
@@ -269,7 +269,7 @@ COMMAND is one of:
       width = sheets.sort_by{|h|h[:name].length }.last[:name].length + 4
       puts " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
       sheets.each do |sheet|
-        star = sheet[:name] == Timetrap.current_sheet ? '*' : ' '
+        star = sheet[:name] == Timer.current_sheet ? '*' : ' '
         puts "#{star}%-#{width}s%-12s%-12s%s" % [
           sheet[:running],
           sheet[:today],
@@ -279,11 +279,11 @@ COMMAND is one of:
     end
 
     def now
-      if !Timetrap.running?
-        puts "*#{Timetrap.current_sheet}: not running"
+      if !Timer.running?
+        puts "*#{Timer.current_sheet}: not running"
       end
-      Timetrap.running_entries.each do |entry|
-        current = entry[:sheet] == Timetrap.current_sheet
+      Timer.running_entries.each do |entry|
+        current = entry[:sheet] == Timer.current_sheet
         out = current ? '*' : ' '
         out << "#{entry[:sheet]}: #{format_duration(entry.start, entry.end_or_now)}".gsub(/  /, ' ')
         out << " (#{entry.note})" if entry.note =~ /.+/

@@ -7,7 +7,7 @@ module Timetrap
       elsif sheet =~ /.+/
         Timetrap::Entry.filter('sheet = ?', sheet)
       else
-        Timetrap::Entry.filter('sheet = ?', Timetrap.current_sheet)
+        Timetrap::Entry.filter('sheet = ?', Timer.current_sheet)
       end
       ee = ee.filter('start >= ?', Date.parse(args['-s'])) if args['-s']
       ee = ee.filter('start <= ?', Date.parse(args['-e']) + 1) if args['-e']
@@ -52,7 +52,7 @@ module Timetrap
       string = string.strip
       case string
       when /^\W*all\W*$/ then "all"
-      when /^$/ then Timetrap.current_sheet
+      when /^$/ then Timer.current_sheet
       else
         entry = DB[:entries].filter(:sheet.like("#{string}")).first ||
           DB[:entries].filter(:sheet.like("#{string}%")).first

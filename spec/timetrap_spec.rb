@@ -81,64 +81,64 @@ describe Timetrap do
 
       describe 'edit' do
         before do
-          Timetrap.start "running entry", nil
+          Timetrap::Timer.start "running entry", nil
         end
 
         it "should edit the description of the active period" do
-          Timetrap.active_entry.note.should == 'running entry'
+          Timetrap::Timer.active_entry.note.should == 'running entry'
           invoke 'edit new description'
-          Timetrap.active_entry.note.should == 'new description'
+          Timetrap::Timer.active_entry.note.should == 'new description'
         end
 
         it "should allow you to move an entry to another sheet" do
           invoke 'edit --move blahblah'
-          Timetrap.active_entry[:sheet].should == 'blahblah'
+          Timetrap::Timer.active_entry[:sheet].should == 'blahblah'
           invoke 'edit -m blahblahblah'
-          Timetrap.active_entry[:sheet].should == 'blahblahblah'
+          Timetrap::Timer.active_entry[:sheet].should == 'blahblahblah'
         end
 
         it "should change the current sheet if the current entry's sheet is changed" do
-          Timetrap.current_sheet.should_not == 'blahblahblah'
+          Timetrap::Timer.current_sheet.should_not == 'blahblahblah'
           invoke 'edit -m blahblahblah'
-          Timetrap.active_entry[:sheet].should == 'blahblahblah'
-          Timetrap.current_sheet.should == 'blahblahblah'
+          Timetrap::Timer.active_entry[:sheet].should == 'blahblahblah'
+          Timetrap::Timer.current_sheet.should == 'blahblahblah'
         end
 
         it "should change the current sheet if a non current entry's sheet is changed" do
-          sheet = Timetrap.current_sheet
-          id = Timetrap.active_entry[:id]
+          sheet = Timetrap::Timer.current_sheet
+          id = Timetrap::Timer.active_entry[:id]
           invoke 'out'
           invoke "edit -m blahblahblah -i #{id}"
-          Timetrap.current_sheet.should == sheet
+          Timetrap::Timer.current_sheet.should == sheet
           Timetrap::Entry[id][:sheet].should == 'blahblahblah'
         end
 
         it "should allow appending to the description of the active period" do
           with_stubbed_config('append_notes_delimiter' => '//')
-          Timetrap.active_entry.note.should == 'running entry'
+          Timetrap::Timer.active_entry.note.should == 'running entry'
           invoke 'edit --append new'
-          Timetrap.active_entry.note.should == 'running entry//new'
+          Timetrap::Timer.active_entry.note.should == 'running entry//new'
           invoke 'edit -z more'
-          Timetrap.active_entry.note.should == 'running entry//new//more'
+          Timetrap::Timer.active_entry.note.should == 'running entry//new//more'
         end
 
         it "should edit the start time of the active period" do
           invoke 'edit --start "yesterday 10am"'
-          Timetrap.active_entry.start.should == Chronic.parse("yesterday 10am")
-          Timetrap.active_entry.note.should == 'running entry'
+          Timetrap::Timer.active_entry.start.should == Chronic.parse("yesterday 10am")
+          Timetrap::Timer.active_entry.note.should == 'running entry'
         end
 
         it "should edit the end time of the active period" do
-          entry = Timetrap.active_entry
+          entry = Timetrap::Timer.active_entry
           invoke 'edit --end "yesterday 10am"'
           entry.refresh.end.should == Chronic.parse("yesterday 10am")
           entry.refresh.note.should == 'running entry'
         end
 
         it "should edit a non running entry based on id" do
-          not_running = Timetrap.active_entry
-          Timetrap.stop(Timetrap.current_sheet)
-          Timetrap.start "another entry", nil
+          not_running = Timetrap::Timer.active_entry
+          Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+          Timetrap::Timer.start "another entry", nil
           invoke "edit --id #{not_running.id} a new description"
           not_running.refresh.note.should == 'a new description'
         end
@@ -220,25 +220,25 @@ Grand Total                                 10:00:00
         end
 
         it "should display the current timesheet" do
-          Timetrap.current_sheet = 'SpecSheet'
+          Timetrap::Timer.current_sheet = 'SpecSheet'
           invoke 'display'
           $stdout.string.should == @desired_output
         end
 
         it "should display a non current timesheet" do
-          Timetrap.current_sheet = 'another'
+          Timetrap::Timer.current_sheet = 'another'
           invoke 'display SpecSheet'
           $stdout.string.should == @desired_output
         end
 
         it "should display a non current timesheet based on a partial name match" do
-          Timetrap.current_sheet = 'another'
+          Timetrap::Timer.current_sheet = 'another'
           invoke 'display S'
           $stdout.string.should == @desired_output
         end
 
         it "should display an exact match of a named sheet to a partial match" do
-          Timetrap.current_sheet = 'Spec'
+          Timetrap::Timer.current_sheet = 'Spec'
           Timetrap::Entry.create( :sheet => 'Spec',
             :note => 'entry 5', :start => '2008-10-05 18:00:00'
           )
@@ -252,7 +252,7 @@ Grand Total                                 10:00:00
         end
 
         it "should display all timesheets" do
-          Timetrap.current_sheet = 'another'
+          Timetrap::Timer.current_sheet = 'another'
           invoke 'display all'
           $stdout.string.should == @desired_output_for_all
         end
@@ -362,7 +362,7 @@ END:VCALENDAR
         end
 
         it "should not start the time if the timetrap is running" do
-          Timetrap.stub!(:running?).and_return true
+          Timetrap::Timer.stub!(:running?).and_return true
           lambda do
             invoke 'in'
           end.should_not change(Timetrap::Entry, :count)
@@ -447,7 +447,7 @@ END:VCALENDAR
                          :end => nil)
             create_entry( :sheet => 'Sheet 1', :start => '2008-10-03 16:00:00',
                          :end => '2008-10-03 18:00:00')
-            Timetrap.current_sheet = 'A Longly Named Sheet 2'
+            Timetrap::Timer.current_sheet = 'A Longly Named Sheet 2'
           end
           it "should list available timesheets" do
             invoke 'list'
@@ -474,7 +474,7 @@ END:VCALENDAR
 
       describe "now" do
         before do
-          Timetrap.current_sheet = 'current sheet'
+          Timetrap::Timer.current_sheet = 'current sheet'
         end
 
         describe "when the current timesheet isn't running" do
@@ -489,7 +489,7 @@ END:VCALENDAR
         describe "when the current timesheet is running" do
           before do
             invoke 'in a timesheet that is running'
-            @entry = Timetrap.active_entry
+            @entry = Timetrap::Timer.active_entry
             @entry.start = Time.at(0)
             @entry.save
             Time.stub!(:now).and_return Time.at(60)
@@ -506,7 +506,7 @@ END:VCALENDAR
             before do
               invoke 'switch another-sheet'
               invoke 'in also running'
-              @entry = Timetrap.active_entry
+              @entry = Timetrap::Timer.active_entry
               @entry.start = Time.at(0)
               @entry.save
               Time.stub!(:now).and_return Time.at(60)
@@ -526,7 +526,7 @@ END:VCALENDAR
       describe "out" do
         before :each do
           invoke 'in'
-          @active = Timetrap.active_entry
+          @active = Timetrap::Timer.active_entry
           @now = Time.now
           Time.stub!(:now).and_return @now
         end
@@ -551,7 +551,7 @@ END:VCALENDAR
         it "should allow you to check out of a non active sheet" do
           invoke 'switch SomeOtherSheet'
           invoke 'in'
-          @new_active = Timetrap.active_entry
+          @new_active = Timetrap::Timer.active_entry
           @active.should_not == @new_active
           invoke %'out #{@active.sheet} --at "10am 2008-10-03"'
           @active.refresh.end.should == Time.parse('2008-10-03 10:00')
@@ -562,15 +562,15 @@ END:VCALENDAR
       describe "switch" do
         it "should switch to a new timesheet" do
           invoke 'switch sheet 1'
-          Timetrap.current_sheet.should == 'sheet 1'
+          Timetrap::Timer.current_sheet.should == 'sheet 1'
           invoke 'switch sheet 2'
-          Timetrap.current_sheet.should == 'sheet 2'
+          Timetrap::Timer.current_sheet.should == 'sheet 2'
         end
 
         it "should not switch to an blank timesheet" do
           invoke 'switch sheet 1'
           invoke 'switch'
-          Timetrap.current_sheet.should == 'sheet 1'
+          Timetrap::Timer.current_sheet.should == 'sheet 1'
         end
       end
     end
@@ -579,7 +579,7 @@ END:VCALENDAR
   describe "entries" do
     it "should give the entires for a sheet" do
       e = create_entry :sheet => 'sheet'
-      Timetrap.entries('sheet').all.should include(e)
+      Timetrap::Timer.entries('sheet').all.should include(e)
     end
 
   end
@@ -587,9 +587,9 @@ END:VCALENDAR
   describe "start" do
     it "should start an new entry" do
       @time = Time.now
-      Timetrap.current_sheet = 'sheet1'
+      Timetrap::Timer.current_sheet = 'sheet1'
       lambda do
-        Timetrap.start 'some work', @time
+        Timetrap::Timer.start 'some work', @time
       end.should change(Timetrap::Entry, :count).by(1)
       Timetrap::Entry.order(:id).last.sheet.should == 'sheet1'
       Timetrap::Entry.order(:id).last.note.should == 'some work'
@@ -598,42 +598,42 @@ END:VCALENDAR
     end
 
     it "should be running if it is started" do
-      Timetrap.should_not be_running
-      Timetrap.start 'some work', @time
-      Timetrap.should be_running
+      Timetrap::Timer.should_not be_running
+      Timetrap::Timer.start 'some work', @time
+      Timetrap::Timer.should be_running
     end
 
     it "should raise an error if it is already running" do
       lambda do
-        Timetrap.start 'some work', @time
-        Timetrap.start 'some work', @time
-      end.should raise_error(Timetrap::AlreadyRunning)
+        Timetrap::Timer.start 'some work', @time
+        Timetrap::Timer.start 'some work', @time
+      end.should raise_error(Timetrap::Timer::AlreadyRunning)
     end
   end
 
   describe "stop" do
     it "should stop a new entry" do
       @time = Time.now
-      Timetrap.start 'some work', @time
-      entry = Timetrap.active_entry
+      Timetrap::Timer.start 'some work', @time
+      entry = Timetrap::Timer.active_entry
       entry.end.should be_nil
-      Timetrap.stop Timetrap.current_sheet, @time
+      Timetrap::Timer.stop Timetrap::Timer.current_sheet, @time
       entry.refresh.end.to_i.should == @time.to_i
     end
 
     it "should not be running if it is stopped" do
-      Timetrap.should_not be_running
-      Timetrap.start 'some work', @time
-      Timetrap.stop Timetrap.current_sheet
-      Timetrap.should_not be_running
+      Timetrap::Timer.should_not be_running
+      Timetrap::Timer.start 'some work', @time
+      Timetrap::Timer.stop Timetrap::Timer.current_sheet
+      Timetrap::Timer.should_not be_running
     end
 
     it "should not stop it twice" do
-      Timetrap.start 'some work'
-      e = Timetrap.active_entry
-      Timetrap.stop Timetrap.current_sheet
+      Timetrap::Timer.start 'some work'
+      e = Timetrap::Timer.active_entry
+      Timetrap::Timer.stop Timetrap::Timer.current_sheet
       time = e.refresh.end
-      Timetrap.stop Timetrap.current_sheet
+      Timetrap::Timer.stop Timetrap::Timer.current_sheet
       time.to_i.should == e.refresh.end.to_i
     end
 
