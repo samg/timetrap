@@ -30,18 +30,6 @@ describe Timetrap do
     $stderr = StringIO.new
   end
 
-  describe '::sheets' do
-    it "should output a list of all the available sheets" do
-      Timetrap::Entry.create( :sheet => 'another',
-        :note => 'entry 4', :start => '2008-10-05 18:00:00'
-      )
-      Timetrap::Entry.create( :sheet => 'SpecSheet',
-        :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
-      )
-      Timetrap::Entry.sheets.should == %w(another SpecSheet).sort
-    end
-  end
-
   describe 'CLI' do
     describe "COMMANDS" do
       def invoke command
@@ -149,7 +137,7 @@ describe Timetrap do
 
         it "should edit a non running entry based on id" do
           not_running = Timetrap.active_entry
-          Timetrap.stop
+          Timetrap.stop(Timetrap.current_sheet)
           Timetrap.start "another entry", nil
           invoke "edit --id #{not_running.id} a new description"
           not_running.refresh.note.should == 'a new description'
@@ -538,7 +526,17 @@ current sheet: 0:01:00 (a timesheet that is running)
 
         it "should allow the sheet to be stopped at a certain time" do
           invoke 'out --at "10am 2008-10-03"'
-          Timetrap::Entry.order_by(:id).last.end.should == Time.parse('2008-10-03 10:00')
+          @active.refresh.end.should == Time.parse('2008-10-03 10:00')
+        end
+
+        it "should allow you to check out of a non active sheet" do
+          invoke 'switch SomeOtherSheet'
+          invoke 'in'
+          @new_active = Timetrap.active_entry
+          @active.should_not == @new_active
+          invoke %'out #{@active.sheet} --at "10am 2008-10-03"'
+          @active.refresh.end.should == Time.parse('2008-10-03 10:00')
+          @new_active.refresh.end.should be_nil
         end
       end
 
@@ -614,117 +612,130 @@ current sheet: 0:01:00 (a timesheet that is running)
       Timetrap.start 'some work', @time
       entry = Timetrap.active_entry
       entry.end.should be_nil
-      Timetrap.stop @time
+      Timetrap.stop Timetrap.current_sheet, @time
       entry.refresh.end.to_i.should == @time.to_i
     end
 
     it "should not be running if it is stopped" do
       Timetrap.should_not be_running
       Timetrap.start 'some work', @time
-      Timetrap.stop
+      Timetrap.stop Timetrap.current_sheet
       Timetrap.should_not be_running
     end
 
     it "should not stop it twice" do
       Timetrap.start 'some work'
       e = Timetrap.active_entry
-      Timetrap.stop
+      Timetrap.stop Timetrap.current_sheet
       time = e.refresh.end
-      Timetrap.stop
+      Timetrap.stop Timetrap.current_sheet
       time.to_i.should == e.refresh.end.to_i
     end
 
   end
 
-end
 
-describe Timetrap::Entry do
+  describe Timetrap::Entry do
 
-  include Timetrap::StubConfig
-  describe "with an instance" do
-    before do
-      @time = Time.now
-      @entry = Timetrap::Entry.new
-    end
-
-    describe 'attributes' do
-      it "should have a note" do
-        @entry.note = "world takeover"
-        @entry.note.should == "world takeover"
+    include Timetrap::StubConfig
+    describe "with an instance" do
+      before do
+        @time = Time.now
+        @entry = Timetrap::Entry.new
       end
 
-      it "should have a start" do
-        @entry.start = @time
-        @entry.start.to_i.should == @time.to_i
-      end
-
-      it "should have a end" do
-        @entry.end = @time
-        @entry.end.to_i.should == @time.to_i
-      end
-
-      it "should have a sheet" do
-        @entry.sheet= 'name'
-        @entry.sheet.should == 'name'
-      end
-
-      def with_rounding_on
-        old_val = Timetrap::Entry.round
-        begin
-          Timetrap::Entry.round = true
-          block_return_value = yield
-        ensure
-          Timetrap::Entry.round = old_val
+      describe '.sheets' do
+        it "should output a list of all the available sheets" do
+          Timetrap::Entry.create( :sheet => 'another',
+            :note => 'entry 4', :start => '2008-10-05 18:00:00'
+          )
+          Timetrap::Entry.create( :sheet => 'SpecSheet',
+            :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
+          )
+          Timetrap::Entry.sheets.should == %w(another SpecSheet).sort
         end
       end
 
-      it "should use round start if the global round attribute is set" do
-        with_rounding_on do
-          with_stubbed_config('round_in_seconds' => 900) do
-            @time = Chronic.parse("12:55am")
-            @entry.start = @time
-            @entry.start.should == Chronic.parse("1am")
+
+      describe 'attributes' do
+        it "should have a note" do
+          @entry.note = "world takeover"
+          @entry.note.should == "world takeover"
+        end
+
+        it "should have a start" do
+          @entry.start = @time
+          @entry.start.to_i.should == @time.to_i
+        end
+
+        it "should have a end" do
+          @entry.end = @time
+          @entry.end.to_i.should == @time.to_i
+        end
+
+        it "should have a sheet" do
+          @entry.sheet= 'name'
+          @entry.sheet.should == 'name'
+        end
+
+        def with_rounding_on
+          old_val = Timetrap::Entry.round
+          begin
+            Timetrap::Entry.round = true
+            block_return_value = yield
+          ensure
+            Timetrap::Entry.round = old_val
           end
         end
-      end
 
-      it "should use round start if the global round attribute is set" do
-        with_rounding_on do
+        it "should use round start if the global round attribute is set" do
+          with_rounding_on do
+            with_stubbed_config('round_in_seconds' => 900) do
+              @time = Chronic.parse("12:55am")
+              @entry.start = @time
+              @entry.start.should == Chronic.parse("1am")
+            end
+          end
+        end
+
+        it "should use round start if the global round attribute is set" do
+          with_rounding_on do
+            with_stubbed_config('round_in_seconds' => 900) do
+              @time = Chronic.parse("12:50am")
+              @entry.start = @time
+              @entry.start.should == Chronic.parse("12:45am")
+            end
+          end
+        end
+
+        it "should have a rounded start" do
           with_stubbed_config('round_in_seconds' => 900) do
             @time = Chronic.parse("12:50am")
             @entry.start = @time
-            @entry.start.should == Chronic.parse("12:45am")
+            @entry.rounded_start.should == Chronic.parse("12:45am")
           end
         end
-      end
 
-      it "should have a rounded start" do
-        with_stubbed_config('round_in_seconds' => 900) do
-          @time = Chronic.parse("12:50am")
-          @entry.start = @time
-          @entry.rounded_start.should == Chronic.parse("12:45am")
+        it "should not round nil times" do
+          @entry.start = nil
+          @entry.rounded_start.should be_nil
         end
       end
 
-      it "should not round nil times" do
-        @entry.start = nil
-        @entry.rounded_start.should be_nil
+      describe "parsing natural language times" do
+        it "should set start time using english" do
+          @entry.start = "yesterday 10am"
+          @entry.start.should_not be_nil
+          @entry.start.should == Chronic.parse("yesterday 10am")
+        end
+
+        it "should set end time using english" do
+          @entry.end = "tomorrow 1pm"
+          @entry.end.should_not be_nil
+          @entry.end.should == Chronic.parse("tomorrow 1pm")
+        end
       end
     end
 
-    describe "parsing natural language times" do
-      it "should set start time using english" do
-        @entry.start = "yesterday 10am"
-        @entry.start.should_not be_nil
-        @entry.start.should == Chronic.parse("yesterday 10am")
-      end
-
-      it "should set end time using english" do
-        @entry.end = "tomorrow 1pm"
-        @entry.end.should_not be_nil
-        @entry.end.should == Chronic.parse("tomorrow 1pm")
-      end
-    end
   end
-
 end

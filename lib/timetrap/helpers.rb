@@ -50,11 +50,18 @@ module Timetrap
 
     def sheet_name_from_string string
       string = string.strip
-      return "all" if string =~ /^\W*all\W*$/
-      return "" unless string =~ /.+/
-      entry = DB[:entries].filter(:sheet.like("#{string}")).first ||
-        DB[:entries].filter(:sheet.like("#{string}%")).first
-      entry ? entry[:sheet] : ''
+      case string
+      when /^\W*all\W*$/ then "all"
+      when /^$/ then Timetrap.current_sheet
+      else
+        entry = DB[:entries].filter(:sheet.like("#{string}")).first ||
+          DB[:entries].filter(:sheet.like("#{string}%")).first
+        if entry
+          entry[:sheet]
+        else
+          raise "Can't find sheet matching #{string.inspect}"
+        end
+      end
     end
   end
 end

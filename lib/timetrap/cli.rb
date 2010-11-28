@@ -143,7 +143,7 @@ COMMAND is one of:
           e.update :sheet => "_#{e.sheet}"
         end
       else
-        puts "archive aborted!"
+        warn "archive aborted!"
       end
     end
 
@@ -186,10 +186,11 @@ COMMAND is one of:
     end
 
     def out
-      if Timetrap.stop args['-a']
-        warn "Checked out of sheet #{Timetrap.current_sheet.inspect}."
+      sheet = sheet_name_from_string(unused_args)
+      if Timetrap.stop sheet, args['-a']
+        warn "Checked out of sheet #{sheet.inspect}."
       else
-        warn "Timetrap is not running."
+        warn "No running entry on sheet #{sheet.inspect}."
       end
     end
 

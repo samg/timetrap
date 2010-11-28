@@ -39,12 +39,12 @@ module Timetrap
     !!active_entry
   end
 
-  def active_entry
-    Entry.find(:sheet => Timetrap.current_sheet, :end => nil)
+  def active_entry(sheet=nil)
+    Entry.find(:sheet => (sheet || Timetrap.current_sheet), :end => nil)
   end
 
-  def stop time = nil
-    if a = active_entry
+  def stop sheet, time = nil
+    if a = active_entry(sheet)
       time ||= Time.now
       a.end = time
       a.save
