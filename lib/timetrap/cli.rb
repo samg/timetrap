@@ -155,7 +155,12 @@ COMMAND is one of:
 
     def edit
       entry = args['-i'] ? Entry[args['-i']] : Timer.active_entry
-      warn "can't find entry" && return unless entry
+      unless entry
+        warn "can't find entry"
+        return
+      else
+        warn "editing entry ##{entry.id.inspect}"
+      end
       entry.update :start => args['-s'] if args['-s'] =~ /.+/
       entry.update :end => args['-e'] if args['-e'] =~ /.+/
 
