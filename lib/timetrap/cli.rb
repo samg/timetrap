@@ -206,7 +206,7 @@ COMMAND is one of:
       elsif (sheets = Entry.map{|e| e.sheet }.uniq).include?(sheet = unused_args)
         victims = Entry.filter(:sheet => sheet).count
         if ask_user "are you sure you want to delete #{victims} entries on sheet #{sheet.inspect}? "
-          Timetrap.kill_sheet sheet
+          Entry.filter(:sheet => sheet).destroy
           warn "killed #{victims} entries"
         else
           warn "will not kill"
@@ -239,8 +239,12 @@ COMMAND is one of:
 
     def switch
       sheet = unused_args
-      if not sheet =~ /.+/ then puts "No sheet specified"; return end
-      warn "Switching to sheet " + Timetrap.switch(sheet)
+      unless sheet =~ /.+/
+        warn "No sheet specified"
+      else
+        Timetrap.current_sheet = sheet
+        warn "Switching to sheet #{sheet.inspect}"
+      end
     end
 
     def list

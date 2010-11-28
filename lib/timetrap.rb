@@ -57,14 +57,6 @@ module Timetrap
     Entry.create(:sheet => Timetrap.current_sheet, :note => note, :start => time).save
   end
 
-  def switch sheet
-    self.current_sheet = sheet
-  end
-
-  def kill_sheet sheet
-    Entry.filter(:sheet => sheet).destroy
-  end
-
   class AlreadyRunning < StandardError
     def message
       "Timetrap is already running"

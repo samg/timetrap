@@ -30,6 +30,18 @@ describe Timetrap do
     $stderr = StringIO.new
   end
 
+  describe '::sheets' do
+    it "should output a list of all the available sheets" do
+      Timetrap::Entry.create( :sheet => 'another',
+        :note => 'entry 4', :start => '2008-10-05 18:00:00'
+      )
+      Timetrap::Entry.create( :sheet => 'SpecSheet',
+        :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
+      )
+      Timetrap::Entry.sheets.should == %w(another SpecSheet).sort
+    end
+  end
+
   describe 'CLI' do
     describe "COMMANDS" do
       def invoke command
@@ -624,15 +636,6 @@ current sheet: 0:01:00 (a timesheet that is running)
 
   end
 
-  describe 'switch' do
-    it "should switch to a new sheet" do
-      Timetrap.switch 'sheet1'
-      Timetrap.current_sheet.should == 'sheet1'
-      Timetrap.switch 'sheet2'
-      Timetrap.current_sheet.should == 'sheet2'
-    end
-  end
-
 end
 
 describe Timetrap::Entry do
@@ -724,15 +727,4 @@ describe Timetrap::Entry do
     end
   end
 
-  describe '::sheets' do
-    it "should output a list of all the available sheets" do
-      Timetrap::Entry.create( :sheet => 'another',
-        :note => 'entry 4', :start => '2008-10-05 18:00:00'
-      )
-      Timetrap::Entry.create( :sheet => 'SpecSheet',
-        :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
-      )
-      Timetrap::Entry.sheets.should == %w(another SpecSheet).sort
-    end
-  end
 end
