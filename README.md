@@ -168,24 +168,23 @@ Commands
   usage: ``t list``
 
 **now**
-  Print the current sheet, whether it's active, and if so, how long it has been
-  active and what notes are associated with the current period.
+  Print a description of all running entries.
 
   usage: ``t now``
 
 **out**
   Stop the timer for the current timesheet. Must be called after in. Accepts an
-  optional --at flag.
+  optional --at flag. Accepts an optional TIMESHEET name to check out of a
+  running, non-current sheet.
 
-  usage: ``t out [--at TIME]``
+  usage: ``t out [--at TIME] [TIMESHEET]``
 
 **running**
-  Print all active sheets and any messages associated with them.
-
-  usage: ``t running``
+  Deprecated
+  Alias for now
 
 **switch**
-  Switch to a new timesheet. this causes all future operation (except switch)
+  Switch to a new timesheet. This causes all future operation (except switch)
   to operate on that timesheet. The default timesheet is called "default".
 
   usage: ``t switch TIMESHEET``
@@ -193,7 +192,7 @@ Commands
 **week**
   Shortcut for display with start date set to monday of this week
 
-  usage: ``t week [--ids] [--end DATE] [--format FMT] [SHEET | all]``
+  usage: ``t week [--ids] [--end DATE] [--format FMT] [TIMESHEET | all]``
 
 Global Options
 --------

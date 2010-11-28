@@ -64,15 +64,14 @@ COMMAND is one of:
   * list - Show the available timesheets.
     usage: t list
 
-  * now - Show the status of the current timesheet.
+  * now - Show all running entries.
     usage: t now
 
-  * out - Stop the timer for the current timesheet.
-    usage: t out [--at TIME]
+  * out - Stop the timer for the a timesheet.
+    usage: t out [--at TIME] [TIMESHEET]
     -a, --at <time:qs>        Use this time instead of now
 
-  * running - Show all running timesheets.
-    usage: t running
+  * running - Deprecated: alias for now.
 
   * switch - Switch to a new timesheet.
     usage: t switch TIMESHEET
@@ -291,11 +290,7 @@ COMMAND is one of:
         puts "#{Timetrap.current_sheet}: not running"
       end
     end
-
-    def running
-      puts "Running Timesheets:"
-      puts Timetrap::Entry.filter(:end => nil).map{|e| "  #{e.sheet}: #{e.note}"}.uniq.sort
-    end
+    alias_method :running, :display
 
     def week
       args['-s'] = Date.today.wday == 1 ? Date.today.to_s : Date.parse(Chronic.parse(%q(last monday)).to_s).to_s
