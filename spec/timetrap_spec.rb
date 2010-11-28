@@ -490,9 +490,9 @@ current sheet: not running
           before do
             invoke 'in a timesheet that is running'
             @entry = Timetrap.active_entry
-            @entry.stub!(:start).and_return(Time.at(0))
+            @entry.start = Time.at(0)
+            @entry.save
             Time.stub!(:now).and_return Time.at(60)
-            Timetrap.stub!(:active_entry).and_return @entry
           end
 
           it "should show how long the current item is running for" do
@@ -500,6 +500,25 @@ current sheet: not running
             $stdout.string.should == <<-OUTPUT
 current sheet: 0:01:00 (a timesheet that is running)
             OUTPUT
+          end
+
+          describe "and another timesheet is running too" do
+            before do
+              invoke 'switch another-sheet'
+              invoke 'in also running'
+              @entry = Timetrap.active_entry
+              @entry.start = Time.at(0)
+              @entry.save
+              Time.stub!(:now).and_return Time.at(60)
+            end
+
+            it "should show both entries" do
+            invoke 'now'
+            $stdout.string.should == <<-OUTPUT
+current sheet: 0:01:00 (a timesheet that is running)
+another-sheet: 0:01:00 (also running)
+            OUTPUT
+            end
           end
         end
       end

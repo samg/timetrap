@@ -43,6 +43,11 @@ module Timetrap
     Entry.find(:sheet => (sheet || Timetrap.current_sheet), :end => nil)
   end
 
+  def running_entries
+    Entry.filter(:end => nil)
+  end
+
+
   def stop sheet, time = nil
     if a = active_entry(sheet)
       time ||= Time.now

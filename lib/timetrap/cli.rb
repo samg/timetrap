@@ -280,10 +280,13 @@ COMMAND is one of:
     end
 
     def now
-      if Timetrap.running?
-        out = "#{Timetrap.current_sheet}: #{format_duration(Timetrap.active_entry.start, Timetrap.active_entry.end_or_now)}".gsub(/  /, ' ')
-        out << " (#{Timetrap.active_entry.note})" if Timetrap.active_entry.note =~ /.+/
-        puts out
+      running = Timetrap.running_entries.all
+      if running != []
+        running.each do |entry|
+          out = "#{entry[:sheet]}: #{format_duration(entry.start, entry.end_or_now)}".gsub(/  /, ' ')
+          out << " (#{entry.note})" if entry.note =~ /.+/
+          puts out
+        end
       else
         puts "#{Timetrap.current_sheet}: not running"
       end
