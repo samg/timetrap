@@ -237,7 +237,7 @@ Grand Total                                 10:00:00
           $stdout.string.should == @desired_output
         end
 
-        it "should display an exact match of a named sheet to a partial match" do
+        it "should prefer an exact match of a named sheet to a partial match" do
           Timetrap::Timer.current_sheet = 'Spec'
           Timetrap::Entry.create( :sheet => 'Spec',
             :note => 'entry 5', :start => '2008-10-05 18:00:00'
