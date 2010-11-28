@@ -127,7 +127,11 @@ COMMAND is one of:
       case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
       when 0 then puts "Invalid command: #{command}"
       else
-        send valid[0]
+        if command
+          send valid[0]
+        else
+          puts USAGE
+        end
       end
     end
 

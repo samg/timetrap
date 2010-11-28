@@ -1,5 +1,5 @@
 TEST_MODE = true
-require File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap')
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap'))
 require 'spec'
 require 'fakefs/safe'
 
@@ -35,6 +35,13 @@ describe Timetrap do
       def invoke command
         Timetrap::CLI.parse command
         Timetrap::CLI.invoke
+      end
+
+      describe 'with no command' do
+        it "should invoke --help" do
+          invoke ''
+          $stdout.string.should include "Usage"
+        end
       end
 
       describe 'archive' do
