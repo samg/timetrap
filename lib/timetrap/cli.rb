@@ -279,15 +279,15 @@ COMMAND is one of:
     end
 
     def now
-      running = Timetrap.running_entries.all
-      if running != []
-        running.each do |entry|
-          out = "#{entry[:sheet]}: #{format_duration(entry.start, entry.end_or_now)}".gsub(/  /, ' ')
-          out << " (#{entry.note})" if entry.note =~ /.+/
-          puts out
-        end
-      else
-        puts "#{Timetrap.current_sheet}: not running"
+      if !Timetrap.running?
+        puts "*#{Timetrap.current_sheet}: not running"
+      end
+      Timetrap.running_entries.each do |entry|
+        current = entry[:sheet] == Timetrap.current_sheet
+        out = current ? '*' : ' '
+        out << "#{entry[:sheet]}: #{format_duration(entry.start, entry.end_or_now)}".gsub(/  /, ' ')
+        out << " (#{entry.note})" if entry.note =~ /.+/
+        puts out
       end
     end
     alias_method :running, :display

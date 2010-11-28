@@ -481,7 +481,7 @@ END:VCALENDAR
           it "should show that it isn't running" do
             invoke 'now'
             $stdout.string.should == <<-OUTPUT
-current sheet: not running
+*current sheet: not running
             OUTPUT
           end
         end
@@ -498,7 +498,7 @@ current sheet: not running
           it "should show how long the current item is running for" do
             invoke 'now'
             $stdout.string.should == <<-OUTPUT
-current sheet: 0:01:00 (a timesheet that is running)
+*current sheet: 0:01:00 (a timesheet that is running)
             OUTPUT
           end
 
@@ -515,8 +515,8 @@ current sheet: 0:01:00 (a timesheet that is running)
             it "should show both entries" do
             invoke 'now'
             $stdout.string.should == <<-OUTPUT
-current sheet: 0:01:00 (a timesheet that is running)
-another-sheet: 0:01:00 (also running)
+ current sheet: 0:01:00 (a timesheet that is running)
+*another-sheet: 0:01:00 (also running)
             OUTPUT
             end
           end
@@ -556,20 +556,6 @@ another-sheet: 0:01:00 (also running)
           invoke %'out #{@active.sheet} --at "10am 2008-10-03"'
           @active.refresh.end.should == Time.parse('2008-10-03 10:00')
           @new_active.refresh.end.should be_nil
-        end
-      end
-
-      describe "running" do
-        it "should show all running timesheets" do
-          create_entry :sheet => 'one', :end => nil
-          create_entry :sheet => 'two', :end => nil
-          create_entry :sheet => 'three'
-          invoke 'running'
-          $stdout.string.should == "Running Timesheets:\n  one: note\n  two: note\n"
-        end
-        it "should show no runnig timesheets" do
-          invoke 'running'
-          $stdout.string.should == "Running Timesheets:\n"
         end
       end
 
