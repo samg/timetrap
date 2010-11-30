@@ -32,7 +32,7 @@ All commands can be abbreviated.
 
 Each timesheet contains *entries*.  Each entry has a start and end time, and a
 note associated with it.  An entry without an end time set is considered to be
-*running*.
+running.
 
 You check in to the current sheet with the `in` command.
 
