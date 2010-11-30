@@ -199,9 +199,9 @@ Commands
 
 **sheet**
   Switch to a timesheet creating it if necessary. The default timesheet is
-  called "default".
+  called "default". When no sheet is specified list all existing sheets.
 
-  usage: ``t sheet TIMESHEET``
+  usage: ``t sheet [TIMESHEET]``
 
 **week**
   Shortcut for display with start date set to monday of this week

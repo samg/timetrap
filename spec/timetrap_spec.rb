@@ -579,6 +579,12 @@ END:VCALENDAR
           invoke 'sheet'
           Timetrap::Timer.current_sheet.should == 'sheet 1'
         end
+
+        it "should list timesheets when there are no arguments" do
+          invoke 'sheet sheet 1'
+          invoke 'sheet'
+          $stdout.string.should == " Timesheet  Running     Today       Total Time\n*sheet 1     0:00:00     0:00:00     0:00:00\n"
+        end
       end
     end
   end

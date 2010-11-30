@@ -71,12 +71,9 @@ COMMAND is one of:
     usage: t out [--at TIME] [TIMESHEET]
     -a, --at <time:qs>        Use this time instead of now
 
-  * running - Deprecated: alias for now.
-
-  * sheet - Switch to a timesheet creating it if necessary.
-    usage: t sheet TIMESHEET
-
-  * switch - Deprecated: renamed to sheet.
+  * sheet - Switch to a timesheet creating it if necessary. When no sheet is
+      specified list all sheets.
+    usage: t sheet [TIMESHEET]
 
   * week - Shortcut for display with start date set to monday of this week.
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
@@ -251,7 +248,7 @@ COMMAND is one of:
     def sheet
       sheet = unused_args
       unless sheet =~ /.+/
-        warn "No sheet specified"
+        list
       else
         Timer.current_sheet = sheet
         warn "Switching to sheet #{sheet.inspect}"
