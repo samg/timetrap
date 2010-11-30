@@ -44,6 +44,14 @@ describe Timetrap do
         end
       end
 
+      describe 'with an invalid command' do
+        it "should tell me I'm wrong" do
+          invoke 'poo'
+          $stderr.string.should include 'Invalid command: "poo"'
+        end
+      end
+
+
       describe 'archive' do
         before do
           3.times do |i|
@@ -279,6 +287,12 @@ Grand Total                                 10:00:00
           create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
         end
         describe 'csv' do
+          it "should be deprecated" do
+            invoke 'format'
+            $stderr.string.should == <<-WARN
+The "format" command is deprecated in favor of "display". Sorry for the inconvenience.
+            WARN
+          end
 
           it "should not export running items" do
             invoke 'in'

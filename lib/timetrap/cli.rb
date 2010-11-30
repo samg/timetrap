@@ -51,8 +51,6 @@ COMMAND is one of:
                                 configurable (see configure)
     -m, --move <sheet>        Move to another sheet
 
-  * format - Deprecated: alias for display.
-
   * in - Start the timer for the current timesheet.
     usage: t in [--at TIME] [NOTES]
     -a, --at <time:qs>        Use this time instead of now
@@ -118,17 +116,33 @@ COMMAND is one of:
       Timetrap::CLI::USAGE.scan(/\* \w+/).map{|s| s.gsub(/\* /, '')}
     end
 
+    def deprecated_commands
+      {
+        'switch' => 'sheet',
+        'running' => 'now',
+        'format' => 'display'
+      }
+    end
+
     def invoke_command_if_valid
       command = args.unused.shift
       set_global_options
       case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
-      when 0 then puts "Invalid command: #{command}"
+      when 1 then send valid[0]
       else
-        if command
-          send valid[0]
-        else
-          puts USAGE
-        end
+        handle_invalid_command(command)
+      end
+    end
+
+    def handle_invalid_command(command)
+      if !command
+        puts USAGE
+      elsif mapping = deprecated_commands.detect{|(k,v)| k =~ %r|^#{command}|}
+        deprecated, current = *mapping
+        warn "The #{deprecated.inspect} command is deprecated in favor of #{current.inspect}. Sorry for the inconvenience."
+        send current
+      else
+        warn "Invalid command: #{command.inspect}"
       end
     end
 
@@ -243,7 +257,6 @@ COMMAND is one of:
         puts fmt_klass.new(entries).output
       end
     end
-    alias_method :format, :display
 
     def sheet
       sheet = unused_args
@@ -254,8 +267,6 @@ COMMAND is one of:
         warn "Switching to sheet #{sheet.inspect}"
       end
     end
-
-    alias_method :switch, :sheet
 
     def list
       sheets = ([Timer.current_sheet] | Entry.sheets).map do |sheet|
@@ -298,7 +309,6 @@ COMMAND is one of:
         puts out
       end
     end
-    alias_method :running, :display
 
     def week
       args['-s'] = Date.today.wday == 1 ? Date.today.to_s : Date.parse(Chronic.parse(%q(last monday)).to_s).to_s
