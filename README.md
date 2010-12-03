@@ -64,6 +64,30 @@ You check out with the `out` command.
     $ t out
     Checked out of sheet "coding"
 
+You can edit entries that aren't running using `edit`'s `--id` or `-i` flag.
+`t display --verbose` will tell you the ids.
+
+    $ # note id column in output
+    $ t d -v
+    Timesheet: coding
+    Id  Day                Start      End        Duration   Notes
+    43  Sun Nov 28, 2010   12:26:10 - 13:41:03   1:14:53    writing readme
+                                                 1:14:53
+        ---------------------------------------------------------
+        Total                                    1:14:53
+
+    $ t e -i43 --end "2010-11-28 13:45"
+    editing entry #43
+
+    $ t d
+    Timesheet: coding
+        Day                Start      End        Duration   Notes
+        Sun Nov 28, 2010   12:26:10 - 13:45:00   1:18:50    document timetrap
+                                                 1:18:50
+        ---------------------------------------------------------
+        Total                                    1:18:50
+
+
 ### Natural Language Times
 
 Commands such as `in`, `out`, `edit`, and `display` have flags that accept
