@@ -76,13 +76,14 @@ You can edit entries that aren't running using `edit`'s `--id` or `-i` flag.
         ---------------------------------------------------------
         Total                                    1:14:53
 
+    $ # -i43 to edit entry 43
     $ t e -i43 --end "2010-11-28 13:45"
     editing entry #43
 
     $ t d
     Timesheet: coding
         Day                Start      End        Duration   Notes
-        Sun Nov 28, 2010   12:26:10 - 13:45:00   1:18:50    document timetrap
+        Sun Nov 28, 2010   12:26:10 - 13:45:00   1:18:50    writing readme
                                                  1:18:50
         ---------------------------------------------------------
         Total                                    1:18:50
