@@ -36,7 +36,6 @@ begin
     s.add_dependency("sqlite3-ruby", ">= 1.2.5")
     s.add_dependency("chronic", "~> 0.3.0")
     s.add_dependency("getopt-declare", ">= 1.28")
-    s.add_dependency("icalendar", ">= 1.1.2")
   end
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"

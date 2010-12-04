@@ -1,4 +1,13 @@
-require 'icalendar'
+begin
+  require 'icalendar'
+rescue LoadError
+  raise <<-ERR
+The icalendar gem must be installed for ical output.
+To install it:
+$ [sudo] gem install icalendar -v"~>1.1.5"
+  ERR
+end
+
 require 'date'
 module Timetrap
   module Formatters
