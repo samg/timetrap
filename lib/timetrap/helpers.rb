@@ -1,6 +1,19 @@
 module Timetrap
   module Helpers
 
+    def load_formatter(formatter)
+      begin
+        $:.unshift(File.expand_path(
+          File.join( File.dirname(__FILE__), 'formatters')))
+        require formatter
+        Timetrap::Formatters.const_get(formatter.classify)
+      rescue LoadError, NameError => e
+        raise "Can't load #{args['-f'].inspect} formatter."
+        err.set_backtrace(e.backtrace)
+        raise err
+      end
+    end
+
     def selected_entries
       ee = if (sheet = sheet_name_from_string(unused_args)) == 'all'
         Timetrap::Entry.filter('sheet not like ? escape "!"', '!_%')

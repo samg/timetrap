@@ -240,21 +240,11 @@ COMMAND is one of:
     end
 
     def display
-      begin
-        fmt_klass = if args['-f']
-          Timetrap::Formatters.const_get("#{args['-f'].classify}")
-        else
-          Timetrap::Formatters::Text
-        end
-      rescue
-        warn "Invalid format #{args['-f'].inspect} specified."
-        return
-      end
       entries = selected_entries.order(:start).all
       if entries == []
         warn "No entries were selected to display."
       else
-        puts fmt_klass.new(entries).output
+        puts load_formatter(args['-f'] || 'text').new(entries).output
       end
     end
 
