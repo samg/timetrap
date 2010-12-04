@@ -1,10 +1,10 @@
 module Timetrap
   module Formatters
     class Csv
-      attr_reader :output
+      attr_reader :to_s
 
       def initialize entries
-        @output = entries.inject("start,end,note,sheet\n") do |out, e|
+        @to_s = entries.inject("start,end,note,sheet\n") do |out, e|
           next(out) unless e.end
           out << %|"#{e.start.strftime(time_format)}","#{e.end.strftime(time_format)}","#{e.note}","#{e.sheet}"\n|
         end

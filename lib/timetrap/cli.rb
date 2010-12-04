@@ -244,7 +244,7 @@ COMMAND is one of:
       if entries == []
         warn "No entries were selected to display."
       else
-        puts load_formatter(args['-f'] || 'text').new(entries).output
+        puts load_formatter(args['-f'] || 'text').new(entries)
       end
     end
 

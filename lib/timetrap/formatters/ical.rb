@@ -8,7 +8,7 @@ module Timetrap
         @calendar ||= Calendar.new
       end
 
-      def output
+      def to_s
         calendar.to_ical
       end
 
