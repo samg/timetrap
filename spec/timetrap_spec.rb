@@ -293,10 +293,26 @@ Grand Total                                 10:00:00
             $stdout.string.should_not =~ /_SpecSheet/
           end
 
-          it "should add the configured formatter directories to the load path" do
-            with_stubbed_config('formatter_search_paths' => '/tmp/foo/bar')
-            invoke 'd all'
-            $:.should include('/tmp/foo/bar')
+          it "it should find a user provided formatter class and require it" do
+            create_entry
+            create_entry
+            dir = '/tmp/timetrap/foo/bar'
+            with_stubbed_config('formatter_search_paths' => dir)
+            FileUtils.mkdir_p(dir)
+            File.open(dir + '/baz.rb', 'w') do |f|
+              f.puts <<-RUBY
+                class Timetrap::Formatters::Baz
+                  def initialize(entries); end
+                  def output
+                    "yeah I did it"
+                  end
+                end
+              RUBY
+            end
+            invoke 'd -fbaz'
+            $stderr.string.should == ''
+            $stdout.string.should == "yeah I did it\n"
+            FileUtils.rm_r dir
           end
         end
 
@@ -344,6 +360,21 @@ start,end,note,sheet
 start,end,note,sheet
 "2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
 "2008-10-05 12:00:00","2008-10-05 14:00:00","note","default"
+            EOF
+          end
+        end
+
+        describe 'json' do
+          before do
+            create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
+            create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
+          end
+
+          it "should export to json not including running items" do
+            invoke 'in'
+            invoke 'display -f json'
+            JSON.parse($stdout.string).should == JSON.parse(<<-EOF)
+[{\"sheet\":\"default\",\"end\":\"Fri Oct 03 14:00:00 -0700 2008\",\"start\":\"Fri Oct 03 12:00:00 -0700 2008\",\"note\":\"note\",\"id\":1},{\"sheet\":\"default\",\"end\":\"Sun Oct 05 14:00:00 -0700 2008\",\"start\":\"Sun Oct 05 12:00:00 -0700 2008\",\"note\":\"note\",\"id\":2}]
             EOF
           end
         end

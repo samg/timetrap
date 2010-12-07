@@ -3,14 +3,19 @@ module Timetrap
 
     def load_formatter(formatter)
       begin
-        [
-          File.join( File.dirname(__FILE__), 'formatters'),
-          *Array(Config['formatter_search_paths'])
-        ].each{|path| $:.unshift(File.expand_path(path)) }
-
-        require formatter
+       (Array(Config['formatter_search_paths']) +
+           [ File.join( File.dirname(__FILE__), 'formatters') ]
+       ).detect do |path|
+          begin
+            fp = File.join(path, formatter)
+            require File.join(path, formatter)
+            true
+          rescue LoadError
+            nil
+          end
+        end
         Timetrap::Formatters.const_get(formatter.classify)
-      rescue LoadError, NameError => e
+      rescue NameError => e
         err = e.class.new("Can't load #{args['-f'].inspect} formatter.")
         err.set_backtrace(e.backtrace)
         raise err

@@ -14,6 +14,7 @@ DB = Sequel.sqlite DB_NAME
 require File.join(File.dirname(__FILE__), 'timetrap', 'models')
 
 module Timetrap
+  module Formatters; end # declare namespace
   CLI.args = Getopt::Declare.new(<<-EOF)
     #{CLI::USAGE}
   EOF
