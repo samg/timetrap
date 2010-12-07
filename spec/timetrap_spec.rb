@@ -279,6 +279,12 @@ Grand Total                                 10:00:00
           invoke 'display all'
           $stdout.string.should_not =~ /_SpecSheet/
         end
+
+        it "should add the configured formatter directories to the load path" do
+          with_stubbed_config('formatter_search_paths' => '/tmp/foo/bar')
+          invoke 'd all'
+          $:.should include('/tmp/foo/bar')
+        end
       end
 
       describe "format" do

@@ -3,8 +3,11 @@ module Timetrap
 
     def load_formatter(formatter)
       begin
-        $:.unshift(File.expand_path(
-          File.join( File.dirname(__FILE__), 'formatters')))
+        [
+          File.join( File.dirname(__FILE__), 'formatters'),
+          *Array(Config['formatter_search_paths'])
+        ].each{|path| $:.unshift(File.expand_path(path)) }
+
         require formatter
         Timetrap::Formatters.const_get(formatter.classify)
       rescue LoadError, NameError => e

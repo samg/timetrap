@@ -16,7 +16,10 @@ module Timetrap
         # Unit of time for rounding (-r) in seconds
         'round_in_seconds' => 900,
         # delimiter used when appending notes with `t edit --append`
-        'append_notes_delimiter' => ' '
+        'append_notes_delimiter' => ' ',
+        'formatter_search_paths' => [
+          "#{ENV['HOME']}/.timetrap_formatters"
+        ]
       }
     end
 
