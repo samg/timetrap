@@ -11,7 +11,7 @@ module Timetrap
         require formatter
         Timetrap::Formatters.const_get(formatter.classify)
       rescue LoadError, NameError => e
-        raise "Can't load #{args['-f'].inspect} formatter."
+        err = e.class.new("Can't load #{args['-f'].inspect} formatter.")
         err.set_backtrace(e.backtrace)
         raise err
       end

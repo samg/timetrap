@@ -300,6 +300,20 @@ Grand Total                                 10:00:00
           end
         end
 
+        describe 'ids' do
+          before do
+            create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
+            create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
+          end
+
+          it "should not export running items" do
+            invoke 'in'
+            invoke 'display --format id'
+            $stdout.string.should == Timetrap::Entry.all.map(&:id).join(" ") + "\n"
+          end
+
+        end
+
         describe 'csv' do
           before do
             create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
