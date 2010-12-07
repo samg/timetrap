@@ -166,26 +166,39 @@ describe Timetrap do
         end
       end
 
-      describe "display" do
+      describe "format" do
         before do
-          Timetrap::Entry.create( :sheet => 'another',
-            :note => 'entry 4', :start => '2008-10-05 18:00:00'
-          )
-          Timetrap::Entry.create( :sheet => 'SpecSheet',
-            :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
-          )
-          Timetrap::Entry.create( :sheet => 'SpecSheet',
-            :note => 'entry 1', :start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00'
-          )
-          Timetrap::Entry.create( :sheet => 'SpecSheet',
-            :note => 'entry 3', :start => '2008-10-05 16:00:00', :end => '2008-10-05 18:00:00'
-          )
-          Timetrap::Entry.create( :sheet => 'SpecSheet',
-            :note => 'entry 4', :start => '2008-10-05 18:00:00'
-          )
+          create_entry
+        end
+        it "should be deprecated" do
+          invoke 'format'
+          $stderr.string.should == <<-WARN
+The "format" command is deprecated in favor of "display". Sorry for the inconvenience.
+          WARN
+        end
+      end
 
-          Time.stub!(:now).and_return Time.at(1223254800 + (60*60*2))
-          @desired_output = <<-OUTPUT
+      describe "display" do
+        describe "text" do
+          before do
+            Timetrap::Entry.create( :sheet => 'another',
+              :note => 'entry 4', :start => '2008-10-05 18:00:00'
+            )
+            Timetrap::Entry.create( :sheet => 'SpecSheet',
+              :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
+            )
+            Timetrap::Entry.create( :sheet => 'SpecSheet',
+              :note => 'entry 1', :start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00'
+            )
+            Timetrap::Entry.create( :sheet => 'SpecSheet',
+              :note => 'entry 3', :start => '2008-10-05 16:00:00', :end => '2008-10-05 18:00:00'
+            )
+            Timetrap::Entry.create( :sheet => 'SpecSheet',
+              :note => 'entry 4', :start => '2008-10-05 18:00:00'
+            )
+
+            Time.stub!(:now).and_return Time.at(1223254800 + (60*60*2))
+            @desired_output = <<-OUTPUT
 Timesheet: SpecSheet
     Day                Start      End        Duration   Notes
     Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
@@ -196,9 +209,9 @@ Timesheet: SpecSheet
                                              4:00:00
     ---------------------------------------------------------
     Total                                    8:00:00
-          OUTPUT
+            OUTPUT
 
-          @desired_output_with_ids = <<-OUTPUT
+            @desired_output_with_ids = <<-OUTPUT
 Timesheet: SpecSheet
 Id  Day                Start      End        Duration   Notes
 3   Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
@@ -209,9 +222,9 @@ Id  Day                Start      End        Duration   Notes
                                              4:00:00
     ---------------------------------------------------------
     Total                                    8:00:00
-          OUTPUT
+            OUTPUT
 
-          @desired_output_for_all = <<-OUTPUT
+            @desired_output_for_all = <<-OUTPUT
 Timesheet: SpecSheet
     Day                Start      End        Duration   Notes
     Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
@@ -231,78 +244,71 @@ Timesheet: another
     Total                                    2:00:00
 -------------------------------------------------------------
 Grand Total                                 10:00:00
-          OUTPUT
+            OUTPUT
+          end
+
+          it "should display the current timesheet" do
+            Timetrap::Timer.current_sheet = 'SpecSheet'
+            invoke 'display'
+            $stdout.string.should == @desired_output
+          end
+
+          it "should display a non current timesheet" do
+            Timetrap::Timer.current_sheet = 'another'
+            invoke 'display SpecSheet'
+            $stdout.string.should == @desired_output
+          end
+
+          it "should display a non current timesheet based on a partial name match" do
+            Timetrap::Timer.current_sheet = 'another'
+            invoke 'display S'
+            $stdout.string.should == @desired_output
+          end
+
+          it "should prefer an exact match of a named sheet to a partial match" do
+            Timetrap::Timer.current_sheet = 'Spec'
+            Timetrap::Entry.create( :sheet => 'Spec',
+              :note => 'entry 5', :start => '2008-10-05 18:00:00'
+            )
+            invoke 'display Spec'
+            $stdout.string.should include("entry 5")
+          end
+
+          it "should display a timesheet with ids" do
+            invoke 'display S --ids'
+            $stdout.string.should == @desired_output_with_ids
+          end
+
+          it "should display all timesheets" do
+            Timetrap::Timer.current_sheet = 'another'
+            invoke 'display all'
+            $stdout.string.should == @desired_output_for_all
+          end
+
+          it "should not display archived for all timesheets" do
+            $stdin.string = "yes\n"
+            invoke 'archive SpecSheet'
+            $stdout.string = ''
+            invoke 'display all'
+            $stdout.string.should_not =~ /_SpecSheet/
+          end
+
+          it "should add the configured formatter directories to the load path" do
+            with_stubbed_config('formatter_search_paths' => '/tmp/foo/bar')
+            invoke 'd all'
+            $:.should include('/tmp/foo/bar')
+          end
         end
 
-        it "should display the current timesheet" do
-          Timetrap::Timer.current_sheet = 'SpecSheet'
-          invoke 'display'
-          $stdout.string.should == @desired_output
-        end
-
-        it "should display a non current timesheet" do
-          Timetrap::Timer.current_sheet = 'another'
-          invoke 'display SpecSheet'
-          $stdout.string.should == @desired_output
-        end
-
-        it "should display a non current timesheet based on a partial name match" do
-          Timetrap::Timer.current_sheet = 'another'
-          invoke 'display S'
-          $stdout.string.should == @desired_output
-        end
-
-        it "should prefer an exact match of a named sheet to a partial match" do
-          Timetrap::Timer.current_sheet = 'Spec'
-          Timetrap::Entry.create( :sheet => 'Spec',
-            :note => 'entry 5', :start => '2008-10-05 18:00:00'
-          )
-          invoke 'display Spec'
-          $stdout.string.should include("entry 5")
-        end
-
-        it "should display a timesheet with ids" do
-          invoke 'display S --ids'
-          $stdout.string.should == @desired_output_with_ids
-        end
-
-        it "should display all timesheets" do
-          Timetrap::Timer.current_sheet = 'another'
-          invoke 'display all'
-          $stdout.string.should == @desired_output_for_all
-        end
-
-        it "should not display archived for all timesheets" do
-          $stdin.string = "yes\n"
-          invoke 'archive SpecSheet'
-          $stdout.string = ''
-          invoke 'display all'
-          $stdout.string.should_not =~ /_SpecSheet/
-        end
-
-        it "should add the configured formatter directories to the load path" do
-          with_stubbed_config('formatter_search_paths' => '/tmp/foo/bar')
-          invoke 'd all'
-          $:.should include('/tmp/foo/bar')
-        end
-      end
-
-      describe "format" do
-        before do
-          create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
-          create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
-        end
         describe 'csv' do
-          it "should be deprecated" do
-            invoke 'format'
-            $stderr.string.should == <<-WARN
-The "format" command is deprecated in favor of "display". Sorry for the inconvenience.
-            WARN
+          before do
+            create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
+            create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
           end
 
           it "should not export running items" do
             invoke 'in'
-            invoke 'format --format csv'
+            invoke 'display --format csv'
             $stdout.string.should == <<-EOF
 start,end,note,sheet
 "2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
@@ -311,7 +317,7 @@ start,end,note,sheet
           end
 
           it "should filter events by the passed dates" do
-            invoke 'format --format csv --start 2008-10-03 --end 2008-10-03'
+            invoke 'display --format csv --start 2008-10-03 --end 2008-10-03'
             $stdout.string.should == <<-EOF
 start,end,note,sheet
 "2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
@@ -319,7 +325,7 @@ start,end,note,sheet
           end
 
           it "should not filter events by date when none are passed" do
-            invoke 'format --format csv'
+            invoke 'display --format csv'
             $stdout.string.should == <<-EOF
 start,end,note,sheet
 "2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
@@ -329,25 +335,29 @@ start,end,note,sheet
         end
 
         describe 'ical' do
+          before do
+            create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
+            create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
+          end
 
           it "should not export running items" do
             invoke 'in'
-            invoke 'format --format ical'
+            invoke 'display --format ical'
             $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
           end
 
           it "should filter events by the passed dates" do
-            invoke 'format --format ical --start 2008-10-03 --end 2008-10-03'
+            invoke 'display --format ical --start 2008-10-03 --end 2008-10-03'
             $stdout.string.scan(/BEGIN:VEVENT/).should have(1).item
           end
 
           it "should not filter events by date when none are passed" do
-            invoke 'format --format ical'
+            invoke 'display --format ical'
             $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
           end
 
           it "should export a sheet to an ical format" do
-            invoke 'format --format ical --start 2008-10-03 --end 2008-10-03'
+            invoke 'display --format ical --start 2008-10-03 --end 2008-10-03'
             desired = <<-EOF
 BEGIN:VCALENDAR
 VERSION:2.0
