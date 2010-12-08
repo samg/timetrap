@@ -26,12 +26,16 @@ module Timetrap
     end
 
     def [](key)
-      overrides = File.exist?(PATH) ? YAML.load(File.read(PATH)) : {}
+      overrides = File.exist?(PATH) ? YAML.load(erb_render(File.read(PATH))) : {}
       defaults.merge(overrides)[key]
     rescue => e
       warn "invalid config file"
       warn e.message
       defaults[key]
+    end
+
+    def erb_render(content)
+      ERB.new(content).result
     end
 
     def configure!
