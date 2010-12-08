@@ -3,9 +3,10 @@ module Timetrap
 
     def load_formatter(formatter)
       begin
-       (Array(Config['formatter_search_paths']) +
+       paths = (Array(Config['formatter_search_paths']) +
            [ File.join( File.dirname(__FILE__), 'formatters') ]
-       ).detect do |path|
+       )
+       paths.detect do |path|
           begin
             fp = File.join(path, formatter)
             require File.join(path, formatter)
@@ -16,7 +17,7 @@ module Timetrap
         end
         Timetrap::Formatters.const_get(formatter.camelize)
       rescue NameError => e
-        err = e.class.new("Can't load #{args['-f'].inspect} formatter.")
+        err = e.class.new("Can't load #{formatter.inspect} formatter.")
         err.set_backtrace(e.backtrace)
         raise err
       end

@@ -316,6 +316,21 @@ Grand Total                                 10:00:00
           end
         end
 
+        describe "default" do
+          before do
+            create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
+            create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
+          end
+
+          it "should allow another formatter to be set as the default" do
+            with_stubbed_config 'default_formatter' => 'ids',
+              'formatter_search_paths' => nil
+
+            invoke 'd'
+            $stdout.string.should == Timetrap::Entry.all.map(&:id).join(" ") + "\n"
+          end
+        end
+
         describe 'ids' do
           before do
             create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')

@@ -19,7 +19,9 @@ module Timetrap
         'append_notes_delimiter' => ' ',
         'formatter_search_paths' => [
           "#{ENV['HOME']}/.timetrap_formatters"
-        ]
+        ],
+        # formatter to use when display is invoked without a --format option
+        'default_formatter' => 'text'
       }
     end
 
