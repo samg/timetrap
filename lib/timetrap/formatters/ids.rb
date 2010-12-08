@@ -1,6 +1,6 @@
 module Timetrap
   module Formatters
-    class Id
+    class Ids
       attr_reader :output
 
       def initialize entries

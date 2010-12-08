@@ -324,7 +324,7 @@ Grand Total                                 10:00:00
 
           it "should not export running items" do
             invoke 'in'
-            invoke 'display --format id'
+            invoke 'display --format ids'
             $stdout.string.should == Timetrap::Entry.all.map(&:id).join(" ") + "\n"
           end
 

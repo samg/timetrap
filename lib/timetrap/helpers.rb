@@ -14,7 +14,7 @@ module Timetrap
             nil
           end
         end
-        Timetrap::Formatters.const_get(formatter.classify)
+        Timetrap::Formatters.const_get(formatter.camelize)
       rescue NameError => e
         err = e.class.new("Can't load #{args['-f'].inspect} formatter.")
         err.set_backtrace(e.backtrace)
