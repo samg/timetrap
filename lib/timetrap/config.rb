@@ -17,8 +17,9 @@ module Timetrap
         'round_in_seconds' => 900,
         # delimiter used when appending notes with `t edit --append`
         'append_notes_delimiter' => ' ',
+        # an array of directories to search for user defined fomatter classes
         'formatter_search_paths' => [
-          "#{ENV['HOME']}/.timetrap_formatters"
+          "#{ENV['HOME']}/.timetrap/formatters"
         ],
         # formatter to use when display is invoked without a --format option
         'default_formatter' => 'text'

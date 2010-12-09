@@ -116,7 +116,20 @@ list of parsable time formats, but all of these should work.
 
 ### Output Formats
 
-Timetrap supports several output formats.  The default is a plain text format.
+#### Built-in Formatters
+
+Timetrap has built-in support for 5 output formats.
+
+These are:
+
+* text
+* csv
+* ical
+* json
+* ids
+
+The default is a plain *text* format.  (You can change the default format using
+`t configure`).
 
     $ t display
     Timesheet: coding
@@ -132,7 +145,7 @@ Timetrap supports several output formats.  The default is a plain text format.
         ---------------------------------------------------------
         Total                                    3:46:05
 
-You can also output csv for easy import into a spreadsheet.
+The *CSV* formatters is easy to import into a spreadsheet.
 
     $ t display --format csv
     start,end,note,sheet
@@ -145,9 +158,73 @@ You can also output csv for easy import into a spreadsheet.
     "2010-08-29 21:15:58","2010-08-29 21:30:31","backups","coding"
     "2010-08-29 21:40:56","2010-08-29 22:32:26","backups","coding"
 
-Or to ical format for import into a calendar program (remember commands can be abbreviated).
+*iCal* format lets you get your time into your favorite calendar program
+(remember commands can be abbreviated).
 
     $ t d -f ical > MyTimeSheet.ics
+
+The *ids* formatter is provided to facilitate scripting within timetrap.  It only
+outputs an entries numeric id.  For example say you wanted to move all entries
+from one sheet to another sheet.  You could do something like this:
+
+    $ for id in `t display sheet1 -f ids`; do t edit --id $id --move sheet2; done
+    editing entry #36
+    editing entry #37
+    editing entry #44
+    editing entry #46
+
+A *json* formatter is also provided, because hackers love json.
+
+    $ t d -fjson
+
+#### Custom Formatters
+
+Timetrap tries to make it easy for users to define their own custom output
+formats in cases where the built-in formatters do not suite their needs.
+(You're encouraged to submit these back to timetrap for inclusion in a future
+version).
+
+To create a custom formatter you'll need to create a ruby class and implement
+two methods on it.
+
+In this example we'll create a formatter that only outputs the notes from
+entries.
+
+To ensure that timetrap can find your formatter put it in
+`~/.timetrap/formatters/notes.rb`.  The filename should be the same as the
+string you will pass to `t d --format` to invoke it.  If you want to put your
+formatter in a different place you can run `t configure` and edit the
+`formatter_search_paths` option.
+
+Now you're ready to write your formatter.  All timetrap formatters live under
+the namespace `Timetrap::Formatters` so you'll want to define your class like
+this:
+
+    class Timetrap::Formatters::Notes
+    end
+
+When `t display` is invoked timetrap initializes a new instance of the
+formatter passing it an Array of entries.  It then calls `#output` which should
+return a string to be printed to the screen.
+
+This means we need to implement an `#initialize` method and an `#output`
+method for out class.  Something like this:
+
+    class Timetrap::Formatters::Notes
+      def initialize(entries)
+        @entries = entries
+      end
+
+      def output
+        @entries.map{|entry| entry[:note]}.join("\n")
+      end
+    end
+
+Now when I invoke it:
+
+    $ t d -f notes
+    working on issue #123
+    working on issue #234
 
 Commands
 --------
@@ -164,9 +241,9 @@ Commands
 
 **configure**
   Creates a config file at  ``~/.timetrap.yml`` or ``ENV['TIMETRAP_CONFIG_FILE']`` if
-  one doesn't exist.  Prints path to config file.  Currently allows configuration
-  of path to database file, and the number of seconds used when the `--round`
-  flag is set (defaults to 15 minutes.)
+  one doesn't exist.  If one does exist it will update it with new
+  configuration options preserving any user overrides. Prints path to config
+  file.
 
   usage: ``t configure``
 
@@ -178,7 +255,7 @@ Commands
 
   Display is designed to support a variety of export formats that can be
   specified by passing the ``--format`` flag.  This currently defaults to
-  text.  iCal and csv output are also supported.
+  text.  iCal, csv, json, and numeric id output are also supported.
 
   Display also allows the use of a ``--round`` or ``-r`` flag which will round
   all times in the output. See global options below.
@@ -255,11 +332,15 @@ Configuration
 Configuration of TimeTrap's behavior can be done through a YAML config file.
 See ``t configure`` for details.  Currently supported options are:
 
- ``round_in_seconds``: The duration of time to use for rounding with the -r flag
+  *round_in_seconds*: The duration of time to use for rounding with the -r flag
 
- ``database_file``: The file path of the sqlite database
+  *database_file*: The file path of the sqlite database
 
- ``append_notes_delimiter``: delimiter used when appending notes via ``t edit --append``
+  *append_notes_delimiter*: delimiter used when appending notes via `t edit --append`
+
+  *formatter_search_paths*: an array of directories to search for user defined fomatter classes
+
+  *default_formatter*: The format to use when display is invoked without a `--format` option
 
 Special Thanks
 --------------

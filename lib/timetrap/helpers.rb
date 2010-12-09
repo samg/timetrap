@@ -3,19 +3,20 @@ module Timetrap
 
     def load_formatter(formatter)
       begin
-       paths = (Array(Config['formatter_search_paths']) +
-           [ File.join( File.dirname(__FILE__), 'formatters') ]
-       )
+        paths = (
+          Array(Config['formatter_search_paths']) +
+          [ File.join( File.dirname(__FILE__), 'formatters') ]
+        )
        paths.detect do |path|
-          begin
-            fp = File.join(path, formatter)
-            require File.join(path, formatter)
-            true
-          rescue LoadError
-            nil
-          end
-        end
-        Timetrap::Formatters.const_get(formatter.camelize)
+         begin
+           fp = File.join(path, formatter)
+           require File.join(path, formatter)
+           true
+         rescue LoadError
+           nil
+         end
+       end
+       Timetrap::Formatters.const_get(formatter.camelize)
       rescue NameError => e
         err = e.class.new("Can't load #{formatter.inspect} formatter.")
         err.set_backtrace(e.backtrace)

@@ -38,8 +38,11 @@ COMMAND is one of:
     -v, --ids                 Print database ids (for use with edit)
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier
-    -f, --format <format>     The output format.  Currently supports ical, csv, and
-                                text (default).
+    -f, --format <format>     The output format.  Valid built-in formats are
+                              ical, csv, json, ids, and text (default).
+                              Documentation on defining custom formats can be
+                              found in the README included in this
+                              distribution.
 
   * edit - Alter an entry's note, start, or end time. Defaults to the active entry.
     usage: t edit [--id ID] [--start TIME] [--end TIME] [--append] [NOTES]
