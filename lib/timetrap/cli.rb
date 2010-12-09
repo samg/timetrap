@@ -109,7 +109,7 @@ COMMAND is one of:
 
     def invoke
       args['-h'] ? puts(USAGE) : invoke_command_if_valid
-    rescue => e
+    rescue StandardError, LoadError => e
       raise e if args['--debug']
       warn e.message
       exit 1 unless defined? TEST_MODE
