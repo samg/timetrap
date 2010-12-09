@@ -8,14 +8,13 @@ require File.join(File.dirname(__FILE__), 'timetrap', 'config')
 require File.join(File.dirname(__FILE__), 'timetrap', 'helpers')
 require File.join(File.dirname(__FILE__), 'timetrap', 'cli')
 require File.join(File.dirname(__FILE__), 'timetrap', 'timer')
-DB_NAME = defined?(TEST_MODE) ? nil : Timetrap::Config['database_file']
-# connect to database.  This will create one if it doesn't exist
-DB = Sequel.sqlite DB_NAME
-require File.join(File.dirname(__FILE__), 'timetrap', 'models')
-
+require File.join(File.dirname(__FILE__), 'timetrap', 'formatters')
 module Timetrap
-  module Formatters; end # declare namespace
+  DB_NAME = defined?(TEST_MODE) ? nil : Timetrap::Config['database_file']
+  # connect to database.  This will create one if it doesn't exist
+  DB = Sequel.sqlite DB_NAME
   CLI.args = Getopt::Declare.new(<<-EOF)
     #{CLI::USAGE}
   EOF
 end
+require File.join(File.dirname(__FILE__), 'timetrap', 'models')
