@@ -240,6 +240,13 @@ Commands
 
   usage: ``t configure``
 
+**continue**
+  Start the timer for the current timesheet with the same notes as the last entry.
+  If there is no last entry the new one has blank notes ore uses the optional 
+  NOTES parameter.
+
+  usage: ``t continue [--at TIME] [NOTES]``
+
 **display**
   Display a given timesheet. If no timesheet is specified, show the current
   timesheet. If ``all`` is passed as SHEET display all timesheets. Accepts
