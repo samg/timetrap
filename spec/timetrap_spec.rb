@@ -3,6 +3,14 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'timetra
 require 'rspec'
 require 'fakefs/safe'
 
+def local_time(str)
+  Chronic.parse(str)
+end
+
+def local_time_cli(str)
+  local_time(str).strftime('%Y-%m-%d %H:%M:%S')
+end
+
 module Timetrap::StubConfig
   def with_stubbed_config options
     options.each do |k, v|
@@ -197,7 +205,7 @@ The "format" command is deprecated in favor of "display". Sorry for the inconven
               :note => 'entry 4', :start => '2008-10-05 18:00:00'
             )
 
-            Time.stub!(:now).and_return Time.at(1223254800 + (60*60*2))
+            Time.stub!(:now).and_return local_time('2008-10-05 20:00:00')
             @desired_output = <<-OUTPUT
 Timesheet: SpecSheet
     Day                Start      End        Duration   Notes
@@ -381,28 +389,29 @@ start,end,note,sheet
 
         describe 'json' do
           before do
-            create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
-            create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
+            create_entry(:start => local_time_cli('2008-10-03 12:00:00'), :end => local_time_cli('2008-10-03 14:00:00'))
+            create_entry(:start => local_time_cli('2008-10-05 12:00:00'), :end => local_time_cli('2008-10-05 14:00:00'))
           end
 
           it "should export to json not including running items" do
             invoke 'in'
             invoke 'display -f json'
             JSON.parse($stdout.string).should == JSON.parse(<<-EOF)
-[{\"sheet\":\"default\",\"end\":\"Fri Oct 03 14:00:00 -0700 2008\",\"start\":\"Fri Oct 03 12:00:00 -0700 2008\",\"note\":\"note\",\"id\":1},{\"sheet\":\"default\",\"end\":\"Sun Oct 05 14:00:00 -0700 2008\",\"start\":\"Sun Oct 05 12:00:00 -0700 2008\",\"note\":\"note\",\"id\":2}]
+[{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-03 14:00:00')}\",\"start\":\"#{local_time('2008-10-03 12:00:00')}\",\"note\":\"note\",\"id\":1},{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-05 14:00:00')}\",\"start\":\"#{local_time('2008-10-05 12:00:00')}\",\"note\":\"note\",\"id\":2}]
             EOF
           end
         end
 
         describe 'ical' do
           before do
-            create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
-            create_entry(:start => '2008-10-05 12:00:00', :end => '2008-10-05 14:00:00')
+            create_entry(:start => local_time_cli('2008-10-03 12:00:00'), :end => local_time_cli('2008-10-03 14:00:00'))
+            create_entry(:start => local_time_cli('2008-10-05 12:00:00'), :end => local_time_cli('2008-10-05 14:00:00'))
           end
 
           it "should not export running items" do
             invoke 'in'
             invoke 'display --format ical'
+            
             $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
           end
 
@@ -533,17 +542,17 @@ END:VCALENDAR
 
         describe "with sheets defined" do
           before do
-            Time.stub!(:now).and_return Time.parse("Oct 5 18:00:00 -0700 2008")
-            create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-03 12:00:00',
-                         :end => '2008-10-03 14:00:00')
-            create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-03 12:00:00',
-                         :end => '2008-10-03 14:00:00')
-            create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-05 12:00:00',
-                         :end => '2008-10-05 14:00:00')
-            create_entry( :sheet => 'A Longly Named Sheet 2', :start => '2008-10-05 14:00:00',
+            Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
+            create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
+                         :end => local_time_cli('2008-10-03 14:00:00'))
+            create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
+                         :end => local_time_cli('2008-10-03 14:00:00'))
+            create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-05 12:00:00'),
+                         :end => local_time_cli('2008-10-05 14:00:00'))
+            create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-05 14:00:00'),
                          :end => nil)
-            create_entry( :sheet => 'Sheet 1', :start => '2008-10-03 16:00:00',
-                         :end => '2008-10-03 18:00:00')
+            create_entry( :sheet => 'Sheet 1', :start => local_time_cli('2008-10-03 16:00:00'),
+                         :end => local_time_cli('2008-10-03 18:00:00'))
             Timetrap::Timer.current_sheet = 'A Longly Named Sheet 2'
           end
           it "should list available timesheets" do
