@@ -120,15 +120,9 @@ list of parsable time formats, but all of these should work.
 
 Timetrap has built-in support for 5 output formats.
 
-These are:
+These are **text**, **csv**, **ical**, **json**, and **ids**
 
-* text
-* csv
-* ical
-* json
-* ids
-
-The default is a plain *text* format.  (You can change the default format using
+The default is a plain **text** format.  (You can change the default format using
 `t configure`).
 
     $ t display
@@ -145,7 +139,7 @@ The default is a plain *text* format.  (You can change the default format using
         ---------------------------------------------------------
         Total                                    3:46:05
 
-The *CSV* formatters is easy to import into a spreadsheet.
+The **CSV** formatters is easy to import into a spreadsheet.
 
     $ t display --format csv
     start,end,note,sheet
@@ -158,13 +152,13 @@ The *CSV* formatters is easy to import into a spreadsheet.
     "2010-08-29 21:15:58","2010-08-29 21:30:31","backups","coding"
     "2010-08-29 21:40:56","2010-08-29 22:32:26","backups","coding"
 
-*iCal* format lets you get your time into your favorite calendar program
+**iCal** format lets you get your time into your favorite calendar program
 (remember commands can be abbreviated).
 
     $ t d -f ical > MyTimeSheet.ics
 
-The *ids* formatter is provided to facilitate scripting within timetrap.  It only
-outputs an entries numeric id.  For example say you wanted to move all entries
+The **ids** formatter is provided to facilitate scripting within timetrap.  It only
+outputs numeric id for the entries.  This is handy if you want to move all entries
 from one sheet to another sheet.  You could do something like this:
 
     $ for id in `t display sheet1 -f ids`; do t edit --id $id --move sheet2; done
@@ -179,15 +173,15 @@ A *json* formatter is also provided, because hackers love json.
 
 #### Custom Formatters
 
-Timetrap tries to make it easy for users to define their own custom output
-formats in cases where the built-in formatters do not suite their needs.
-(You're encouraged to submit these back to timetrap for inclusion in a future
-version).
+Timetrap tries to make it easy to define custom output formats.
 
-To create a custom formatter you'll need to create a ruby class and implement
-two methods on it.
+You're encouraged to submit these back to timetrap for inclusion in a future
+version.
 
-In this example we'll create a formatter that only outputs the notes from
+To create a custom formatter you create a ruby class and implement two methods
+on it.
+
+As an example we'll create a formatter that only outputs the notes from
 entries.
 
 To ensure that timetrap can find your formatter put it in
@@ -196,19 +190,18 @@ string you will pass to `t d --format` to invoke it.  If you want to put your
 formatter in a different place you can run `t configure` and edit the
 `formatter_search_paths` option.
 
-Now you're ready to write your formatter.  All timetrap formatters live under
-the namespace `Timetrap::Formatters` so you'll want to define your class like
-this:
+All timetrap formatters live under the namespace `Timetrap::Formatters` so
+define your class like this:
 
     class Timetrap::Formatters::Notes
     end
 
-When `t display` is invoked timetrap initializes a new instance of the
+When `t display` is invoked, timetrap initializes a new instance of the
 formatter passing it an Array of entries.  It then calls `#output` which should
 return a string to be printed to the screen.
 
 This means we need to implement an `#initialize` method and an `#output`
-method for out class.  Something like this:
+method for the class.  Something like this:
 
     class Timetrap::Formatters::Notes
       def initialize(entries)
