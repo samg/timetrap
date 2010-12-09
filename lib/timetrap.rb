@@ -2,6 +2,7 @@ require 'rubygems'
 require 'chronic'
 require 'sequel'
 require 'yaml'
+require 'erb'
 require 'sequel/extensions/inflector'
 require 'Getopt/Declare'
 require File.join(File.dirname(__FILE__), 'timetrap', 'config')
