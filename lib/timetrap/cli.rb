@@ -59,6 +59,11 @@ COMMAND is one of:
     usage: t in [--at TIME] [NOTES]
     -a, --at <time:qs>        Use this time instead of now
 
+  * continue - Start the timer for the current time sheet with the same note as 
+      the last entry on the sheet. If there is no entry it takes the passed note.
+    usage: t continue [NOTES]
+    -a, --at <time:qs>        Use this time instead of now
+
   * kill - Delete a timesheet or an entry.
     usage: t kill [--id ID] [TIMESHEET]
     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
@@ -208,6 +213,15 @@ COMMAND is one of:
     def in
       Timer.start unused_args, args['-a']
       warn "Checked into sheet #{Timer.current_sheet.inspect}."
+    end
+    
+    def continue
+      last_entry = Timer.entries(Timer.current_sheet).last
+      warn "No entry yet on this sheet yet. Started a new entry." unless last_entry
+      
+      note = (last_entry ? last_entry.note : nil) || unused_args
+      
+      Timer.start note, args['-a']
     end
 
     def out
