@@ -1,3 +1,4 @@
 tags
 pkg
 *.swp
+Gemfile.lock
