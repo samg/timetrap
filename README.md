@@ -325,15 +325,15 @@ Configuration
 Configuration of TimeTrap's behavior can be done through a YAML config file.
 See ``t configure`` for details.  Currently supported options are:
 
-  *round_in_seconds*: The duration of time to use for rounding with the -r flag
+  **round_in_seconds**: The duration of time to use for rounding with the -r flag
 
-  *database_file*: The file path of the sqlite database
+  **database_file**: The file path of the sqlite database
 
-  *append_notes_delimiter*: delimiter used when appending notes via `t edit --append`
+  **append_notes_delimiter**: delimiter used when appending notes via `t edit --append`
 
-  *formatter_search_paths*: an array of directories to search for user defined fomatter classes
+  **formatter_search_paths**: an array of directories to search for user defined fomatter classes
 
-  *default_formatter*: The format to use when display is invoked without a `--format` option
+  **default_formatter**: The format to use when display is invoked without a `--format` option
 
 Special Thanks
 --------------
