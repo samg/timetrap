@@ -23,7 +23,8 @@ COMMAND is one of:
   * backend - Open an sqlite shell to the database.
     usage: t backend
 
-  * configure - Write out a config file. print path to config file.
+  * configure - Write out a YAML config file. Print path to config file.  The
+      file may contain ERB.
     usage: t configure
     Currently supported options are:
       round_in_seconds:       The duration of time to use for rounding with

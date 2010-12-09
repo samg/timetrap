@@ -236,7 +236,7 @@ Commands
   Creates a config file at  ``~/.timetrap.yml`` or ``ENV['TIMETRAP_CONFIG_FILE']`` if
   one doesn't exist.  If one does exist it will update it with new
   configuration options preserving any user overrides. Prints path to config
-  file.
+  file.  This file may contain ERB.
 
   usage: ``t configure``
 
@@ -322,7 +322,9 @@ Global Options
 Configuration
 --------
 
-Configuration of TimeTrap's behavior can be done through a YAML config file.
+Configuration of TimeTrap's behavior can be done through an ERB interpolated
+YAML config file.
+
 See ``t configure`` for details.  Currently supported options are:
 
   **round_in_seconds**: The duration of time to use for rounding with the -r flag
