@@ -65,7 +65,7 @@ You check out with the `out` command.
     Checked out of sheet "coding"
 
 You can edit entries that aren't running using `edit`'s `--id` or `-i` flag.
-`t display --verbose` will tell you the ids.
+`t display --ids`  (or `t display -v`) will tell you the ids.
 
     $ # note id column in output
     $ t d -v
