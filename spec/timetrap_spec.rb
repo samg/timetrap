@@ -665,7 +665,7 @@ END:VCALENDAR
         end
       end
       
-      describe "continue" do
+      describe "resume" do
         before :each do
           @time = Time.now
           Time.stub!(:now).and_return @time
@@ -679,14 +679,14 @@ END:VCALENDAR
         end
 
         it "should allow to continue the last active sheet" do
-          invoke 'continue'
+          invoke 'resume'
 
           Timetrap::Timer.active_entry.note.should ==(@last_active.note)
           Timetrap::Timer.active_entry.start.should eql(@time)
         end
         
         it "should allow to continue the activity with a given time" do
-          invoke 'continue --at "10am 2008-10-03"'
+          invoke 'resume --at "10am 2008-10-03"'
           
           Timetrap::Timer.active_entry.start.should eql(Time.parse('2008-10-03 10:00'))
         end
@@ -702,13 +702,13 @@ END:VCALENDAR
           end
         
           it "starts a new entry if no entry exists" do
-            invoke "continue"
+            invoke "resume"
             Timetrap::Timer.active_entry.should_not be_nil
             Timetrap::Timer.active_entry.note.should ==("")
           end
           
           it "allows to pass a note that is used for the new entry" do
-            invoke "continue New Note"
+            invoke "resume New Note"
             Timetrap::Timer.active_entry.should_not be_nil
             Timetrap::Timer.active_entry.note.should ==("New Note")
           end
