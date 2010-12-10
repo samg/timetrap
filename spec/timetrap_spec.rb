@@ -1,5 +1,6 @@
 TEST_MODE = true
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap'))
+require 'rspec'
 require 'fakefs/safe'
 
 module Timetrap::StubConfig
