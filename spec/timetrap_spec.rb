@@ -678,14 +678,14 @@ END:VCALENDAR
           @last_active.should_not be_nil
         end
 
-        it "should allow to continue the last active sheet" do
+        it "should allow to resume the last active sheet" do
           invoke 'resume'
 
           Timetrap::Timer.active_entry.note.should ==(@last_active.note)
           Timetrap::Timer.active_entry.start.should eql(@time)
         end
         
-        it "should allow to continue the activity with a given time" do
+        it "should allow to resume the activity with a given time" do
           invoke 'resume --at "10am 2008-10-03"'
           
           Timetrap::Timer.active_entry.start.should eql(Time.parse('2008-10-03 10:00'))
