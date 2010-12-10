@@ -8,6 +8,6 @@ gem 'json'
 gem 'icalendar'
 
 group :test do
-  gem "rspec"
+  gem "rspec", "~>2"
   gem 'fakefs'
 end
