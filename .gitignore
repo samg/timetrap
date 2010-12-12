@@ -2,3 +2,4 @@ tags
 pkg
 *.swp
 Gemfile.lock
+.bundle
