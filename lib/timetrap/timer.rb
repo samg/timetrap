@@ -8,6 +8,40 @@ module Timetrap
 
     extend self
 
+    def process_time(time)
+      case time
+      when Time
+        time
+      when String
+        chronic = begin
+          Chronic.parse(time)
+        rescue => e
+          warn "#{e.class} in Chronic gem parsing time.  Falling back to Time.parse"
+        end
+
+        if parsed = chronic
+          parsed
+        elsif safe_for_time_parse?(time) and parsed = Time.parse(time)
+          parsed
+        else
+          raise ArgumentError, "Could not parse #{time.inspect}, entry not updated"
+        end
+      end
+    end
+
+    # Time.parse is optimistic and will parse things like '=18' into midnight
+    # on 18th of this month.
+    # It will also turn 'total garbage' into Time.now
+    # Here we do some sanity checks on the string to protect it from common
+    # cli formatting issues, and allow reasonable warning to be passed back to
+    # the user.
+    def safe_for_time_parse?(string)
+      # misformatted cli option
+      !string.include?('=') and
+      # a date time string needs a number in it
+      string =~ /\d/
+    end
+
     def current_sheet= sheet
       m = Meta.find_or_create(:key => 'current_sheet')
       m.value = sheet

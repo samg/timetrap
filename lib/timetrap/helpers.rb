@@ -36,8 +36,8 @@ module Timetrap
       else
         Timetrap::Entry.filter('sheet = ?', Timer.current_sheet)
       end
-      ee = ee.filter('start >= ?', Date.parse(Chronic.parse(args['-s']).to_s)) if args['-s']
-      ee = ee.filter('start <= ?', Date.parse(Chronic.parse(args['-e']).to_s) + 1) if args['-e']
+      ee = ee.filter('start >= ?', Date.parse(Timer.process_time(args['-s']).to_s)) if args['-s']
+      ee = ee.filter('start <= ?', Date.parse(Timer.process_time(args['-e']).to_s) + 1) if args['-e']
       ee
     end
 

@@ -4,7 +4,7 @@ require 'rspec'
 require 'fakefs/safe'
 
 def local_time(str)
-  Chronic.parse(str)
+  Timetrap::Timer.process_time(str)
 end
 
 def local_time_cli(str)
@@ -318,7 +318,6 @@ Grand Total                                 10:00:00
               RUBY
             end
             invoke 'd -fbaz'
-            $stderr.string.should == ''
             $stdout.string.should == "yeah I did it\n"
             FileUtils.rm_r dir
           end
@@ -682,7 +681,7 @@ END:VCALENDAR
           invoke 'resume'
 
           Timetrap::Timer.active_entry.note.should ==(@last_active.note)
-          Timetrap::Timer.active_entry.start.should eql(@time)
+          Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
         end
 
         it "should allow to resume the activity with a given time" do
