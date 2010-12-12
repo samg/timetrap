@@ -291,10 +291,10 @@ Commands
   running, non-current sheet.
 
   usage: ``t out [--at TIME] [TIMESHEET]``
-  
+
 **resume**
   Start the timer for the current timesheet with the same notes as the last entry.
-  If there is no last entry the new one has blank notes ore uses the optional 
+  If there is no last entry the new one has blank notes ore uses the optional
   NOTES parameter.
 
   usage: ``t resume [--at TIME] [NOTES]``

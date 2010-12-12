@@ -664,16 +664,16 @@ END:VCALENDAR
           @new_active.refresh.end.should be_nil
         end
       end
-      
+
       describe "resume" do
         before :each do
           @time = Time.now
           Time.stub!(:now).and_return @time
-          
+
           invoke 'in Some strange task'
           @last_active = Timetrap::Timer.active_entry
           invoke 'out'
-          
+
           Timetrap::Timer.active_entry.should be_nil
           @last_active.should_not be_nil
         end
@@ -684,29 +684,29 @@ END:VCALENDAR
           Timetrap::Timer.active_entry.note.should ==(@last_active.note)
           Timetrap::Timer.active_entry.start.should eql(@time)
         end
-        
+
         it "should allow to resume the activity with a given time" do
           invoke 'resume --at "10am 2008-10-03"'
-          
+
           Timetrap::Timer.active_entry.start.should eql(Time.parse('2008-10-03 10:00'))
         end
-        
+
         describe "no existing entries" do
           before(:each) do
             Timetrap::Timer.entries(Timetrap::Timer.current_sheet).each do |e|
               e.destroy
             end
-          
+
             Timetrap::Timer.entries(Timetrap::Timer.current_sheet).should be_empty
             Timetrap::Timer.active_entry.should be_nil
           end
-        
+
           it "starts a new entry if no entry exists" do
             invoke "resume"
             Timetrap::Timer.active_entry.should_not be_nil
             Timetrap::Timer.active_entry.note.should ==("")
           end
-          
+
           it "allows to pass a note that is used for the new entry" do
             invoke "resume New Note"
             Timetrap::Timer.active_entry.should_not be_nil
@@ -714,7 +714,7 @@ END:VCALENDAR
           end
         end
       end
-    
+
       describe "sheet" do
         it "should switch to a new timesheet" do
           invoke 'sheet sheet 1'
