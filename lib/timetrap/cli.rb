@@ -218,10 +218,12 @@ COMMAND is one of:
     def resume
       last_entry = Timer.entries(Timer.current_sheet).last
       warn "No entry yet on this sheet yet. Started a new entry." unless last_entry
+      note = (last_entry ? last_entry.note : nil)
+      warn "Resuming #{note.inspect} from entry ##{last_entry.id}" if note
 
-      note = (last_entry ? last_entry.note : nil) || unused_args
+      self.unused_args = note || unused_args
 
-      Timer.start note, args['-a']
+      self.in
     end
 
     def out
@@ -327,6 +329,10 @@ COMMAND is one of:
 
     def unused_args
       args.unused.join(' ')
+    end
+
+    def unused_args=(str)
+      args.unused = str.split
     end
 
     def ask_user question
