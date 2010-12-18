@@ -4,8 +4,8 @@ gem 'sequel', ">= 3.9.0"
 gem 'sqlite3-ruby', ">= 1.2.5"
 gem 'chronic', "~> 0.3.0"
 gem 'getopt-declare', ">= 1.28"
-gem 'json'
-gem 'icalendar'
+gem 'json', "~>1.4.6"
+gem 'icalendar', "~>1.1.5"
 
 group :test do
   gem "rspec", "~>2"
