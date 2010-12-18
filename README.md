@@ -299,7 +299,6 @@ Commands
 
   usage: ``t resume [--at TIME] [NOTES]``
 
-
 **sheet**
   Switch to a timesheet creating it if necessary. The default timesheet is
   called "default". When no sheet is specified list all existing sheets.

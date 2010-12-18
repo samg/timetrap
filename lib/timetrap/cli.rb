@@ -59,11 +59,6 @@ COMMAND is one of:
     usage: t in [--at TIME] [NOTES]
     -a, --at <time:qs>        Use this time instead of now
 
-  * resume - Start the timer for the current time sheet with the same note as
-      the last entry on the sheet. If there is no entry it takes the passed note.
-    usage: t resume [NOTES]
-    -a, --at <time:qs>        Use this time instead of now
-
   * kill - Delete a timesheet or an entry.
     usage: t kill [--id ID] [TIMESHEET]
     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
@@ -76,6 +71,11 @@ COMMAND is one of:
 
   * out - Stop the timer for the a timesheet.
     usage: t out [--at TIME] [TIMESHEET]
+    -a, --at <time:qs>        Use this time instead of now
+
+  * resume - Start the timer for the current time sheet with the same note as
+      the last entry on the sheet. If there is no entry it takes the passed note.
+    usage: t resume [--at TIME] [NOTES]
     -a, --at <time:qs>        Use this time instead of now
 
   * sheet - Switch to a timesheet creating it if necessary. When no sheet is
