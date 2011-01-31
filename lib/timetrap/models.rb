@@ -84,6 +84,7 @@ module Timetrap
     set_schema do
       primary_key :id
       column :name, :string
+      column :rate, :integer
     end
 
     unless table_exists?
