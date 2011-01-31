@@ -4,7 +4,7 @@ module Timetrap
     attr_accessor :args
     extend self
 
-    USAGE = <<-EOF
+    USAGE = <<EOF
 
 Timetrap - Simple Time Tracking
 
@@ -94,7 +94,7 @@ COMMAND is one of:
 
   EXAMPLES
 
-  # create the "MyTimesheet" timesheet
+  # create the \"MyTimesheet\" timesheet
   $ t sheet MyTimesheet
 
   # check in 5 minutes ago with a note
@@ -107,7 +107,7 @@ COMMAND is one of:
   $ t display
 
   Submit bugs and feature requests to http://github.com/samg/timetrap/issues
-    EOF
+EOF
 
     def parse arguments
       args.parse arguments
@@ -165,7 +165,7 @@ COMMAND is one of:
       if ask_user "Archive #{ee.count} entries? "
         ee.all.each do |e|
           next unless e.end
-          e.update :sheet => "_#{e.sheet}"
+          e.sheet.update :name => "_#{e.sheet.name}"
         end
       else
         warn "archive aborted!"
@@ -191,9 +191,9 @@ COMMAND is one of:
       # update sheet
       if args['-m'] =~ /.+/
         if entry == Timer.active_entry
-          Timer.current_sheet = args['-m']
+          Timer.current_sheet = Sheet[:name => args['-m']]
         end
-        entry.update :sheet => args['-m']
+        entry.sheet = Sheet[:name => args['-m']]
       end
 
       # update notes
@@ -212,7 +212,7 @@ COMMAND is one of:
 
     def in
       Timer.start unused_args, args['-a']
-      warn "Checked into sheet #{Timer.current_sheet.inspect}."
+      warn "Checked into sheet #{Timer.current_sheet.name.inspect}."
     end
 
     def resume
@@ -227,11 +227,11 @@ COMMAND is one of:
     end
 
     def out
-      sheet = sheet_name_from_string(unused_args)
+      sheet = sheet_from_string(unused_args)
       if Timer.stop sheet, args['-a']
-        warn "Checked out of sheet #{sheet.inspect}."
+        warn "Checked out of sheet #{sheet.name.inspect}."
       else
-        warn "No running entry on sheet #{sheet.inspect}."
+        warn "No running entry on sheet #{sheet.name.inspect}."
       end
     end
 
@@ -245,10 +245,10 @@ COMMAND is one of:
         else
           warn "will not kill"
         end
-      elsif (sheets = Entry.map{|e| e.sheet }.uniq).include?(sheet = unused_args)
-        victims = Entry.filter(:sheet => sheet).count
+      elsif (sheets = Entry.map{|e| e.sheet.name }.uniq).include?(sheet = unused_args)
+        victims = Entry.filter(:sheet_id => Sheet[:name => sheet].id).count
         if ask_user "are you sure you want to delete #{victims} entries on sheet #{sheet.inspect}? "
-          Entry.filter(:sheet => sheet).destroy
+          Entry.filter(:sheet_id => Sheet[:name => sheet].id).destroy
           warn "killed #{victims} entries"
         else
           warn "will not kill"
@@ -269,36 +269,36 @@ COMMAND is one of:
     end
 
     def sheet
-      sheet = unused_args
-      unless sheet =~ /.+/
+      unless unused_args =~ /.+/
         list
       else
+        sheet = Sheet.find_or_create :name => unused_args
         Timer.current_sheet = sheet
-        warn "Switching to sheet #{sheet.inspect}"
+        warn "Switching to sheet #{sheet.name.inspect}"
       end
     end
 
     def list
       sheets = ([Timer.current_sheet] | Entry.sheets).map do |sheet|
         sheet_atts = {:total => 0, :running => 0, :today => 0}
-        entries = Timetrap::Entry.filter(:sheet => sheet)
+        entries = Timetrap::Entry.filter(:sheet_id => sheet.id)
         if entries.empty?
-          sheet_atts.merge(:name => sheet)
+          sheet_atts.merge(:name => sheet.name)
         else
           entries.inject(sheet_atts) do |m, e|
             e_end = e.end_or_now
-            m[:name] ||= sheet
+            m[:name] ||= sheet.name
             m[:total] += (e_end.to_i - e.start.to_i)
             m[:running] += (e_end.to_i - e.start.to_i) unless e.end
             m[:today] += (e_end.to_i - e.start.to_i) if same_day?(Time.now, e.start)
             m
           end
         end
-      end.sort_by{|sheet| sheet[:name].downcase}
+      end.sort_by{|esheet| esheet[:name].downcase}
       width = sheets.sort_by{|h|h[:name].length }.last[:name].length + 4
       puts " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
       sheets.each do |sheet|
-        star = sheet[:name] == Timer.current_sheet ? '*' : ' '
+        star = sheet[:name] == Timer.current_sheet.name ? '*' : ' '
         puts "#{star}%-#{width}s%-12s%-12s%s" % [
           sheet[:running],
           sheet[:today],
@@ -309,12 +309,12 @@ COMMAND is one of:
 
     def now
       if !Timer.running?
-        puts "*#{Timer.current_sheet}: not running"
+        puts "*#{Timer.current_sheet.name}: not running"
       end
       Timer.running_entries.each do |entry|
-        current = entry[:sheet] == Timer.current_sheet
+        current = entry[:sheet_id] == Timer.current_sheet.id
         out = current ? '*' : ' '
-        out << "#{entry[:sheet]}: #{format_duration(entry.start, entry.end_or_now)}".gsub(/  /, ' ')
+        out << "#{entry.sheet.name}: #{format_duration(entry.start, entry.end_or_now)}".gsub(/  /, ' ')
         out << " (#{entry.note})" if entry.note =~ /.+/
         puts out
       end

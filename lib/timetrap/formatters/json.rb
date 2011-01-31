@@ -16,6 +16,7 @@ module Timetrap
       def initialize entries
         @output = entries.map do |e|
           next unless e.end
+          e.values['sheet'] = e.sheet.name
           e.values
         end.compact.to_json
       end

@@ -7,8 +7,8 @@ module Timetrap
       def initialize entries
         self.output = ''
         sheets = entries.inject({}) do |h, e|
-          h[e.sheet] ||= []
-          h[e.sheet] << e
+          h[e.sheet.name] ||= []
+          h[e.sheet.name] << e
           h
         end
         (sheet_names = sheets.keys.sort).each do |sheet|

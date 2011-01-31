@@ -6,7 +6,7 @@ module Timetrap
       def initialize entries
         @output = entries.inject("start,end,note,sheet\n") do |out, e|
           next(out) unless e.end
-          out << %|"#{e.start.strftime(time_format)}","#{e.end.strftime(time_format)}","#{e.note}","#{e.sheet}"\n|
+          out << %|"#{e.start.strftime(time_format)}","#{e.end.strftime(time_format)}","#{e.note}","#{e.sheet.name}"\n|
         end
       end
 

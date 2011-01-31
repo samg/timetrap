@@ -43,20 +43,27 @@ module Timetrap
     end
 
     def current_sheet= sheet
+      sheet.save
+
       m = Meta.find_or_create(:key => 'current_sheet')
-      m.value = sheet
+      m.value = sheet.id
       m.save
     end
 
     def current_sheet
       unless Meta.find(:key => 'current_sheet')
-        Meta.create(:key => 'current_sheet', :value => 'default')
+        sheet_id = 1
+        Meta.create(:key => 'current_sheet', :value => sheet_id)
+      else
+        sheet_id = Meta.find(:key => 'current_sheet').value
       end
-      Meta.find(:key => 'current_sheet').value
+
+      Sheet[:id => sheet_id]
     end
 
     def entries sheet = nil
-      Entry.filter(:sheet => sheet).order_by(:start)
+      sheet_id = sheet.nil? ? nil : sheet.id
+      Entry.filter(:sheet_id => sheet_id).order_by(:start)
     end
 
     def running?
@@ -64,7 +71,8 @@ module Timetrap
     end
 
     def active_entry(sheet=nil)
-      Entry.find(:sheet => (sheet || Timer.current_sheet), :end => nil)
+      sheet_id = sheet.nil? ? nil : sheet.id
+      Entry.find(:sheet_id => (sheet_id || Timer.current_sheet.id), :end => nil)
     end
 
     def running_entries
@@ -82,7 +90,8 @@ module Timetrap
     def start note, time = nil
       raise AlreadyRunning if running?
       time ||= Time.now
-      Entry.create(:sheet => Timer.current_sheet, :note => note, :start => time).save
+
+      Entry.create(:sheet_id => Timer.current_sheet.id, :note => note, :start => time).save
     end
 
   end

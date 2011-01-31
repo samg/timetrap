@@ -52,8 +52,18 @@ module Timetrap
       )
     end
 
+    def sheet
+      Sheet[:id => self[:sheet_id]]
+    end
+
+    def sheet= sheet
+      self[:sheet_id] = sheet.id
+      self.save
+    end
+
     def self.sheets
-      map{|e|e.sheet}.uniq.sort
+      p Sheet.all
+      Sheet.all.sort { |a, b| a.name <=> b.name }
     end
 
     private
@@ -63,9 +73,23 @@ module Timetrap
       column :note, :string
       column :start, :timestamp
       column :end, :timestamp
-      column :sheet, :string
+      column :sheet_id, :int
     end
     create_table unless table_exists?
+  end
+
+  class Sheet < Sequel::Model
+    plugin :schema
+
+    set_schema do
+      primary_key :id
+      column :name, :string
+    end
+
+    unless table_exists?
+      create_table
+      Sheet.create :name => 'default'
+    end
   end
 
   class Meta < Sequel::Model(:meta)

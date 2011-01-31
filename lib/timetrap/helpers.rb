@@ -29,13 +29,15 @@ module Timetrap
     end
 
     def selected_entries
-      ee = if (sheet = sheet_name_from_string(unused_args)) == 'all'
-        Timetrap::Entry.filter('sheet not like ? escape "!"', '!_%')
+      sheet = if (sheet_name = sheet_name_from_string(unused_args)) == 'all'
+        Sheet.filter 'name not like ? escape "!"', '!_%'
       elsif sheet =~ /.+/
-        Timetrap::Entry.filter('sheet = ?', sheet)
+        Sheet.filter 'name = ?', sheet_name
       else
-        Timetrap::Entry.filter('sheet = ?', Timer.current_sheet)
-      end
+        Sheet.filter 'name = ?', Timer.current_sheet.name
+      end.map { |e| e.id }
+
+      ee = Entry.filter :sheet_id => sheet
       ee = ee.filter('start >= ?', Date.parse(Timer.process_time(args['-s']).to_s)) if args['-s']
       ee = ee.filter('start <= ?', Date.parse(Timer.process_time(args['-e']).to_s) + 1) if args['-e']
       ee
@@ -75,20 +77,26 @@ module Timetrap
       "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
     end
 
-    def sheet_name_from_string string
+    def sheet_from_string string
       string = string.strip
       case string
       when /^\W*all\W*$/ then "all"
       when /^$/ then Timer.current_sheet
       else
-        entry = DB[:entries].filter(:sheet.like("#{string}")).first ||
-          DB[:entries].filter(:sheet.like("#{string}%")).first
-        if entry
-          entry[:sheet]
+        sheet = Sheet.filter(:name.like("#{string}")).first ||
+          Sheet.filter(:name.like("#{string}%")).first
+        if sheet
+          sheet
         else
           raise "Can't find sheet matching #{string.inspect}"
         end
       end
+    end
+
+    def sheet_name_from_string string
+      sheet = sheet_from_string(string)
+      return sheet if sheet.is_a? String
+      sheet.name
     end
   end
 end
