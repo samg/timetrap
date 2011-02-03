@@ -62,7 +62,6 @@ module Timetrap
     end
 
     def self.sheets
-      p Sheet.all
       Sheet.all.sort { |a, b| a.name <=> b.name }
     end
 
