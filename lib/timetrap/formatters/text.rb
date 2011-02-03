@@ -12,20 +12,26 @@ module Timetrap
           h
         end
         (sheet_names = sheets.keys.sort).each do |sheet|
+          sheet_obj = sheets[sheet][0].sheet
+          
           self.output <<  "Timesheet: #{sheet}\n"
           id_heading = Timetrap::CLI.args['-v'] ? 'Id' : '  '
-          self.output <<  "#{id_heading}  Day                Start      End        Duration   Notes\n"
+          self.output <<  "#{id_heading}  Day                Start      End        Duration   "
+          self.output << "Bill     " unless sheet_obj.rate.nil?
+          self.output << "Notes\n"
+          
           last_start = nil
           from_current_day = []
           sheets[sheet].each_with_index do |e, i|
             from_current_day << e
             e_end = e.end_or_now
-            self.output <<  "%-4s%16s%11s -%9s%10s    %s\n" % [
+            self.output <<  "%-4s%16s%11s -%9s%10s    %s%s\n" % [
               (Timetrap::CLI.args['-v'] ? e.id : ''),
               format_date_if_new(e.start, last_start),
               format_time(e.start),
               format_time(e.end),
               format_duration(e.start, e_end),
+              ( sheet_obj.rate.nil? ? '' : e.bill.to_s + "     " ),
               e.note
             ]
 
@@ -38,14 +44,14 @@ module Timetrap
             last_start = e.start
           end
           self.output <<  <<-OUT
-    ---------------------------------------------------------
+    ------------------------------------------------------------------
           OUT
           self.output <<  "    Total%43s\n" % format_total(sheets[sheet])
           self.output <<  "\n" unless sheet == sheet_names.last
         end
         if sheets.size > 1
           self.output <<  <<-OUT
--------------------------------------------------------------
+------------------------------------------------------------------
           OUT
           self.output <<  "Grand Total%41s\n" % format_total(sheets.values.flatten)
         end

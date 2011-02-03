@@ -31,7 +31,7 @@ module Timetrap
     def selected_entries
       sheet = if (sheet_name = sheet_name_from_string(unused_args)) == 'all'
         Sheet.filter 'name not like ? escape "!"', '!_%'
-      elsif sheet =~ /.+/
+      elsif sheet_name =~ /.+/
         Sheet.filter 'name = ?', sheet_name
       else
         Sheet.filter 'name = ?', Timer.current_sheet.name
