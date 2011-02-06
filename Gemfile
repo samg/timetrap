@@ -1,7 +1,7 @@
 source 'http://rubygems.org'
 
 gem 'sequel', ">= 3.9.0"
-gem 'sqlite3-ruby', ">= 1.2.5"
+gem 'sqlite3', "~> 1.3.3"
 gem 'chronic', "~> 0.3.0"
 gem 'getopt-declare', ">= 1.28"
 gem 'json', "~>1.4.6"
