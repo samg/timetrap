@@ -765,6 +765,34 @@ END:VCALENDAR
           invoke 'sheet'
           $stdout.string.should == " Timesheet  Running     Today       Total Time\n*sheet 1     0:00:00     0:00:00     0:00:00\n"
         end
+
+        describe "using - to switch to the last sheet" do
+          it "should warn if there isn't a sheet set" do
+            lambda do
+              invoke 'sheet -'
+            end.should_not change(Timetrap::Timer, :current_sheet)
+            $stderr.string.should include 'LAST_SHEET is not set'
+          end
+
+          it "should switch to the last active sheet" do
+            invoke 'sheet second'
+            lambda do
+              invoke 'sheet -'
+            end.should change(Timetrap::Timer, :current_sheet).
+              from('second').to('default')
+          end
+
+          it "should toggle back and forth" do
+            invoke 'sheet first'
+            invoke 'sheet second'
+            5.times do
+              invoke 's -'
+              Timetrap::Timer.current_sheet.should == 'first'
+              invoke 's -'
+              Timetrap::Timer.current_sheet.should == 'second'
+            end
+          end
+        end
       end
     end
   end

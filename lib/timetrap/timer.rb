@@ -43,6 +43,10 @@ module Timetrap
     end
 
     def current_sheet= sheet
+      last = Meta.find_or_create(:key => 'last_sheet')
+      last.value = current_sheet
+      last.save
+
       m = Meta.find_or_create(:key => 'current_sheet')
       m.value = sheet
       m.save
@@ -53,6 +57,11 @@ module Timetrap
         Meta.create(:key => 'current_sheet', :value => 'default')
       end
       Meta.find(:key => 'current_sheet').value
+    end
+
+    def last_sheet
+      m = Meta.find(:key => 'last_sheet')
+      m and m.value
     end
 
     def entries sheet = nil

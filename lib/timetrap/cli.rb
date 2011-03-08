@@ -270,12 +270,21 @@ COMMAND is one of:
 
     def sheet
       sheet = unused_args
-      unless sheet =~ /.+/
+      case sheet
+      when nil, ''
         list
-      else
-        Timer.current_sheet = sheet
-        warn "Switching to sheet #{sheet.inspect}"
+        return
+      when '-'
+        if Timer.last_sheet
+          sheet = Timer.last_sheet
+        else
+          warn 'LAST_SHEET is not set'
+          return
+        end
       end
+
+      Timer.current_sheet = sheet
+      warn "Switching to sheet #{sheet.inspect}"
     end
 
     def list
