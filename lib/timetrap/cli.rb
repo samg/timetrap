@@ -79,7 +79,8 @@ COMMAND is one of:
     -a, --at <time:qs>        Use this time instead of now
 
   * sheet - Switch to a timesheet creating it if necessary. When no sheet is
-      specified list all sheets.
+      specified list all sheets. The special sheetname '-' will switch to the
+      last active sheet.
     usage: t sheet [TIMESHEET]
 
   * week - Shortcut for display with start date set to monday of this week.

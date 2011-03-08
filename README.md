@@ -321,6 +321,7 @@ Commands
 **sheet**
   Switch to a timesheet creating it if necessary. The default timesheet is
   called "default". When no sheet is specified list all existing sheets.
+  The special timesheet name '-' will switch to the last active sheet.
 
   usage: ``t sheet [TIMESHEET]``
 
