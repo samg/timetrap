@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{timetrap}
-  s.version = "1.7.3"
+  s.version = "1.7.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Sam Goldstein"]
-  s.date = %q{2011-02-06}
+  s.date = %q{2011-03-07}
   s.default_executable = %q{t}
   s.description = %q{Command line time tracker}
   s.email = %q{sgrock@gmail.com}
@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
      "lib/timetrap/config.rb",
      "lib/timetrap/formatters.rb",
      "lib/timetrap/formatters/csv.rb",
+     "lib/timetrap/formatters/factor.rb",
      "lib/timetrap/formatters/ical.rb",
      "lib/timetrap/formatters/ids.rb",
      "lib/timetrap/formatters/json.rb",
