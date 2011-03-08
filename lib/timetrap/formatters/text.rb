@@ -19,13 +19,12 @@ module Timetrap
           from_current_day = []
           sheets[sheet].each_with_index do |e, i|
             from_current_day << e
-            e_end = e.end_or_now
             self.output <<  "%-4s%16s%11s -%9s%10s    %s\n" % [
               (Timetrap::CLI.args['-v'] ? e.id : ''),
               format_date_if_new(e.start, last_start),
               format_time(e.start),
               format_time(e.end),
-              format_duration(e.start, e_end),
+              format_duration(e.duration),
               e.note
             ]
 

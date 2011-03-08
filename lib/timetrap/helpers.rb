@@ -60,18 +60,15 @@ module Timetrap
       format_date(time) == format_date(other_time)
     end
 
-    def format_duration stime, etime
-      return '' unless stime and etime
-      secs = etime.to_i - stime.to_i
-      format_seconds secs
-    end
-
     def format_seconds secs
       "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
     end
+    alias :format_duration :format_seconds
 
     def format_total entries
-      secs = entries.inject(0){|m, e|e_end = e.end_or_now; m += e_end.to_i - e.start.to_i if e_end && e.start;m}
+      secs = entries.inject(0) do |m, e|
+        m += e.duration
+      end
       "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
     end
 

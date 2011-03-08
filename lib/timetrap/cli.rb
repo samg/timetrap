@@ -314,7 +314,7 @@ COMMAND is one of:
       Timer.running_entries.each do |entry|
         current = entry[:sheet] == Timer.current_sheet
         out = current ? '*' : ' '
-        out << "#{entry[:sheet]}: #{format_duration(entry.start, entry.end_or_now)}".gsub(/  /, ' ')
+        out << "#{entry[:sheet]}: #{format_duration(entry.duration)}".gsub(/  /, ' ')
         out << " (#{entry.note})" if entry.note =~ /.+/
         puts out
       end

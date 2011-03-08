@@ -29,6 +29,13 @@ module Timetrap
       round? ? rounded_end : self[:end]
     end
 
+    def duration
+      @duration ||= self.end_or_now.to_i - self.start.to_i
+    end
+    def duration=( nd )
+      @duration = nd.to_i
+    end
+
     def end_or_now
       self.end || (round? ? round(Time.now) : Time.now)
     end
