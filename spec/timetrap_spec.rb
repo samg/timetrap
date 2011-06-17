@@ -561,6 +561,22 @@ END:VCALENDAR
             invoke "kill --id #{entry.id} --yes"
           end.should change(Timetrap::Entry, :count).by(-1)
         end
+
+        describe "with a numeric sheet name" do
+          before do
+            Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
+            create_entry( :sheet => 1234, :start => local_time_cli('2008-10-03 12:00:00'),
+                         :end => local_time_cli('2008-10-03 14:00:00'))
+          end
+
+          it "should list the sheet" do
+            STDERR.puts Timetrap::Entry.all
+            lambda do
+              invoke 'kill -y 1234'
+            end.should change(Timetrap::Entry, :count).by(-1)
+            STDERR.puts Timetrap::Entry.all
+          end
+        end
       end
 
       describe "list" do
@@ -568,6 +584,19 @@ END:VCALENDAR
           it "should list the default sheet" do
             invoke 'list'
             $stdout.string.chomp.should == " Timesheet  Running     Today       Total Time\n*default     0:00:00     0:00:00     0:00:00"
+          end
+        end
+
+        describe "with a numeric sheet name" do
+          before do
+            Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
+            create_entry( :sheet => '1234', :start => local_time_cli('2008-10-03 12:00:00'),
+                         :end => local_time_cli('2008-10-03 14:00:00'))
+          end
+
+          it "should list the sheet" do
+            invoke 'list'
+            $stdout.string.should == " Timesheet  Running     Today       Total Time\n 1234        0:00:00     0:00:00     2:00:00\n*default     0:00:00     0:00:00     0:00:00\n"
           end
         end
 

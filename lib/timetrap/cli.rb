@@ -322,9 +322,9 @@ COMMAND is one of:
         puts "*#{Timer.current_sheet}: not running"
       end
       Timer.running_entries.each do |entry|
-        current = entry[:sheet] == Timer.current_sheet
+        current = entry.sheet == Timer.current_sheet
         out = current ? '*' : ' '
-        out << "#{entry[:sheet]}: #{format_duration(entry.duration)}".gsub(/  /, ' ')
+        out << "#{entry.sheet}: #{format_duration(entry.duration)}".gsub(/  /, ' ')
         out << " (#{entry.note})" if entry.note =~ /.+/
         puts out
       end

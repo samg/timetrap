@@ -29,6 +29,12 @@ module Timetrap
       round? ? rounded_end : self[:end]
     end
 
+    # work around sequel's behavior of returning numeric values in string
+    # fields as integers
+    def sheet
+      self[:sheet].to_s
+    end
+
     def duration
       @duration ||= self.end_or_now.to_i - self.start.to_i
     end
