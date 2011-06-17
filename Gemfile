@@ -6,6 +6,7 @@ gem 'chronic', "~> 0.3.0"
 gem 'getopt-declare', ">= 1.28"
 gem 'json', "~>1.4.6"
 gem 'icalendar', "~>1.1.5"
+gem 'rake'
 
 group :test do
   gem "rspec", "~>2"
