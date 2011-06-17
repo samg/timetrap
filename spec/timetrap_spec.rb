@@ -570,11 +570,9 @@ END:VCALENDAR
           end
 
           it "should list the sheet" do
-            STDERR.puts Timetrap::Entry.all
             lambda do
               invoke 'kill -y 1234'
             end.should change(Timetrap::Entry, :count).by(-1)
-            STDERR.puts Timetrap::Entry.all
           end
         end
       end
