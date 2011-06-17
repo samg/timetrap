@@ -569,7 +569,7 @@ END:VCALENDAR
                          :end => local_time_cli('2008-10-03 14:00:00'))
           end
 
-          it "should list the sheet" do
+          it "should kill the sheet" do
             lambda do
               invoke 'kill -y 1234'
             end.should change(Timetrap::Entry, :count).by(-1)
@@ -595,6 +595,17 @@ END:VCALENDAR
           it "should list the sheet" do
             invoke 'list'
             $stdout.string.should == " Timesheet  Running     Today       Total Time\n 1234        0:00:00     0:00:00     2:00:00\n*default     0:00:00     0:00:00     0:00:00\n"
+          end
+        end
+
+        describe "with a numeric current_sheet" do
+          before do
+            Timetrap::Timer.current_sheet = '1234'
+          end
+
+          it "should list the sheet" do
+            invoke 'list'
+            $stdout.string.should ==  " Timesheet Running     Today       Total Time\n*1234       0:00:00     0:00:00     0:00:00\n"
           end
         end
 

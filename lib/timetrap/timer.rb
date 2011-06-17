@@ -56,7 +56,7 @@ module Timetrap
       unless Meta.find(:key => 'current_sheet')
         Meta.create(:key => 'current_sheet', :value => 'default')
       end
-      Meta.find(:key => 'current_sheet').value
+      Meta.find(:key => 'current_sheet').value.to_s
     end
 
     def last_sheet

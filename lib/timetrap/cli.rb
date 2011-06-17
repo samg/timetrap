@@ -306,6 +306,7 @@ COMMAND is one of:
         end
       end.sort_by{|sheet| sheet[:name].downcase}
       width = sheets.sort_by{|h|h[:name].length }.last[:name].length + 4
+      width = 10 if width < 10
       puts " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
       sheets.each do |sheet|
         star = sheet[:name] == Timer.current_sheet ? '*' : ' '
