@@ -1,5 +1,5 @@
 require 'rake/rdoctask'
-require 'rake/gempackagetask'
+require 'rubygems/package_task'
 require 'rspec/core/rake_task'
 
 desc 'Default: run specs.'
@@ -24,7 +24,6 @@ begin
 
     s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
     s.authors = ["Sam Goldstein"]
-    s.date = %q{2009-04-14}
     s.description = %q{Command line time tracker}
     s.email = %q{sgrock@gmail.com}
     s.has_rdoc = true
@@ -40,6 +39,6 @@ begin
     s.add_dependency("getopt-declare", ">= 1.28")
   end
 rescue LoadError
-  puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
+  puts "Jeweler not available."
 end
 

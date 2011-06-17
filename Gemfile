@@ -12,3 +12,7 @@ group :test do
   gem "rspec", "~>2"
   gem 'fakefs'
 end
+
+group :development do
+  gem 'jeweler'
+end
