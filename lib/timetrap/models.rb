@@ -29,12 +29,6 @@ module Timetrap
       round? ? rounded_end : self[:end]
     end
 
-    # work around sequel's behavior of returning numeric values in string
-    # fields as integers
-    def sheet
-      self[:sheet].to_s
-    end
-
     def duration
       @duration ||= self.end_or_now.to_i - self.start.to_i
     end
@@ -73,10 +67,10 @@ module Timetrap
     # do a quick pseudo migration.  This should only get executed on the first run
     set_schema do
       primary_key :id
-      column :note, :string
-      column :start, :timestamp
-      column :end, :timestamp
-      column :sheet, :string
+      column :note, String
+      column :start, DateTime
+      column :end, DateTime
+      column :sheet, String
     end
     create_table unless table_exists?
   end
@@ -86,8 +80,8 @@ module Timetrap
 
     set_schema do
       primary_key :id
-      column :key, :string
-      column :value, :string
+      column :key, String
+      column :value, String
     end
     create_table unless table_exists?
   end
