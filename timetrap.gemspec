@@ -8,12 +8,11 @@ Gem::Specification.new do |s|
   s.version = "1.7.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Sam Goldstein"]
-  s.date = %q{2011-06-17}
-  s.default_executable = %q{t}
+  s.authors = [%q{Sam Goldstein}]
+  s.date = %q{2011-09-29}
   s.description = %q{Command line time tracker}
   s.email = %q{sgrock@gmail.com}
-  s.executables = ["t"]
+  s.executables = [%q{t}]
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.md"
@@ -45,9 +44,9 @@ Gem::Specification.new do |s|
     "timetrap.gemspec"
   ]
   s.homepage = %q{http://github.com/samg/timetrap/tree/master}
-  s.rdoc_options = ["--inline-source", "--charset=UTF-8"]
-  s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.5.3}
+  s.rdoc_options = [%q{--inline-source}, %q{--charset=UTF-8}]
+  s.require_paths = [%q{lib}]
+  s.rubygems_version = %q{1.8.6}
   s.summary = %q{Command line time tracker}
 
   if s.respond_to? :specification_version then
@@ -56,7 +55,7 @@ Gem::Specification.new do |s|
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<sequel>, [">= 3.9.0"])
       s.add_runtime_dependency(%q<sqlite3>, ["~> 1.3.3"])
-      s.add_runtime_dependency(%q<chronic>, ["~> 0.3.0"])
+      s.add_runtime_dependency(%q<chronic>, [">= 0.6.4"])
       s.add_runtime_dependency(%q<getopt-declare>, [">= 1.28"])
       s.add_runtime_dependency(%q<json>, ["~> 1.4.6"])
       s.add_runtime_dependency(%q<icalendar>, ["~> 1.1.5"])
@@ -64,12 +63,12 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<jeweler>, [">= 0"])
       s.add_runtime_dependency(%q<sequel>, [">= 3.9.0"])
       s.add_runtime_dependency(%q<sqlite3>, ["~> 1.3.3"])
-      s.add_runtime_dependency(%q<chronic>, ["~> 0.3.0"])
+      s.add_runtime_dependency(%q<chronic>, [">= 0.6.4"])
       s.add_runtime_dependency(%q<getopt-declare>, [">= 1.28"])
     else
       s.add_dependency(%q<sequel>, [">= 3.9.0"])
       s.add_dependency(%q<sqlite3>, ["~> 1.3.3"])
-      s.add_dependency(%q<chronic>, ["~> 0.3.0"])
+      s.add_dependency(%q<chronic>, [">= 0.6.4"])
       s.add_dependency(%q<getopt-declare>, [">= 1.28"])
       s.add_dependency(%q<json>, ["~> 1.4.6"])
       s.add_dependency(%q<icalendar>, ["~> 1.1.5"])
@@ -77,13 +76,13 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<jeweler>, [">= 0"])
       s.add_dependency(%q<sequel>, [">= 3.9.0"])
       s.add_dependency(%q<sqlite3>, ["~> 1.3.3"])
-      s.add_dependency(%q<chronic>, ["~> 0.3.0"])
+      s.add_dependency(%q<chronic>, [">= 0.6.4"])
       s.add_dependency(%q<getopt-declare>, [">= 1.28"])
     end
   else
     s.add_dependency(%q<sequel>, [">= 3.9.0"])
     s.add_dependency(%q<sqlite3>, ["~> 1.3.3"])
-    s.add_dependency(%q<chronic>, ["~> 0.3.0"])
+    s.add_dependency(%q<chronic>, [">= 0.6.4"])
     s.add_dependency(%q<getopt-declare>, [">= 1.28"])
     s.add_dependency(%q<json>, ["~> 1.4.6"])
     s.add_dependency(%q<icalendar>, ["~> 1.1.5"])
@@ -91,7 +90,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<jeweler>, [">= 0"])
     s.add_dependency(%q<sequel>, [">= 3.9.0"])
     s.add_dependency(%q<sqlite3>, ["~> 1.3.3"])
-    s.add_dependency(%q<chronic>, ["~> 0.3.0"])
+    s.add_dependency(%q<chronic>, [">= 0.6.4"])
     s.add_dependency(%q<getopt-declare>, [">= 1.28"])
   end
 end
