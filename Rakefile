@@ -1,7 +1,12 @@
 require 'rake/rdoctask'
 require 'rubygems/package_task'
 require 'rspec/core/rake_task'
-require 'psych'
+begin
+  # use psych for YAML parsing if available
+  require 'psych'
+rescue LoadError
+  # use syck
+end
 
 desc 'Default: run specs.'
 task :default => :spec
