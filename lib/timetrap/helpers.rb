@@ -31,6 +31,8 @@ module Timetrap
     def selected_entries
       ee = if (sheet = sheet_name_from_string(unused_args)) == 'all'
         Timetrap::Entry.filter('sheet not like ? escape "!"', '!_%')
+      elsif (sheet = sheet_name_from_string(unused_args)) == 'full'
+       Timetrap::Entry.filter()
       elsif sheet =~ /.+/
         Timetrap::Entry.filter('sheet = ?', sheet)
       else
@@ -76,6 +78,7 @@ module Timetrap
       string = string.strip
       case string
       when /^\W*all\W*$/ then "all"
+      when /^\W*full\W*$/ then "full"
       when /^$/ then Timer.current_sheet
       else
         entry = DB[:entries].filter(:sheet.like("#{string}")).first ||
