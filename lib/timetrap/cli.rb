@@ -33,9 +33,10 @@ COMMAND is one of:
       append_notes_delimiter: delimiter used when appending notes via
                               t edit --append
 
-  * display - Display the current timesheet or a specific. Pass `all' as
-      SHEET to display all sheets.
-    usage: t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]
+  * display - Display the current timesheet or a specific. Pass `all' as SHEET
+      to display all unarchived sheets or `full' to display archived and
+      unarchived sheets.
+    usage: t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all | full]
     -v, --ids                 Print database ids (for use with edit)
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier

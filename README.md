@@ -261,8 +261,9 @@ Commands
 
 **display**
   Display a given timesheet. If no timesheet is specified, show the current
-  timesheet. If ``all`` is passed as SHEET display all timesheets. Accepts
-  an optional ``--ids`` flag which will include the entries' ids in the output.
+  timesheet. If ``all`` is passed as SHEET display all timesheets. If ``full``
+  is passed as SHEET archived timesheets are displayed as well. Accepts an
+  optional ``--ids`` flag which will include the entries' ids in the output.
   This is useful when editing an non running entry with ``edit``.
 
   Display is designed to support a variety of export formats that can be
@@ -272,7 +273,7 @@ Commands
   Display also allows the use of a ``--round`` or ``-r`` flag which will round
   all times in the output. See global options below.
 
-  usage: ``t display [--ids] [--round] [--start DATE] [--end DATE] [--format FMT] [SHEET | all]``
+  usage: ``t display [--ids] [--round] [--start DATE] [--end DATE] [--format FMT] [SHEET | all | full]``
 
 **edit**
   Inserts a note associated with the an entry in the timesheet, or edits the
