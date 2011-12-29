@@ -63,7 +63,11 @@ module Timetrap
     end
 
     def format_seconds secs
-      "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
+      negative = secs < 0
+      secs = secs.abs
+      formatted = "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
+      formatted = "-#{formatted}" if negative
+      formatted
     end
     alias :format_duration :format_seconds
 
