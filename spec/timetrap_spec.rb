@@ -1013,6 +1013,17 @@ END:VCALENDAR
           @entry.end.should == Chronic.parse("tomorrow 1pm")
         end
       end
+
+      describe "setting the end time" do
+        it "should assume a <24 hour duration" do
+          @entry.start= Time.at(Time.now - 3600) # 1.hour.ago
+          @entry.end = Time.at(Time.now - 300).strftime("%H:%M:%S") # ambiguous 5.minutes.ago
+
+          # should be about 55 minutes duration.  Allow for second rollover
+          # within this test.
+          (3299..3301).should === @entry.duration
+        end
+      end
     end
 
   end

@@ -8,13 +8,13 @@ module Timetrap
 
     extend self
 
-    def process_time(time)
+    def process_time(time, now = Time.now)
       case time
       when Time
         time
       when String
         chronic = begin
-          Chronic.parse(time)
+          Chronic.parse(time, :now => now)
         rescue => e
           warn "#{e.class} in Chronic gem parsing time.  Falling back to Time.parse"
         end

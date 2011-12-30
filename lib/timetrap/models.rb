@@ -18,7 +18,7 @@ module Timetrap
     end
 
     def end= time
-      self[:end]= Timer.process_time(time)
+      self[:end]= Timer.process_time(time, self[:start])
     end
 
     def start
