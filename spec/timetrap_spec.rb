@@ -1014,7 +1014,7 @@ END:VCALENDAR
         end
       end
 
-      describe "setting the end time" do
+      describe "with times specfied like 12:12:12" do
         it "should assume a <24 hour duration" do
           @entry.start= Time.at(Time.now - 3600) # 1.hour.ago
           @entry.end = Time.at(Time.now - 300).strftime("%H:%M:%S") # ambiguous 5.minutes.ago
@@ -1022,6 +1022,15 @@ END:VCALENDAR
           # should be about 55 minutes duration.  Allow for second rollover
           # within this test.
           (3299..3301).should === @entry.duration
+        end
+
+        it "should assume a start time near the current time" do
+          time = Time.at(Time.now - 300)
+          @entry.start= time.strftime("%H:%M:%S") # ambiguous 5.minutes.ago
+
+          # should be about 55 minutes duration.  Allow for second rollover
+          # within this test.
+          @entry.start.to_i.should == time.to_i
         end
       end
     end

@@ -14,7 +14,7 @@ module Timetrap
         time
       when String
         chronic = begin
-          Chronic.parse(time, :now => now)
+          time_closest_to_now_with_chronic(time, now)
         rescue => e
           warn "#{e.class} in Chronic gem parsing time.  Falling back to Time.parse"
         end
@@ -27,6 +27,13 @@ module Timetrap
           raise ArgumentError, "Could not parse #{time.inspect}, entry not updated"
         end
       end
+    end
+
+    def time_closest_to_now_with_chronic(time, now)
+      [
+        Chronic.parse(time, :context => :past, :now => now),
+        Chronic.parse(time, :context => :future, :now => now)
+      ].sort_by{|a| (a.to_i - now.to_i).abs }.first
     end
 
     # Time.parse is optimistic and will parse things like '=18' into midnight
