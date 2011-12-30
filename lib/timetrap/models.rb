@@ -29,6 +29,10 @@ module Timetrap
       round? ? rounded_end : self[:end]
     end
 
+    def sheet
+      self[:sheet].to_s
+    end
+
     def duration
       @duration ||= self.end_or_now.to_i - self.start.to_i
     end
@@ -84,5 +88,9 @@ module Timetrap
       column :value, String
     end
     create_table unless table_exists?
+
+    def value
+      self[:value].to_s
+    end
   end
 end
