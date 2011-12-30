@@ -1024,12 +1024,17 @@ END:VCALENDAR
           (3299..3301).should === @entry.duration
         end
 
+        it "should not assume negative durations around 12 hour length" do
+          @entry.start= Time.at(Time.now - (15 * 3600)) # 15.hour.ago
+          @entry.end = Time.at(Time.now - 300).strftime("%H:%M:%S") # ambiguous 5.minutes.ago
+
+          (53699..53701).should === @entry.duration
+        end
+
         it "should assume a start time near the current time" do
           time = Time.at(Time.now - 300)
           @entry.start= time.strftime("%H:%M:%S") # ambiguous 5.minutes.ago
 
-          # should be about 55 minutes duration.  Allow for second rollover
-          # within this test.
           @entry.start.to_i.should == time.to_i
         end
       end
