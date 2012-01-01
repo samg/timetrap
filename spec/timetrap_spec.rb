@@ -87,10 +87,11 @@ describe Timetrap do
         it "should write a config file" do
           FakeFS do
             FileUtils.mkdir_p(ENV['HOME'])
-            FileUtils.rm(ENV['HOME'] + '/.timetrap.yml')
-            File.exist?(ENV['HOME'] + '/.timetrap.yml').should be_false
+            config_file = ENV['HOME'] + '/.timetrap.yml'
+            FileUtils.rm(config_file) if File.exist? config_file
+            File.exist?(config_file).should be_false
             invoke "configure"
-            File.exist?(ENV['HOME'] + '/.timetrap.yml').should be_true
+            File.exist?(config_file).should be_true
           end
         end
 
