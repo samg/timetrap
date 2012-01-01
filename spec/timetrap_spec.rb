@@ -323,38 +323,6 @@ Grand Total                                 10:00:00
           end
         end
 
-        describe "factor" do
-          before do
-            Timetrap::Entry.create( :sheet => 'SpecSheet',
-              :note => 'entry f:2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
-            )
-            Timetrap::Entry.create( :sheet => 'SpecSheet',
-              :note => 'entry f:0.5', :start => '2008-10-04 16:00:00', :end => '2008-10-04 18:00:00'
-            )
-            Timetrap::Entry.create( :sheet => 'SpecSheet',
-              :note => 'entry', :start => '2008-10-04 19:00:00'
-            )
-            Time.stub!(:now).and_return local_time('2008-10-04 20:00:00')
-            @desired_output = <<-OUTPUT
-Timesheet: SpecSheet
-    Day                Start      End        Duration   Notes
-    Fri Oct 03, 2008   16:00:00 - 18:00:00   4:00:00    entry f:2
-                                             4:00:00
-    Sat Oct 04, 2008   16:00:00 - 18:00:00   1:00:00    entry f:0.5
-                       19:00:00 -            1:00:00    entry
-                                             2:00:00
-    ---------------------------------------------------------
-    Total                                    6:00:00
-            OUTPUT
-          end
-
-          it "should correctly handle factors in notes" do
-            Timetrap::Timer.current_sheet = 'SpecSheet'
-            invoke 'display --format factor'
-            $stdout.string.should == @desired_output
-          end
-        end
-
         describe "default" do
           before do
             create_entry(:start => '2008-10-03 12:00:00', :end => '2008-10-03 14:00:00')
