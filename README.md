@@ -223,7 +223,7 @@ Timetrap Formatters Repository
 ------------------------------
 
 A community focused repository of custom formatters is available at
-https://github.com/sam/timetrap_formatters.
+https://github.com/samg/timetrap_formatters.
 
 Commands
 --------
