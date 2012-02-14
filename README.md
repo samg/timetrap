@@ -318,6 +318,13 @@ Commands
 
   usage: ``t week [--ids] [--end DATE] [--format FMT] [TIMESHEET | all]``
 
+**month**
+  Shortcut for display with start date set to the beginning of this month
+  (or a specified month) and end date set to the end of the month.
+
+  usage: ``t month [--ids] [--start MONTH] [--format FMT] [TIMESHEET | all]``
+
+
 Global Options
 --------
 

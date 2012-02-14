@@ -87,6 +87,10 @@ COMMAND is one of:
   * week - Shortcut for display with start date set to monday of this week.
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
 
+  * month - Shortcut for display with start date set to the beginning of either
+      this month or a specified month.
+    usage: t month [--ids] [--start MONTH] [--format FMT] [SHEET | all]
+
   OTHER OPTIONS
 
   -h, --help              Display this help.
@@ -334,6 +338,15 @@ COMMAND is one of:
 
     def week
       args['-s'] = Date.today.wday == 1 ? Date.today.to_s : Date.parse(Chronic.parse(%q(last monday)).to_s).to_s
+      display
+    end
+
+    def month
+      d = Chronic.parse( "last #{args['-s'] || Date.today.strftime("%B")}" ).to_date
+      beginning_of_month = Date.new( d.year, d.month )
+      end_of_month = Date.new( d.year, d.month+1 ) - 1
+      args['-s'] = beginning_of_month.to_s
+      args['-e'] = end_of_month.to_s
       display
     end
 
