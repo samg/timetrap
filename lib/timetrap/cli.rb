@@ -155,7 +155,7 @@ COMMAND is one of:
     end
 
     def handle_invalid_command(command)
-	default_command = Timetrap::Config['default_command']
+      default_command = Timetrap::Config['default_command']
       if !command
 	if default_command != nil && valid_command(default_command)
 	    send default_command
