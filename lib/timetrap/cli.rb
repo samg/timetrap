@@ -151,17 +151,14 @@ COMMAND is one of:
     end
 
     def valid_command(command)
-     if (valid = commands.select{|name| name =~ %r|^#{command}|}).size == 1
-       return true
-     else
-       return false
-     end
+       return commands.include?(command)
     end
 
     def handle_invalid_command(command)
+	default_command = Timetrap::Config['default_command']
       if !command
-	if Timetrap::Config['default_command'] != nil
-	    send Timetrap::Config['default_command']
+	if default_command != nil && valid_command(default_command)
+	    send default_command
         else
  	    puts USAGE
         end
