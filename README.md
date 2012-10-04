@@ -359,6 +359,8 @@ See ``t configure`` for details.  Currently supported options are:
 
   **default_formatter**: The format to use when display is invoked without a `--format` option
 
+  **default_command**: The default command to invoke when you call `t`
+
 Special Thanks
 --------------
 
