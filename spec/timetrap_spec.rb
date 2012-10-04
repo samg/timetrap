@@ -52,6 +52,16 @@ describe Timetrap do
         end
       end
 
+      describe 'with default command configured' do
+        it "should invoke the default command" do
+          with_stubbed_config('default_command' => 'd') do
+            invoke ''
+            $stdout.string.should include('Timesheet: ')
+          end
+          
+        end
+      end
+
       describe 'with an invalid command' do
         it "should tell me I'm wrong" do
           invoke 'poo'
