@@ -16,6 +16,7 @@ module Timetrap::StubConfig
     options.each do |k, v|
       Timetrap::Config.stub(:[]).with(k).and_return v
     end
+    yield if block_given?
   end
 end
 
@@ -47,18 +48,28 @@ describe Timetrap do
 
       describe 'with no command' do
         it "should invoke --help" do
-          invoke ''
-          $stdout.string.should include "Usage"
+          with_stubbed_config('default_command' => nil) do
+            invoke ''
+            $stdout.string.should include "Usage"
+          end
         end
       end
 
       describe 'with default command configured' do
         it "should invoke the default command" do
-          with_stubbed_config('default_command' => 'd') do
+          with_stubbed_config('default_command' => 'n') do
             invoke ''
-            $stdout.string.should include('Timesheet: ')
+            $stdout.string.should include('*default: not running')
           end
-          
+        end
+
+        it "should allow a complicated default command" do
+          with_stubbed_config('default_command' => 'display -f csv', 'formatter_search_paths' => '/tmp') do
+            invoke 'in foo bar'
+            invoke 'out'
+            invoke ''
+            $stdout.string.should include(',"foo bar"')
+          end
         end
       end
 

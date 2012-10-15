@@ -32,7 +32,7 @@ COMMAND is one of:
       database_file:          The file path of the sqlite database
       append_notes_delimiter: delimiter used when appending notes via
                               t edit --append
-			      default_command:	      The default command to run when calling t.
+      default_command:        The default command to run when calling t.
 
   * display - Display the current timesheet or a specific. Pass `all' as SHEET
       to display all unarchived sheets or `full' to display archived and
@@ -141,6 +141,9 @@ COMMAND is one of:
     end
 
     def invoke_command_if_valid
+      if args.unused.empty? && Timetrap::Config['default_command']
+        self.args = Getopt::Declare.new(USAGE.dup, Timetrap::Config['default_command'])
+      end
       command = args.unused.shift
       set_global_options
       case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
@@ -155,13 +158,8 @@ COMMAND is one of:
     end
 
     def handle_invalid_command(command)
-      default_command = Timetrap::Config['default_command']
       if !command
-	if default_command != nil && valid_command(default_command)
-	    send default_command
-        else
- 	    puts USAGE
-        end
+        puts USAGE
       elsif mapping = deprecated_commands.detect{|(k,v)| k =~ %r|^#{command}|}
         deprecated, current = *mapping
         warn "The #{deprecated.inspect} command is deprecated in favor of #{current.inspect}. Sorry for the inconvenience."

@@ -22,7 +22,9 @@ module Timetrap
           "#{ENV['HOME']}/.timetrap/formatters"
         ],
         # formatter to use when display is invoked without a --format option
-        'default_formatter' => 'text'
+        'default_formatter' => 'text',
+        # the default command to when you run `t`.  default to printing usage.
+        'default_command' => nil
       }
     end
 
