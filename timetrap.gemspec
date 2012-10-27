@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "timetrap"
-  s.version = "1.8.1"
+  s.version = "1.8.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Sam Goldstein"]
-  s.date = "2012-04-04"
+  s.date = "2012-10-27"
   s.description = "Command line time tracker"
   s.email = "sgrock@gmail.com"
   s.executables = ["t"]
@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".rspec",
+    ".travis.yml",
     "CONTRIBUTORS",
     "Gemfile",
     "LICENSE.txt",
@@ -46,7 +47,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/samg/timetrap/tree/master"
   s.rdoc_options = ["--inline-source", "--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.10"
+  s.rubygems_version = "1.8.24"
   s.summary = "Command line time tracker"
 
   if s.respond_to? :specification_version then
