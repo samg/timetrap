@@ -1,4 +1,4 @@
-Timetrap
+Timetrap [![Build Status](https://secure.travis-ci.org/samg/timetrap.png)](http://travis-ci.org/samg/timetrap)
 ========
 
 Timetrap is a simple command line time tracker written in ruby. It provides an
