@@ -353,13 +353,19 @@ See ``t configure`` for details.  Currently supported options are:
 
   **database_file**: The file path of the sqlite database
 
-  **append_notes_delimiter**: delimiter used when appending notes via `t edit --append`
+  **append_notes_delimiter**: delimiter used when appending notes via
+                              `t edit --append`
 
-  **formatter_search_paths**: an array of directories to search for user defined fomatter classes
+  **formatter_search_paths**: an array of directories to search for user
+                              defined fomatter classes
 
-  **default_formatter**: The format to use when display is invoked without a `--format` option
+  **default_formatter**: The format to use when display is invoked without a
+                         `--format` option
 
   **default_command**: The default command to invoke when you call `t`
+
+  **sheets_are_exclusive**: Only allow one running entry at a time. Defaults to
+                            false which allows one running entry per sheet.
 
 Special Thanks
 --------------

@@ -225,6 +225,11 @@ COMMAND is one of:
     end
 
     def in
+      if Config['sheets_are_exclusive']
+        Timer.stop_other_sheets(args['-a']).each do |checked_out_of|
+          warn "Checked out of sheet #{checked_out_of.sheet.inspect}."
+        end
+      end
       Timer.start unused_args, args['-a']
       warn "Checked into sheet #{Timer.current_sheet.inspect}."
     end

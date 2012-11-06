@@ -24,7 +24,10 @@ module Timetrap
         # formatter to use when display is invoked without a --format option
         'default_formatter' => 'text',
         # the default command to when you run `t`.  default to printing usage.
-        'default_command' => nil
+        'default_command' => nil,
+        # only allow one running entry at a time.
+        # when set to false it is possible to have one running entry per sheet.
+        'sheets_are_exclusive' => false
       }
     end
 
