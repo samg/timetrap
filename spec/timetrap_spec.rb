@@ -12,9 +12,10 @@ def local_time_cli(str)
 end
 
 module Timetrap::StubConfig
-  def with_stubbed_config options
-    options.each do |k, v|
-      Timetrap::Config.stub(:[]).with(k).and_return v
+  def with_stubbed_config options = {}
+    defaults = Timetrap::Config.defaults.dup
+    Timetrap::Config.stub(:[]).and_return do |k|
+      defaults.merge(options)[k]
     end
     yield if block_given?
   end
@@ -22,6 +23,9 @@ end
 
 describe Timetrap do
   include Timetrap::StubConfig
+  before do
+    with_stubbed_config
+  end
   def create_entry atts = {}
     Timetrap::Entry.create({
       :sheet => 'default',
