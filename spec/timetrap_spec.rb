@@ -520,9 +520,9 @@ END:VCALENDAR
           $stderr.string.should =~ /\w+/
         end
 
-        describe "with sheets_are_exclusive config option set" do
+        describe "with auto_checkout config option set" do
           before do
-            with_stubbed_config 'sheets_are_exclusive' => true
+            with_stubbed_config 'auto_checkout' => true
           end
 
           it "should check in normally if nothing else is running" do
@@ -537,10 +537,15 @@ END:VCALENDAR
               invoke 'in first task'
             end
 
-            it "should tell you you're already checked in" do
+            it "should check out and back in" do
               entry = Timetrap::Timer.active_entry('sheet1')
               invoke 'in second task'
-              Timetrap::Timer.active_entry('sheet1').should == entry
+              Timetrap::Timer.active_entry('sheet1').note.should == 'second task'
+            end
+
+            it "should tell me what it's doing" do
+              invoke 'in second task'
+              $stderr.string.should include "Checked out"
             end
           end
 
@@ -824,9 +829,9 @@ END:VCALENDAR
           end
         end
 
-        describe "with sheets_are_exclusive config option set" do
+        describe "with auto_checkout config option set" do
           before do
-            with_stubbed_config 'sheets_are_exclusive' => true
+            with_stubbed_config 'auto_checkout' => true
           end
 
           it "should check in normally if nothing else is running" do
@@ -841,10 +846,10 @@ END:VCALENDAR
               invoke 'in first task'
             end
 
-            it "should tell you you're already checked in" do
+            it "should check out and back in" do
               entry = Timetrap::Timer.active_entry('sheet1')
               invoke 'resume second task'
-              Timetrap::Timer.active_entry('sheet1').should == entry
+              Timetrap::Timer.active_entry('sheet1').id.should_not == entry.id
             end
           end
 

@@ -364,8 +364,7 @@ See ``t configure`` for details.  Currently supported options are:
 
   **default_command**: The default command to invoke when you call `t`
 
-  **sheets_are_exclusive**: Only allow one running entry at a time. Defaults to
-                            false which allows one running entry per sheet.
+  **auto_checkout**: Automatically check out of running entries when you check in
 
 Special Thanks
 --------------

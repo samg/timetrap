@@ -26,8 +26,8 @@ module Timetrap
         # the default command to when you run `t`.  default to printing usage.
         'default_command' => nil,
         # only allow one running entry at a time.
-        # when set to false it is possible to have one running entry per sheet.
-        'sheets_are_exclusive' => false
+        # automatically check out of any running tasks when checking in.
+        'auto_checkout' => false
       }
     end
 

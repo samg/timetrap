@@ -87,8 +87,8 @@ module Timetrap
       Entry.filter(:end => nil)
     end
 
-    def stop_other_sheets(time = nil)
-      running_entries.all.select{ |e| stop(e, time) unless current_sheet == e.sheet }
+    def stop_all(time = nil)
+      running_entries.map{ |e| stop(e, time) }
     end
 
     def stop sheet_or_entry, time = nil
@@ -104,6 +104,7 @@ module Timetrap
         a.end = time
         a.save
       end
+      a
     end
 
     def start note, time = nil

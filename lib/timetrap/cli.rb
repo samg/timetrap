@@ -33,6 +33,8 @@ COMMAND is one of:
       append_notes_delimiter: delimiter used when appending notes via
                               t edit --append
       default_command:        The default command to run when calling t.
+      auto_checkout:          Automatically check out of running entries when
+                              you check in
 
   * display - Display the current timesheet or a specific. Pass `all' as SHEET
       to display all unarchived sheets or `full' to display archived and
@@ -225,8 +227,8 @@ COMMAND is one of:
     end
 
     def in
-      if Config['sheets_are_exclusive']
-        Timer.stop_other_sheets(args['-a']).each do |checked_out_of|
+      if Config['auto_checkout']
+        Timer.stop_all(args['-a']).each do |checked_out_of|
           warn "Checked out of sheet #{checked_out_of.sheet.inspect}."
         end
       end
