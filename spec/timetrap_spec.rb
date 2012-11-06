@@ -823,6 +823,53 @@ END:VCALENDAR
             Timetrap::Timer.active_entry.note.should ==("New Note")
           end
         end
+
+        describe "with sheets_are_exclusive config option set" do
+          before do
+            with_stubbed_config 'sheets_are_exclusive' => true
+          end
+
+          it "should check in normally if nothing else is running" do
+            Timetrap::Timer.should_not be_running #precondition
+            invoke 'resume'
+            Timetrap::Timer.should be_running
+          end
+
+          describe "with a running entry on current sheet" do
+            before do
+              invoke 'sheet sheet1'
+              invoke 'in first task'
+            end
+
+            it "should tell you you're already checked in" do
+              entry = Timetrap::Timer.active_entry('sheet1')
+              invoke 'resume second task'
+              Timetrap::Timer.active_entry('sheet1').should == entry
+            end
+          end
+
+          describe "with a running entry on another sheet" do
+            before do
+              invoke 'sheet sheet1'
+              invoke 'in first task'
+              invoke 'sheet sheet2'
+            end
+
+            it "should check out of the running entry" do
+              Timetrap::Timer.active_entry('sheet1').should be_a(Timetrap::Entry)
+              invoke 'resume second task'
+              Timetrap::Timer.active_entry('sheet1').should be nil
+            end
+
+            it "should check out of the running entry at another time" do
+              now = Time.at(Time.now - 5 * 60) # 5 minutes ago
+              entry = Timetrap::Timer.active_entry('sheet1')
+              entry.should be_a(Timetrap::Entry)
+              invoke "resume -a '#{now}' second task"
+              entry.reload.end.to_s.should == now.to_s
+            end
+          end
+        end
       end
 
       describe "sheet" do
