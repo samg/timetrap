@@ -1,4 +1,4 @@
-require 'rake/rdoctask'
+require 'rdoc/task'
 require 'rubygems/package_task'
 require 'rspec/core/rake_task'
 begin
