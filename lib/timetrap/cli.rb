@@ -32,6 +32,10 @@ COMMAND is one of:
       database_file:          The file path of the sqlite database
       append_notes_delimiter: delimiter used when appending notes via
                               t edit --append
+      formatter_search_paths: an array of directories to search for user
+                              defined fomatter classes
+      default_formatter:      The format to use when display is invoked without a
+                              `--format` option
       default_command:        The default command to run when calling t.
       auto_checkout:          Automatically check out of running entries when
                               you check in
