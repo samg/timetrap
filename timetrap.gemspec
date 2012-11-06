@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "timetrap"
-  s.version = "1.8.3.beta1"
+  s.version = "1.8.3.beta2"
 
   s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
   s.authors = ["Sam Goldstein"]
