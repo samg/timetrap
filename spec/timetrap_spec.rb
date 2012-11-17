@@ -989,6 +989,13 @@ END:VCALENDAR
       time.to_i.should == e.refresh.end.to_i
     end
 
+    it "should track the last entry that was checked out of" do
+      Timetrap::Timer.start 'some work'
+      e = Timetrap::Timer.active_entry
+      Timetrap::Timer.stop Timetrap::Timer.current_sheet
+      Timetrap::Timer.last_checkout.id.should == e.id
+    end
+
   end
 
   describe Timetrap::Helpers do

@@ -83,6 +83,12 @@ module Timetrap
       Entry.find(:sheet => (sheet || Timer.current_sheet), :end => nil)
     end
 
+    # the last entry to be checked out of
+    def last_checkout
+      meta = Meta.find(:key => 'last_checkout_id')
+      Entry[meta.value] if meta
+    end
+
     def running_entries
       Entry.filter(:end => nil)
     end
@@ -103,6 +109,9 @@ module Timetrap
         time ||= Time.now
         a.end = time
         a.save
+        meta = Meta.find(:key => 'last_checkout_id') || Meta.create(:key => 'last_checkout_id')
+        meta.value = a.id
+        meta.save
       end
       a
     end
