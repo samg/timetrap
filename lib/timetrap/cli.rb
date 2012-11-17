@@ -198,13 +198,24 @@ COMMAND is one of:
     end
 
     def edit
-      entry = args['-i'] ? Entry[args['-i']] : Timer.active_entry
+      entry = case
+              when args['-i']
+                warn "Editing entry with id #{args['-i'].inspect}"
+                Entry[args['-i']]
+              when Timer.active_entry
+                warn "Editing running entry"
+                Timer.active_entry
+              when Timer.last_checkout
+                warn  "Editing last entry you checked out of"
+                Timer.last_checkout
+              end
+
       unless entry
-        warn "can't find entry"
+        warn "Can't find entry"
         return
-      else
-        warn "editing entry ##{entry.id.inspect}"
       end
+      warn ""
+
       entry.update :start => args['-s'] if args['-s'] =~ /.+/
       entry.update :end => args['-e'] if args['-e'] =~ /.+/
 
@@ -224,6 +235,8 @@ COMMAND is one of:
         end
         entry.update :note => note
       end
+
+      puts format_entries(entry)
     end
 
     def backend
@@ -289,7 +302,7 @@ COMMAND is one of:
       if entries == []
         warn "No entries were selected to display."
       else
-        puts load_formatter(args['-f'] || Config['default_formatter']).new(entries).output
+        puts format_entries(entries)
       end
     end
 
@@ -383,6 +396,10 @@ COMMAND is one of:
       return true if args['-y']
       $stderr.print question
       $stdin.gets =~ /\Aye?s?\Z/i
+    end
+
+    def format_entries(entries)
+      load_formatter(args['-f'] || Config['default_formatter']).new(Array(entries)).output
     end
 
   end

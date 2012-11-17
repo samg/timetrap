@@ -188,8 +188,34 @@ describe Timetrap do
           not_running = Timetrap::Timer.active_entry
           Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
           Timetrap::Timer.start "another entry", nil
+
+          # create a few more entries to ensure we're not falling back on "last
+          # checked out of" feature.
+          Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+          Timetrap::Timer.start "another entry", nil
+
+          Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+          Timetrap::Timer.start "another entry", nil
+
           invoke "edit --id #{not_running.id} a new description"
           not_running.refresh.note.should == 'a new description'
+        end
+
+        it "should edit the entry last checked out of if none is running" do
+          not_running = Timetrap::Timer.active_entry
+          Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+          invoke "edit -z 'a new description'"
+          not_running.refresh.note.should include 'a new description'
+        end
+
+        it "should edit the entry last checked out of if none is running even if the sheet is changed" do
+          not_running = Timetrap::Timer.active_entry
+          Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+          invoke "edit -z 'a new description'"
+          invoke "sheet another second sheet"
+          not_running.refresh.note.should include 'a new description'
+          not_running.refresh.sheet.should == 'default'
+          Timetrap::Timer.current_sheet.should == 'another second sheet'
         end
       end
 
