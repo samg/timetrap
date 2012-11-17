@@ -53,7 +53,8 @@ COMMAND is one of:
                               found in the README included in this
                               distribution.
 
-  * edit - Alter an entry's note, start, or end time. Defaults to the active entry.
+  * edit - Alter an entry's note, start, or end time. Defaults to the active
+    entry. Defaults to the last entry to be checked out of if no entry is active.
     usage: t edit [--id ID] [--start TIME] [--end TIME] [--append] [NOTES]
     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
     -s, --start <time:qs>     Change the start time to <time>

@@ -57,12 +57,18 @@ If you make a mistake use the `edit` command.
 
     $ # edit the running entry's note
     $ t edit writing readme
-    editing entry #42
+    Editing running entry
 
 You check out with the `out` command.
 
     $ t out
     Checked out of sheet "coding"
+
+Running `edit` when you're checked out will edit the last sheet you checked out
+of.
+
+    $ t edit --append "oh and that"
+    Editing last entry you checked out of
 
 You can edit entries that aren't running using `edit`'s `--id` or `-i` flag.
 `t display --ids`  (or `t display -v`) will tell you the ids.
@@ -78,7 +84,7 @@ You can edit entries that aren't running using `edit`'s `--id` or `-i` flag.
 
     $ # -i43 to edit entry 43
     $ t e -i43 --end "2010-11-28 13:45"
-    editing entry #43
+    Editing entry with id 43
 
     $ t d
     Timesheet: coding
@@ -264,8 +270,8 @@ Commands
 
 **edit**
   Inserts a note associated with the an entry in the timesheet, or edits the
-  start or end times.  Defaults to the current time although an ``--id`` flag can
-  be passed with the entry's id (see display.)
+  start or end times.  Defaults to the current entry, or previously running
+  entry. An ``--id`` flag can be passed with the entry's id (see display.)
 
   usage: ``t edit [--id ID] [--start TIME] [--end TIME] [--append] [NOTES]``
 
