@@ -599,6 +599,42 @@ END:VCALENDAR
         end
       end
 
+      describe "month" do
+        it "should display all entries for the month" do
+          create_entry(
+            :start => Time.new(2012, 2, 5, 1, 2, 3),
+            :end => Time.new(2012, 2, 5, 2, 2, 3),
+          )
+          create_entry(
+            :start => Time.new(2012, 2, 6, 1, 2, 3),
+            :end => Time.new(2012, 2, 6, 2, 2, 3),
+          )
+          create_entry(
+            :start => Time.new(2012, 1, 5, 1, 2, 3),
+            :end => Time.new(2012, 1, 5, 2, 2, 3),
+          )
+
+          Date.should_receive(:today).and_return(Date.new(2012, 2, 5))
+          invoke "month"
+
+          $stdout.string.should include 'Feb 05, 2012'
+          $stdout.string.should include 'Feb 06, 2012'
+          $stdout.string.should_not include 'Jan'
+        end
+
+        it "should work in December" do
+          create_entry(
+            :start => Time.new(2012, 12, 5, 1, 2, 3),
+            :end => Time.new(2012, 12, 5, 2, 2, 3),
+          )
+
+          Date.should_receive(:today).and_return(Date.new(2012, 12, 5))
+          invoke "month"
+
+          $stdout.string.should include 'Wed Dec 05, 2012   01:02:03 - 02:02:03'
+        end
+      end
+
       describe "kill" do
         it "should give me a chance not to fuck up" do
           entry = create_entry
