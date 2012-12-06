@@ -598,6 +598,18 @@ END:VCALENDAR
           end
         end
       end
+      describe "week" do
+        it "should only show entries from this week" do
+          create_entry(
+            :start => Time.local(2012, 2, 1, 1, 2, 3),
+            :end => Time.local(2012, 2, 1, 2, 2, 3)
+          )
+          create_entry
+          invoke 'week'
+          $stdout.string.should include Time.now.strftime('%a %b %d, %Y')
+          $stdout.string.should_not include 'Feb 01, 2012'
+        end
+      end
 
       describe "month" do
         it "should display all entries for the month" do
