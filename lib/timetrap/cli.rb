@@ -375,7 +375,7 @@ COMMAND is one of:
     end
 
     def month
-      d = Chronic.parse( "last #{args['-s'] || Date.today.strftime("%B")}" )
+      d = Chronic.parse( args['-s'] || Date.today )
 
       beginning_of_month = Date.new( d.year, d.month )
       end_of_month = if d.month == 12 # handle edgecase

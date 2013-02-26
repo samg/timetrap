@@ -629,6 +629,7 @@ END:VCALENDAR
           Date.should_receive(:today).and_return(Date.new(2012, 2, 5))
           invoke "month"
 
+
           $stdout.string.should include 'Feb 05, 2012'
           $stdout.string.should include 'Feb 06, 2012'
           $stdout.string.should_not include 'Jan'
