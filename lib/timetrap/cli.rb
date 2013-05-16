@@ -358,7 +358,7 @@ COMMAND is one of:
 
     def now
       if !Timer.running?
-        puts "*#{Timer.current_sheet}: not running"
+        warn "*#{Timer.current_sheet}: not running"
       end
       Timer.running_entries.each do |entry|
         current = entry.sheet == Timer.current_sheet
