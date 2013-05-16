@@ -92,6 +92,9 @@ COMMAND is one of:
       last active sheet.
     usage: t sheet [TIMESHEET]
 
+  * today - Shortcut for display with start date as the current day
+    usage: t today [--ids] [--format FMT] [SHEET | all]
+
   * week - Shortcut for display with start date set to monday of this week.
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
 
@@ -367,6 +370,11 @@ COMMAND is one of:
         out << " (#{entry.note})" if entry.note =~ /.+/
         puts out
       end
+    end
+
+    def today
+        args['-s'] = Date.today.to_s
+        display
     end
 
     def week
