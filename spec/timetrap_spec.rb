@@ -63,7 +63,7 @@ describe Timetrap do
         it "should invoke the default command" do
           with_stubbed_config('default_command' => 'n') do
             invoke ''
-            $stdout.string.should include('*default: not running')
+            $stderr.string.should include('*default: not running')
           end
         end
 
@@ -791,7 +791,7 @@ END:VCALENDAR
         describe "when the current timesheet isn't running" do
           it "should show that it isn't running" do
             invoke 'now'
-            $stdout.string.should == <<-OUTPUT
+            $stderr.string.should == <<-OUTPUT
 *current sheet: not running
             OUTPUT
           end
