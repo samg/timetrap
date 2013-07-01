@@ -11,6 +11,7 @@ module Timetrap
           h[e.sheet] << e
           h
         end
+        longest_note = entries.inject('Notes'.length) {|l, e| [e.note.rstrip.length, l].max}
         (sheet_names = sheets.keys.sort).each do |sheet|
           self.output <<  "Timesheet: #{sheet}\n"
           id_heading = Timetrap::CLI.args['-v'] ? 'Id' : '  '
@@ -36,16 +37,12 @@ module Timetrap
             end
             last_start = e.start
           end
-          self.output <<  <<-OUT
-    ---------------------------------------------------------
-          OUT
+          self.output <<  "    %s\n" % ('-'*(52+longest_note))
           self.output <<  "    Total%43s\n" % format_total(sheets[sheet])
           self.output <<  "\n" unless sheet == sheet_names.last
         end
         if sheets.size > 1
-          self.output <<  <<-OUT
--------------------------------------------------------------
-          OUT
+          self.output <<  "%s\n" % ('-'*(4+52+longest_note))
           self.output <<  "Grand Total%41s\n" % format_total(sheets.values.flatten)
         end
       end
