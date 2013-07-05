@@ -746,7 +746,7 @@ END:VCALENDAR
         end
 
         describe "with sheets defined" do
-          before do
+          before :each do
             Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
@@ -769,13 +769,36 @@ END:VCALENDAR
             OUTPUT
           end
 
+          it "should mark the last sheet with '-' if it exists" do
+            invoke 'sheet Sheet 1'
+            $stdout.string = ''
+            invoke 'list'
+            $stdout.string.should == <<-OUTPUT
+ Timesheet                 Running     Today       Total Time
+-A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+*Sheet 1                    0:00:00     0:00:00     2:00:00
+            OUTPUT
+          end
+
+          it "should not mark the last sheet with '-' if it doesn't exist" do
+            invoke 'sheet Non-existent'
+            invoke 'sheet Sheet 1'
+            $stdout.string = ''
+            invoke 'list'
+            $stdout.string.should == <<-OUTPUT
+ Timesheet                 Running     Today       Total Time
+ A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+*Sheet 1                    0:00:00     0:00:00     2:00:00
+            OUTPUT
+          end
+
           it "should include the active timesheet even if it has no entries" do
             invoke 'sheet empty sheet'
             $stdout.string = ''
             invoke 'list'
             $stdout.string.should == <<-OUTPUT
  Timesheet                 Running     Today       Total Time
- A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+-A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
 *empty sheet                0:00:00     0:00:00     0:00:00
  Sheet 1                    0:00:00     0:00:00     2:00:00
             OUTPUT
