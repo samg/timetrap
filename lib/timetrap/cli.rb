@@ -350,7 +350,7 @@ COMMAND is one of:
       width = 10 if width < 10
       puts " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
       sheets.each do |sheet|
-        star = sheet[:name] == Timer.current_sheet ? '*' : ' '
+        star = sheet[:name] == Timer.current_sheet ? '*' : sheet[:name] == Timer.last_sheet ? '-' : ' '
         puts "#{star}%-#{width}s%-12s%-12s%s" % [
           sheet[:running],
           sheet[:today],
