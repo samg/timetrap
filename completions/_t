@@ -1,10 +1,9 @@
 #compdef t
 
 _t() {
-  # If the first argument is a prefix of 'sheet',
-  # the second argument can be autocompleted to one
-  # of the existing sheets.
-  if [[ 'sheet' == $words[2]* ]]; then
+  # If the first argument starts with s or d (sheet or display),
+  # the second argument can be autocompleted to one of the existing sheets.
+  if [[ $words[2] == s* || $words[2] == d* ]]; then
     echo 'select DISTINCT(sheet) from entries;' | t b | while read sheet; do
       compadd "$@" $sheet
     done
