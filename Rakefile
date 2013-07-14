@@ -42,7 +42,6 @@ begin
     s.add_dependency("sequel", ">= 3.9.0")
     s.add_dependency("sqlite3", "~> 1.3.3")
     s.add_dependency("chronic", ">= 0.6.4")
-    s.add_dependency("getopt-declare", ">= 1.28")
   end
 rescue LoadError
   puts "Jeweler not available."

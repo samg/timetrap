@@ -63,7 +63,7 @@ describe Timetrap do
         it "should invoke the default command" do
           with_stubbed_config('default_command' => 'n') do
             invoke ''
-            $stdout.string.should include('*default: not running')
+            $stderr.string.should include('*default: not running')
           end
         end
 
@@ -242,7 +242,7 @@ The "format" command is deprecated in favor of "display". Sorry for the inconven
         describe "text" do
           before do
             Timetrap::Entry.create( :sheet => 'another',
-              :note => 'entry 4', :start => '2008-10-05 18:00:00'
+              :note => 'a long entry note', :start => '2008-10-05 18:00:00'
             )
             Timetrap::Entry.create( :sheet => 'SpecSheet',
               :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
@@ -267,7 +267,7 @@ Timesheet: SpecSheet
     Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
                        18:00:00 -            2:00:00    entry 4
                                              4:00:00
-    ---------------------------------------------------------
+    -----------------------------------------------------------
     Total                                    8:00:00
             OUTPUT
 
@@ -280,7 +280,7 @@ Id  Day                Start      End        Duration   Notes
 4   Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
 5                      18:00:00 -            2:00:00    entry 4
                                              4:00:00
-    ---------------------------------------------------------
+    -----------------------------------------------------------
     Total                                    8:00:00
             OUTPUT
 
@@ -293,16 +293,16 @@ Timesheet: SpecSheet
     Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
                        18:00:00 -            2:00:00    entry 4
                                              4:00:00
-    ---------------------------------------------------------
+    ---------------------------------------------------------------------
     Total                                    8:00:00
 
 Timesheet: another
     Day                Start      End        Duration   Notes
-    Sun Oct 05, 2008   18:00:00 -            2:00:00    entry 4
+    Sun Oct 05, 2008   18:00:00 -            2:00:00    a long entry note
                                              2:00:00
-    ---------------------------------------------------------
+    ---------------------------------------------------------------------
     Total                                    2:00:00
--------------------------------------------------------------
+-------------------------------------------------------------------------
 Grand Total                                 10:00:00
             OUTPUT
           end
@@ -599,6 +599,70 @@ END:VCALENDAR
         end
       end
 
+      describe "today" do
+        it "should only show entries for today" do
+          yesterday = Time.now - (24 * 60 * 60)
+          create_entry(
+            :start => yesterday,
+            :end => yesterday
+          )
+          create_entry
+          invoke 'today'
+          $stdout.string.should include Time.now.strftime('%a %b %d, %Y')
+          $stdout.string.should_not include yesterday.strftime('%a %b %d, %Y')
+        end
+      end
+
+      describe "week" do
+        it "should only show entries from this week" do
+          create_entry(
+            :start => Time.local(2012, 2, 1, 1, 2, 3),
+            :end => Time.local(2012, 2, 1, 2, 2, 3)
+          )
+          create_entry
+          invoke 'week'
+          $stdout.string.should include Time.now.strftime('%a %b %d, %Y')
+          $stdout.string.should_not include 'Feb 01, 2012'
+        end
+      end
+
+      describe "month" do
+        it "should display all entries for the month" do
+          create_entry(
+            :start => Time.local(2012, 2, 5, 1, 2, 3),
+            :end => Time.local(2012, 2, 5, 2, 2, 3)
+          )
+          create_entry(
+            :start => Time.local(2012, 2, 6, 1, 2, 3),
+            :end => Time.local(2012, 2, 6, 2, 2, 3)
+          )
+          create_entry(
+            :start => Time.local(2012, 1, 5, 1, 2, 3),
+            :end => Time.local(2012, 1, 5, 2, 2, 3)
+          )
+
+          Date.should_receive(:today).and_return(Date.new(2012, 2, 5))
+          invoke "month"
+
+
+          $stdout.string.should include 'Feb 05, 2012'
+          $stdout.string.should include 'Feb 06, 2012'
+          $stdout.string.should_not include 'Jan'
+        end
+
+        it "should work in December" do
+          create_entry(
+            :start => Time.local(2012, 12, 5, 1, 2, 3),
+            :end => Time.local(2012, 12, 5, 2, 2, 3)
+          )
+
+          Date.should_receive(:today).and_return(Date.new(2012, 12, 5))
+          invoke "month"
+
+          $stdout.string.should include 'Wed Dec 05, 2012   01:02:03 - 02:02:03'
+        end
+      end
+
       describe "kill" do
         it "should give me a chance not to fuck up" do
           entry = create_entry
@@ -682,7 +746,7 @@ END:VCALENDAR
         end
 
         describe "with sheets defined" do
-          before do
+          before :each do
             Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
@@ -705,13 +769,36 @@ END:VCALENDAR
             OUTPUT
           end
 
+          it "should mark the last sheet with '-' if it exists" do
+            invoke 'sheet Sheet 1'
+            $stdout.string = ''
+            invoke 'list'
+            $stdout.string.should == <<-OUTPUT
+ Timesheet                 Running     Today       Total Time
+-A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+*Sheet 1                    0:00:00     0:00:00     2:00:00
+            OUTPUT
+          end
+
+          it "should not mark the last sheet with '-' if it doesn't exist" do
+            invoke 'sheet Non-existent'
+            invoke 'sheet Sheet 1'
+            $stdout.string = ''
+            invoke 'list'
+            $stdout.string.should == <<-OUTPUT
+ Timesheet                 Running     Today       Total Time
+ A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+*Sheet 1                    0:00:00     0:00:00     2:00:00
+            OUTPUT
+          end
+
           it "should include the active timesheet even if it has no entries" do
             invoke 'sheet empty sheet'
             $stdout.string = ''
             invoke 'list'
             $stdout.string.should == <<-OUTPUT
  Timesheet                 Running     Today       Total Time
- A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+-A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
 *empty sheet                0:00:00     0:00:00     0:00:00
  Sheet 1                    0:00:00     0:00:00     2:00:00
             OUTPUT
@@ -727,7 +814,7 @@ END:VCALENDAR
         describe "when the current timesheet isn't running" do
           it "should show that it isn't running" do
             invoke 'now'
-            $stdout.string.should == <<-OUTPUT
+            $stderr.string.should == <<-OUTPUT
 *current sheet: not running
             OUTPUT
           end

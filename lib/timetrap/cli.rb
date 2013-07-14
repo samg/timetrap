@@ -92,6 +92,9 @@ COMMAND is one of:
       last active sheet.
     usage: t sheet [TIMESHEET]
 
+  * today - Shortcut for display with start date as the current day
+    usage: t today [--ids] [--format FMT] [SHEET | all]
+
   * week - Shortcut for display with start date set to monday of this week.
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
 
@@ -347,7 +350,7 @@ COMMAND is one of:
       width = 10 if width < 10
       puts " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
       sheets.each do |sheet|
-        star = sheet[:name] == Timer.current_sheet ? '*' : ' '
+        star = sheet[:name] == Timer.current_sheet ? '*' : sheet[:name] == Timer.last_sheet ? '-' : ' '
         puts "#{star}%-#{width}s%-12s%-12s%s" % [
           sheet[:running],
           sheet[:today],
@@ -358,7 +361,7 @@ COMMAND is one of:
 
     def now
       if !Timer.running?
-        puts "*#{Timer.current_sheet}: not running"
+        warn "*#{Timer.current_sheet}: not running"
       end
       Timer.running_entries.each do |entry|
         current = entry.sheet == Timer.current_sheet
@@ -369,15 +372,25 @@ COMMAND is one of:
       end
     end
 
+    def today
+        args['-s'] = Date.today.to_s
+        display
+    end
+
     def week
       args['-s'] = Date.today.wday == 1 ? Date.today.to_s : Date.parse(Chronic.parse(%q(last monday)).to_s).to_s
       display
     end
 
     def month
-      d = Chronic.parse( "last #{args['-s'] || Date.today.strftime("%B")}" ).to_date
+      d = Chronic.parse( args['-s'] || Date.today )
+
       beginning_of_month = Date.new( d.year, d.month )
-      end_of_month = Date.new( d.year, d.month+1 ) - 1
+      end_of_month = if d.month == 12 # handle edgecase
+        Date.new( d.year + 1, 1) - 1
+      else
+        Date.new( d.year, d.month+1 ) - 1
+      end
       args['-s'] = beginning_of_month.to_s
       args['-e'] = end_of_month.to_s
       display
