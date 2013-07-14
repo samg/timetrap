@@ -242,7 +242,7 @@ The "format" command is deprecated in favor of "display". Sorry for the inconven
         describe "text" do
           before do
             Timetrap::Entry.create( :sheet => 'another',
-              :note => 'entry 4', :start => '2008-10-05 18:00:00'
+              :note => 'a long entry note', :start => '2008-10-05 18:00:00'
             )
             Timetrap::Entry.create( :sheet => 'SpecSheet',
               :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
@@ -267,7 +267,7 @@ Timesheet: SpecSheet
     Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
                        18:00:00 -            2:00:00    entry 4
                                              4:00:00
-    ---------------------------------------------------------
+    -----------------------------------------------------------
     Total                                    8:00:00
             OUTPUT
 
@@ -280,7 +280,7 @@ Id  Day                Start      End        Duration   Notes
 4   Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
 5                      18:00:00 -            2:00:00    entry 4
                                              4:00:00
-    ---------------------------------------------------------
+    -----------------------------------------------------------
     Total                                    8:00:00
             OUTPUT
 
@@ -293,16 +293,16 @@ Timesheet: SpecSheet
     Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
                        18:00:00 -            2:00:00    entry 4
                                              4:00:00
-    ---------------------------------------------------------
+    ---------------------------------------------------------------------
     Total                                    8:00:00
 
 Timesheet: another
     Day                Start      End        Duration   Notes
-    Sun Oct 05, 2008   18:00:00 -            2:00:00    entry 4
+    Sun Oct 05, 2008   18:00:00 -            2:00:00    a long entry note
                                              2:00:00
-    ---------------------------------------------------------
+    ---------------------------------------------------------------------
     Total                                    2:00:00
--------------------------------------------------------------
+-------------------------------------------------------------------------
 Grand Total                                 10:00:00
             OUTPUT
           end
@@ -746,7 +746,7 @@ END:VCALENDAR
         end
 
         describe "with sheets defined" do
-          before do
+          before :each do
             Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
@@ -769,13 +769,36 @@ END:VCALENDAR
             OUTPUT
           end
 
+          it "should mark the last sheet with '-' if it exists" do
+            invoke 'sheet Sheet 1'
+            $stdout.string = ''
+            invoke 'list'
+            $stdout.string.should == <<-OUTPUT
+ Timesheet                 Running     Today       Total Time
+-A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+*Sheet 1                    0:00:00     0:00:00     2:00:00
+            OUTPUT
+          end
+
+          it "should not mark the last sheet with '-' if it doesn't exist" do
+            invoke 'sheet Non-existent'
+            invoke 'sheet Sheet 1'
+            $stdout.string = ''
+            invoke 'list'
+            $stdout.string.should == <<-OUTPUT
+ Timesheet                 Running     Today       Total Time
+ A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+*Sheet 1                    0:00:00     0:00:00     2:00:00
+            OUTPUT
+          end
+
           it "should include the active timesheet even if it has no entries" do
             invoke 'sheet empty sheet'
             $stdout.string = ''
             invoke 'list'
             $stdout.string.should == <<-OUTPUT
  Timesheet                 Running     Today       Total Time
- A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+-A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
 *empty sheet                0:00:00     0:00:00     0:00:00
  Sheet 1                    0:00:00     0:00:00     2:00:00
             OUTPUT
