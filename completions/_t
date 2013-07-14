@@ -2,9 +2,11 @@
 
 _t() {
   # If the first argument starts with s or d (sheet or display),
-  # the second argument can be autocompleted to one of the existing sheets.
+  # the second argument can be autocompleted to one of the existing
+  # non-archived sheets.
   if [[ $words[2] == s* || $words[2] == d* ]]; then
-    echo 'select DISTINCT(sheet) from entries;' | t b | while read sheet; do
+    query='SELECT DISTINCT(sheet) FROM entries WHERE sheet NOT LIKE "\_%" ESCAPE "\";'
+    echo $query | t b | while read sheet; do
       compadd "$@" $sheet
     done
   fi
