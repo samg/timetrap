@@ -1,4 +1,3 @@
-require 'rdoc/task'
 require 'rubygems/package_task'
 require 'rspec/core/rake_task'
 begin
@@ -17,10 +16,5 @@ RSpec::Core::RakeTask.new do |t|
   # Put spec opts in a file named .rspec in root
 end
 
-Rake::RDocTask.new do |rd|
-  rd.main = "README"
-  rd.rdoc_dir = 'doc'
-  rd.rdoc_files.include("README", "**/*.rb")
-end
 
 
