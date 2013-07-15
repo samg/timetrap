@@ -257,7 +257,7 @@ The "format" command is deprecated in favor of "display". Sorry for the inconven
               :note => 'entry 4', :start => '2008-10-05 18:00:00'
             )
 
-            Time.stub!(:now).and_return local_time('2008-10-05 20:00:00')
+            Time.stub(:now).and_return local_time('2008-10-05 20:00:00')
             @desired_output = <<-OUTPUT
 Timesheet: SpecSheet
     Day                Start      End        Duration   Notes
@@ -513,13 +513,13 @@ END:VCALENDAR
 
         it "should set the start when starting a new entry" do
           @time = Time.now
-          Time.stub!(:now).and_return @time
+          Time.stub(:now).and_return @time
           invoke 'in working on something'
           Timetrap::Entry.order_by(:id).last.start.to_i.should == @time.to_i
         end
 
         it "should not start the time if the timetrap is running" do
-          Timetrap::Timer.stub!(:running?).and_return true
+          Timetrap::Timer.stub(:running?).and_return true
           lambda do
             invoke 'in'
           end.should_not change(Timetrap::Entry, :count)
@@ -532,7 +532,7 @@ END:VCALENDAR
 
         it "should fail with a warning for misformatted cli options it can't parse" do
           now = Time.now
-          Time.stub!(:now).and_return now
+          Time.stub(:now).and_return now
           invoke 'in work --at="18 minutes ago"'
           Timetrap::Entry.order_by(:id).last.should be_nil
           $stderr.string.should =~ /\w+/
@@ -540,7 +540,7 @@ END:VCALENDAR
 
         it "should fail with a time argurment of total garbage" do
           now = Time.now
-          Time.stub!(:now).and_return now
+          Time.stub(:now).and_return now
           invoke 'in work --at "total garbage"'
           Timetrap::Entry.order_by(:id).last.should be_nil
           $stderr.string.should =~ /\w+/
@@ -700,7 +700,7 @@ END:VCALENDAR
 
         describe "with a numeric sheet name" do
           before do
-            Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
+            Time.stub(:now).and_return local_time("2008-10-05 18:00:00")
             create_entry( :sheet => 1234, :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
           end
@@ -723,7 +723,7 @@ END:VCALENDAR
 
         describe "with a numeric sheet name" do
           before do
-            Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
+            Time.stub(:now).and_return local_time("2008-10-05 18:00:00")
             create_entry( :sheet => '1234', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
           end
@@ -747,7 +747,7 @@ END:VCALENDAR
 
         describe "with sheets defined" do
           before :each do
-            Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
+            Time.stub(:now).and_return local_time("2008-10-05 18:00:00")
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
@@ -826,7 +826,7 @@ END:VCALENDAR
             @entry = Timetrap::Timer.active_entry
             @entry.start = Time.at(0)
             @entry.save
-            Time.stub!(:now).and_return Time.at(60)
+            Time.stub(:now).and_return Time.at(60)
           end
 
           it "should show how long the current item is running for" do
@@ -843,7 +843,7 @@ END:VCALENDAR
               @entry = Timetrap::Timer.active_entry
               @entry.start = Time.at(0)
               @entry.save
-              Time.stub!(:now).and_return Time.at(60)
+              Time.stub(:now).and_return Time.at(60)
             end
 
             it "should show both entries" do
@@ -862,7 +862,7 @@ END:VCALENDAR
           invoke 'in'
           @active = Timetrap::Timer.active_entry
           @now = Time.now
-          Time.stub!(:now).and_return @now
+          Time.stub(:now).and_return @now
         end
         it "should set the stop for the running entry" do
           @active.refresh.end.should == nil
@@ -896,7 +896,7 @@ END:VCALENDAR
       describe "resume" do
         before :each do
           @time = Time.now
-          Time.stub!(:now).and_return @time
+          Time.stub(:now).and_return @time
 
           invoke 'in Some strange task'
           @last_active = Timetrap::Timer.active_entry
