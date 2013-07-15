@@ -85,8 +85,8 @@ module Timetrap
       when /^\W*full\W*$/ then "full"
       when /^$/ then Timer.current_sheet
       else
-        entry = DB[:entries].filter(:sheet.like("#{string}")).first ||
-          DB[:entries].filter(:sheet.like("#{string}%")).first
+        entry = DB[:entries].filter(Sequel.like(:sheet,string)).first ||
+          DB[:entries].filter(Sequel.like(:sheet, "#{string}%")).first
         if entry
           entry[:sheet]
         else
