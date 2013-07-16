@@ -372,6 +372,34 @@ See ``t configure`` for details.  Currently supported options are:
 
   **auto_checkout**: Automatically check out of running entries when you check in
 
+Autocomplete
+------------
+
+Timetrap has some basic support for autocomplete in bash and zsh.
+There are completions for commands and for sheets.
+
+**HINT** If you don't know where timetrap is installed,
+have a look in the directories listed in `echo $GEM_PATH`.
+
+### bash
+
+If it isn't already, add the following to your `.bashrc`/`.bash_profile`:
+
+    if [ -f /etc/bash_completion ]; then
+      . /etc/bash_completion
+    fi
+
+Then add this to source the completions:
+
+    source /path/to/timetrap-1.x.y/gem/completions/bash/timetrap-autocomplete.bash
+
+### zsh
+
+You need to add timetrap's zsh completions directory to your $fpath,
+so add the following to your `.zshrc`:
+
+    fpath=(/path/to/timetrap-1.x.y/gem/completions/zsh $fpath)
+
 Special Thanks
 --------------
 
