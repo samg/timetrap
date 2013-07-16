@@ -64,7 +64,7 @@ You check out with the `out` command.
     $ t out
     Checked out of sheet "coding"
 
-Running `edit` when you're checked out will edit the last sheet you checked out
+Running `edit` when you're checked out will edit the last entry you checked out
 of.
 
     $ t edit --append "oh and that"
