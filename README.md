@@ -395,7 +395,7 @@ Then add this to source the completions:
 
 ### zsh
 
-You need to add timetrap's zsh completions directory to your $fpath,
+You need to add timetrap's zsh completions directory to your `$fpath`,
 so add the following to your `.zshrc`:
 
     fpath=(/path/to/timetrap-1.x.y/gem/completions/zsh $fpath)
