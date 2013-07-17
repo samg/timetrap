@@ -1,0 +1,31 @@
+#compdef t
+
+_t() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+
+  _arguments \
+      '1: :->t_command'\
+      '2: :->first_arg'
+
+  case $state in
+  t_command)
+    compadd "$@" archive backend configure display edit in kill\
+                 list now out resume sheet week month
+  ;;
+
+  first_arg)
+    # If the first argument starts with s or d (sheet or display),
+    # the second argument can be autocompleted to one of the existing
+    # non-archived sheets.
+    if [[ $words[2] == s* || $words[2] == d* ]]; then
+      query='SELECT DISTINCT(sheet) FROM entries WHERE sheet NOT LIKE "\_%" ESCAPE "\";'
+      echo $query | t b | while read sheet; do
+        compadd "$@" $sheet
+      done
+    fi
+  ;;
+  esac
+}
+
+_t "$@"
