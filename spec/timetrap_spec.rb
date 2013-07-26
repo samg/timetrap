@@ -217,6 +217,28 @@ describe Timetrap do
           not_running.refresh.sheet.should == 'default'
           Timetrap::Timer.current_sheet.should == 'another second sheet'
         end
+
+        describe 'auto_sheet' do
+          describe 'with cwd in auto_sheet_paths' do
+            it 'should use sheet defined in config' do
+              with_stubbed_config('auto_sheet_paths' => {'a sheet' => ['/not/cwd/', Dir.getwd]})
+              Timetrap::Timer.current_sheet.should == 'a sheet'
+            end
+          end
+
+          describe 'with ancestor of cwd in auto_sheet_paths' do
+            it 'should use sheet defined in config' do
+              with_stubbed_config('auto_sheet_paths' => {'a sheet' => '/'})
+              Timetrap::Timer.current_sheet.should == 'a sheet'
+            end
+          end
+
+          describe 'with cwd not in auto_sheet_paths' do
+            it 'should not use sheet defined in config' do
+              with_stubbed_config('auto_sheet_paths' => {'a sheet' => '/not/the/current/working/directory/'})
+              Timetrap::Timer.current_sheet.should_not == 'a sheet'
+            end
+          end
       end
 
       describe "backend" do
