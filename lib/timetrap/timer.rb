@@ -71,8 +71,14 @@ module Timetrap
     def sheet_from_cwd
       auto_sheet = nil
       cwd = "#{Dir.getwd}/"
+      most_specific = 0
       Timetrap::Config['auto_sheet_paths'] && Timetrap::Config['auto_sheet_paths'].each do |sheet, dirs|
-        auto_sheet = sheet if Array(dirs).any? {|dir| cwd.start_with? dir}
+        Array(dirs).each do |dir|
+          if cwd.start_with?(dir) && dir.length > most_specific
+            most_specific = dir.length
+            auto_sheet = sheet
+          end
+        end
       end
       auto_sheet
     end
