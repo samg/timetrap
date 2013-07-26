@@ -11,7 +11,7 @@ module Timetrap
           h[e.sheet] << e
           h
         end
-        longest_note = entries.inject('Notes'.length) {|l, e| return l if not e.note; [e.note.rstrip.length, l].max}
+        longest_note = entries.inject('Notes'.length) {|l, e| [e.note.to_s.rstrip.length, l].max}
         (sheet_names = sheets.keys.sort).each do |sheet|
           self.output <<  "Timesheet: #{sheet}\n"
           id_heading = Timetrap::CLI.args['-v'] ? 'Id' : '  '
