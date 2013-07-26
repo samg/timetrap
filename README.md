@@ -383,6 +383,7 @@ Specify which sheet to automatically use in which directories in with the follow
 ```yaml
 auto_sheet_paths:
   Sheet name: /path/to/directory
+  More specific sheet: /path/to/directory/that/is/nested
   Other sheet:
     - /path/to/first/directory
     - /path/to/second/directory
