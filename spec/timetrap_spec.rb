@@ -236,7 +236,7 @@ describe Timetrap do
           describe 'with cwd not in auto_sheet_paths' do
             it 'should not use sheet defined in config' do
               with_stubbed_config('auto_sheet_paths' => {'a sheet' => '/not/the/current/working/directory/'})
-              Timetrap::Timer.current_sheet.should_not == 'a sheet'
+              Timetrap::Timer.current_sheet.should == 'default'
             end
           end
 
