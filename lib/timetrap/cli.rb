@@ -39,6 +39,9 @@ COMMAND is one of:
       default_command:        The default command to run when calling t.
       auto_checkout:          Automatically check out of running entries when
                               you check in
+      auto_sheet_paths:       Always use a given sheet when you're in a list of
+                              directories (or their descendants). A hash of
+                              sheets as keys and path or array of paths as values
 
   * display - Display the current timesheet or a specific. Pass `all' as SHEET
       to display all unarchived sheets or `full' to display archived and
