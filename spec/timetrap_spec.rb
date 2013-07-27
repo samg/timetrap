@@ -405,6 +405,15 @@ Grand Total                                 10:00:00
             $stdout.string.should == "yeah I did it\n"
             FileUtils.rm_r dir
           end
+
+          it "should work when there's no note" do
+            Timetrap::Entry.create( :sheet => 'SpecSheet',
+              :note => nil
+            )
+            invoke 'd SpecSheet'
+            # check it doesn't error and produces valid looking output
+            $stdout.string.should include('Timesheet: SpecSheet') 
+          end
         end
 
         describe "default" do
