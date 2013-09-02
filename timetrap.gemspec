@@ -26,5 +26,12 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "json"
   spec.add_dependency "sequel", "~> 4.0.0"
   spec.add_dependency "sqlite3", "~> 1.3.3"
-  spec.add_dependency "chronic", "~> 0.10.1"
+
+  # Chronic 0.9 is the last version that is compatible with ruby 1.8.7
+  if RUBY_VERSION == '1.8.7'
+    spec.add_dependency "chronic", "~> 0.9.1"
+  # but for everyone else 0.10 is a better choice
+  else
+    spec.add_dependency "chronic", "~> 0.10.1"
+  end
 end
