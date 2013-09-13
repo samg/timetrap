@@ -60,10 +60,27 @@ module Timetrap
     end
 
     def current_sheet
+      auto_sheet = sheet_from_cwd
+      return auto_sheet if auto_sheet
       unless Meta.find(:key => 'current_sheet')
         Meta.create(:key => 'current_sheet', :value => 'default')
       end
       Meta.find(:key => 'current_sheet').value
+    end
+
+    def sheet_from_cwd
+      auto_sheet = nil
+      cwd = "#{Dir.getwd}/"
+      most_specific = 0
+      Timetrap::Config['auto_sheet_paths'] && Timetrap::Config['auto_sheet_paths'].each do |sheet, dirs|
+        Array(dirs).each do |dir|
+          if cwd.start_with?(dir) && dir.length > most_specific
+            most_specific = dir.length
+            auto_sheet = sheet
+          end
+        end
+      end
+      auto_sheet
     end
 
     def last_sheet

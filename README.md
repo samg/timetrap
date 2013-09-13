@@ -372,6 +372,25 @@ See ``t configure`` for details.  Currently supported options are:
 
   **auto_checkout**: Automatically check out of running entries when you check in
 
+  **auto_sheet_paths**: Always use a given sheet when you're in a list of directories
+                        (or their descendants). A hash of sheets as keys and path or
+                        array of paths as values
+
+### auto_sheet_paths
+
+Specify which sheet to automatically use in which directories in with the following format:
+
+```yaml
+auto_sheet_paths:
+  Sheet name: /path/to/directory
+  More specific sheet: /path/to/directory/that/is/nested
+  Other sheet:
+    - /path/to/first/directory
+    - /path/to/second/directory
+```
+
+**Note** Timetrap will always use the sheet specified in the config file if you are in that directory (or in its tree). To use a different sheet, you must be in a different directory.
+
 Autocomplete
 ------------
 
