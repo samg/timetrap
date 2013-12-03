@@ -259,6 +259,7 @@ COMMAND is one of:
 
     def resume
       last_entry = Timer.entries(Timer.current_sheet).last
+      last_entry ||= Timer.entries("_#{Timer.current_sheet}").last
       warn "No entry yet on this sheet yet. Started a new entry." unless last_entry
       note = (last_entry ? last_entry.note : nil)
       warn "Resuming #{note.inspect} from entry ##{last_entry.id}" if note
