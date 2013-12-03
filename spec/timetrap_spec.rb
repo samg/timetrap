@@ -951,6 +951,22 @@ END:VCALENDAR
           end
         end
 
+        describe "with only archived entries" do
+          before(:each) do
+            $stdin.string = "yes\n"
+            invoke "archive"
+            Timetrap::Timer.entries(Timetrap::Timer.current_sheet).should be_empty
+            Timetrap::Timer.active_entry.should be_nil
+          end
+
+          it "retrieves the note of the most recent archived entry" do
+            invoke "resume"
+            Timetrap::Timer.active_entry.should_not be_nil
+            Timetrap::Timer.active_entry.note.should == @last_active.note
+            Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+          end
+        end
+
         describe "with auto_checkout config option set" do
           before do
             with_stubbed_config 'auto_checkout' => true
