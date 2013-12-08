@@ -199,8 +199,10 @@ formatter in a different place you can run `t configure` and edit the
 All timetrap formatters live under the namespace `Timetrap::Formatters` so
 define your class like this:
 
-    class Timetrap::Formatters::Notes
-    end
+```ruby
+class Timetrap::Formatters::Notes
+end
+```
 
 When `t display` is invoked, timetrap initializes a new instance of the
 formatter passing it an Array of entries.  It then calls `#output` which should
@@ -209,15 +211,17 @@ return a string to be printed to the screen.
 This means we need to implement an `#initialize` method and an `#output`
 method for the class.  Something like this:
 
-    class Timetrap::Formatters::Notes
-      def initialize(entries)
-        @entries = entries
-      end
+```ruby
+class Timetrap::Formatters::Notes
+  def initialize(entries)
+    @entries = entries
+  end
 
-      def output
-        @entries.map{|entry| entry[:note]}.join("\n")
-      end
-    end
+  def output
+    @entries.map{|entry| entry[:note]}.join("\n")
+  end
+end
+```
 
 Now when I invoke it:
 
