@@ -119,6 +119,10 @@ module Timetrap
     def start note, time = nil
       raise AlreadyRunning if running?
       time ||= Time.now
+      if Config['require_note'] && note.empty?
+        $stdout.print 'You need to add a note to the entry: '
+        note = $stdin.gets.chomp
+      end
       Entry.create(:sheet => Timer.current_sheet, :note => note, :start => time).save
     end
 
