@@ -1294,8 +1294,8 @@ EOS
     end
     prog.sub!(%r#.*/#,'')
     r = ''
-    if defined?($VERSION)
-      r << "\n#{prog}: version #{$VERSION}  (#{filedate})\n\n"
+    if defined?(::Timetrap::VERSION)
+      r << "\n#{prog}: version #{::Timetrap::VERSION}  (#{filedate})\n\n"
     else
       r << "\n#{prog}: version dated #{filedate}\n\n"
     end
