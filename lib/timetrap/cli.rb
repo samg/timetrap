@@ -270,11 +270,20 @@ COMMAND is one of:
     end
 
     def out
-      sheet = sheet_name_from_string(unused_args)
-      if Timer.stop sheet, args['-a']
-        warn "Checked out of sheet #{sheet.inspect}."
+      if Config['auto_checkout']
+        stopped = Timer.stop_all(args['-a']).each do |checked_out_of|
+          warn "Checked out of sheet #{checked_out_of.sheet.inspect}."
+        end
+        if stopped.empty?
+          warn "No running entries to stop."
+        end
       else
-        warn "No running entry on sheet #{sheet.inspect}."
+        sheet = sheet_name_from_string(unused_args)
+        if Timer.stop sheet, args['-a']
+          warn "Checked out of sheet #{sheet.inspect}."
+        else
+          warn "No running entry on sheet #{sheet.inspect}."
+        end
       end
     end
 

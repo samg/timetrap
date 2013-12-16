@@ -604,6 +604,14 @@ END:VCALENDAR
               invoke "in -a '#{now}' second task"
               entry.reload.end.to_s.should == now.to_s
             end
+
+            it "should check out of the running entry without having to start a new entry" do
+              entry = Timetrap::Timer.active_entry('sheet1')
+              entry.should be_a(Timetrap::Entry)
+              entry.end.should be_nil
+              invoke "out"
+              entry.reload.end.should_not be_nil
+            end
           end
         end
       end
