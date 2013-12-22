@@ -306,7 +306,7 @@ Commands
   Stop the timer for the current timesheet. Must be called after in. Accepts an
   optional --at flag. Accepts an optional TIMESHEET name to check out of a
   running, non-current sheet. Will check out of all running sheets if the
-  auto_sheet configuration option is enabled.
+  auto_checkout configuration option is enabled.
 
   usage: ``t out [--at TIME] [TIMESHEET]``
 
