@@ -305,7 +305,8 @@ Commands
 **out**
   Stop the timer for the current timesheet. Must be called after in. Accepts an
   optional --at flag. Accepts an optional TIMESHEET name to check out of a
-  running, non-current sheet.
+  running, non-current sheet. Will check out of all running sheets if the
+  auto_sheet configuration option is enabled.
 
   usage: ``t out [--at TIME] [TIMESHEET]``
 
@@ -374,7 +375,8 @@ See ``t configure`` for details.  Currently supported options are:
 
   **default_command**: The default command to invoke when you call `t`
 
-  **auto_checkout**: Automatically check out of running entries when you check in
+  **auto_checkout**: Automatically check out of running entries when you check
+                     in or out
 
 Autocomplete
 ------------

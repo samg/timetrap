@@ -38,7 +38,7 @@ COMMAND is one of:
                               `--format` option
       default_command:        The default command to run when calling t.
       auto_checkout:          Automatically check out of running entries when
-                              you check in
+                              you check in or out
 
   * display - Display the current timesheet or a specific. Pass `all' as SHEET
       to display all unarchived sheets or `full' to display archived and
@@ -78,7 +78,7 @@ COMMAND is one of:
   * now - Show all running entries.
     usage: t now
 
-  * out - Stop the timer for the a timesheet.
+  * out - Stop the timer for a timesheet.
     usage: t out [--at TIME] [TIMESHEET]
     -a, --at <time:qs>        Use this time instead of now
 
