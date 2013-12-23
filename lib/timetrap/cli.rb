@@ -39,6 +39,8 @@ COMMAND is one of:
       default_command:        The default command to run when calling t.
       auto_checkout:          Automatically check out of running entries when
                               you check in or out
+      require_note:           Prompt for a note if one isn't provided when
+                              checking in
 
   * display - Display the current timesheet or a specific. Pass `all' as SHEET
       to display all unarchived sheets or `full' to display archived and
@@ -253,6 +255,12 @@ COMMAND is one of:
           warn "Checked out of sheet #{checked_out_of.sheet.inspect}."
         end
       end
+
+      if Config['require_note'] && !Timer.running? && unused_args.empty?
+        $stderr.print("Please enter a note for this entry:\n> ")
+        self.unused_args = $stdin.gets
+      end
+
       Timer.start unused_args, args['-a']
       warn "Checked into sheet #{Timer.current_sheet.inspect}."
     end

@@ -27,7 +27,9 @@ module Timetrap
         'default_command' => nil,
         # only allow one running entry at a time.
         # automatically check out of any running tasks when checking in.
-        'auto_checkout' => false
+        'auto_checkout' => false,
+        # interactively prompt for a note if one isn't passed when checking in.
+        'require_note' => false
       }
     end
 

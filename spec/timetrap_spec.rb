@@ -555,6 +555,32 @@ END:VCALENDAR
           $stderr.string.should =~ /\w+/
         end
 
+        describe "with require_note config option set" do
+          before do
+            with_stubbed_config 'require_note' => true
+          end
+
+          it "should prompt for a note if one isn't passed" do
+            $stdin.string = "an interactive note\n"
+            invoke "in"
+            $stderr.string.should include('enter a note')
+            Timetrap::Timer.active_entry.note.should == "an interactive note"
+          end
+
+          it "should not prompt for a note if one is passed" do
+            $stdin.string = "an interactive note\n"
+            invoke "in a normal note"
+            Timetrap::Timer.active_entry.note.should == "a normal note"
+          end
+
+          it "should not stop the running entry or prompt" do
+            invoke "in a normal note"
+            $stdin.string = "an interactive note\n"
+            invoke "in"
+            Timetrap::Timer.active_entry.note.should == "a normal note"
+          end
+        end
+
         describe "with auto_checkout config option set" do
           before do
             with_stubbed_config 'auto_checkout' => true

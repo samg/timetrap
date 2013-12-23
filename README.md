@@ -378,6 +378,8 @@ See ``t configure`` for details.  Currently supported options are:
   **auto_checkout**: Automatically check out of running entries when you check
                      in or out
 
+  **require_note**: Prompt for a note if one isn't provided when checking in
+
 Autocomplete
 ------------
 
