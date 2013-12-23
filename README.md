@@ -16,6 +16,8 @@ This will place a ``t`` executable in your path.
 ### Basic Usage
 
     $ # get help
+    $ timetrap --help
+    $ # or
     $ t --help
 
 Timetrap maintains a list of *timesheets*.
