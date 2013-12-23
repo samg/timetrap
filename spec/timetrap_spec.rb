@@ -1097,6 +1097,17 @@ END:VCALENDAR
           end
         end
       end
+
+      describe '--version' do
+        it 'should print the version number if asked' do
+          begin
+            invoke '--version'
+          rescue SystemExit #Getopt::Declare calls exit after --version is invoked
+          end
+
+          $stdout.string.should include(::Timetrap::VERSION)
+        end
+      end
     end
   end
 
