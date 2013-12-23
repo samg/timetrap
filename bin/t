@@ -8,4 +8,8 @@ rescue LoadError
     require File.dirname(__FILE__) + '/../lib/timetrap'
   end
 end
+
+warn "The `t` command is deprecated in favor of `timetrap`, and will be removed in a future version! Sorry for the inconvenience."
+warn "Consider aliasing `timetrap` to `t` if you wish to keep using it with `t` as command."
+warn "You can find the reasoning and more information at https://github.com/samg/timetrap/pull/80."
 Timetrap::CLI.invoke
