@@ -1329,7 +1329,6 @@ END:VCALENDAR
     it 'should include a t bin and an equivalent timetrap bin' do
       timetrap = File.open(File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 'timetrap')))
       t = File.open(File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 't')))
-      t.read.should == timetrap.read
       t.stat.mode.should == timetrap.stat.mode
     end
 
