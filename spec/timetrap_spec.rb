@@ -284,6 +284,19 @@ Id  Day                Start      End        Duration   Notes
     Total                                    8:00:00
             OUTPUT
 
+            @desired_output_with_long_ids = <<-OUTPUT
+Timesheet: SpecSheet
+Id    Day                Start      End        Duration   Notes
+3     Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
+2                        16:00:00 - 18:00:00   2:00:00    entry 2
+                                               4:00:00
+40000 Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
+5                        18:00:00 -            2:00:00    entry 4
+                                               4:00:00
+      -----------------------------------------------------------
+      Total                                    8:00:00
+            OUTPUT
+
             @desired_output_for_all = <<-OUTPUT
 Timesheet: SpecSheet
     Day                Start      End        Duration   Notes
@@ -337,6 +350,13 @@ Grand Total                                 10:00:00
           it "should display a timesheet with ids" do
             invoke 'display S --ids'
             $stdout.string.should == @desired_output_with_ids
+          end
+
+          it "should properly form a timesheet with long ids" do
+            Timetrap::DB["UPDATE entries SET id = 40000 WHERE id = 4"].all
+            invoke 'display S --ids'
+            STDERR.puts $stderr.string
+            $stdout.string.should == @desired_output_with_long_ids
           end
 
           it "should display all timesheets" do
