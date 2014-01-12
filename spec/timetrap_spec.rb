@@ -352,12 +352,18 @@ Grand Total                                 10:00:00
             $stdout.string.should == @desired_output_with_ids
           end
 
-          it "should properly form a timesheet with long ids" do
+          it "should properly format a timesheet with long ids" do
             Timetrap::DB["UPDATE entries SET id = 40000 WHERE id = 4"].all
             invoke 'display S --ids'
-            STDERR.puts $stderr.string
             $stdout.string.should == @desired_output_with_long_ids
           end
+
+          it "should properly format a timesheet with no ids even if long ids are in the db" do
+            Timetrap::DB["UPDATE entries SET id = 40000 WHERE id = 4"].all
+            invoke 'display S'
+            $stdout.string.should == @desired_output
+          end
+
 
           it "should display all timesheets" do
             Timetrap::Timer.current_sheet = 'another'
