@@ -28,6 +28,33 @@ module Timetrap
       end
     end
 
+    def load_auto_sheet(auto_sheet)
+      err_msg = "Can't load #{auto_sheet.inspect} auto_sheet."
+      begin
+        paths = (
+          Array(Config['auto_sheet_search_paths']) +
+          [ File.join( File.dirname(__FILE__), 'auto_sheets') ]
+        )
+       if paths.detect do |path|
+           begin
+             fp = File.join(path, auto_sheet)
+             require File.join(path, auto_sheet)
+             true
+           rescue LoadError
+             nil
+           end
+         end
+       else
+         raise LoadError, "Couldn't find #{auto_sheet}.rb in #{paths.inspect}"
+       end
+       Timetrap::AutoSheets.const_get(auto_sheet.camelize)
+      rescue LoadError, NameError => e
+        err = e.class.new("#{err_msg} (#{e.message})")
+        err.set_backtrace(e.backtrace)
+        raise err
+      end
+    end
+
     def selected_entries
       ee = if (sheet = sheet_name_from_string(unused_args)) == 'all'
         Timetrap::Entry.filter('sheet not like ? escape "!"', '!_%')
