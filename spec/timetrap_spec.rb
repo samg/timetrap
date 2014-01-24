@@ -219,6 +219,17 @@ describe Timetrap do
         end
       end
 
+      describe 'auto_sheet' do
+        describe 'with a .timetrap-sheet in cwd' do
+          it 'should use sheet defined in dorfile' do
+            Dir.chdir('spec/dotfile') do
+              with_stubbed_config('auto_sheet' => 'dotfiles')
+              Timetrap::Timer.current_sheet.should == 'dotfile-sheet'
+            end
+          end
+        end
+      end
+
       describe "backend" do
         it "should open an sqlite console to the db" do
           Timetrap::CLI.should_receive(:exec).with("sqlite3 #{Timetrap::DB_NAME}")
@@ -406,7 +417,7 @@ Grand Total                                 10:00:00
             )
             invoke 'd SpecSheet'
             # check it doesn't error and produces valid looking output
-            $stdout.string.should include('Timesheet: SpecSheet') 
+            $stdout.string.should include('Timesheet: SpecSheet')
           end
         end
 

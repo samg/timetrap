@@ -23,6 +23,12 @@ module Timetrap
         ],
         # formatter to use when display is invoked without a --format option
         'default_formatter' => 'text',
+        # the auto_sheet to use
+        'auto_sheet' => 'dotfiles',
+        # an array of directories to search for user defined auto_sheet classes
+        'auto_sheet_search_paths' => [
+          "#{ENV['HOME']}/.timetrap/auto_sheets"
+        ],
         # the default command to when you run `t`.  default to printing usage.
         'default_command' => nil,
         # only allow one running entry at a time.

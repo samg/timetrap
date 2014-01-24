@@ -1,6 +1,7 @@
 require "rubygems"
 
 require 'chronic'
+require 'pathname'
 require 'sequel'
 require 'yaml'
 require 'erb'
@@ -12,6 +13,7 @@ require File.join(File.dirname(__FILE__), 'timetrap', 'helpers')
 require File.join(File.dirname(__FILE__), 'timetrap', 'cli')
 require File.join(File.dirname(__FILE__), 'timetrap', 'timer')
 require File.join(File.dirname(__FILE__), 'timetrap', 'formatters')
+require File.join(File.dirname(__FILE__), 'timetrap', 'auto_sheets')
 module Timetrap
   DB_NAME = defined?(TEST_MODE) ? nil : Timetrap::Config['database_file']
   # connect to database.  This will create one if it doesn't exist
