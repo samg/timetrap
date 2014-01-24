@@ -62,12 +62,15 @@ module Timetrap
     end
 
     def current_sheet
-      return auto_sheet if auto_sheet
-
       unless Meta.find(:key => 'current_sheet')
         Meta.create(:key => 'current_sheet', :value => 'default')
       end
-      Meta.find(:key => 'current_sheet').value
+
+      if the_auto_sheet = auto_sheet
+        the_auto_sheet
+      else
+        Meta.find(:key => 'current_sheet').value
+      end
     end
 
     def last_sheet
@@ -128,7 +131,7 @@ module Timetrap
 
     def auto_sheet
       if Timetrap::Config['auto_sheet']
-        load_auto_sheet(Config['auto_sheet']).new.sheet
+        load_auto_sheet(Config['auto_sheet']).new(Meta.find(:key => 'current_sheet').value).sheet
       end
     end
   end
