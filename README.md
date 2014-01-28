@@ -413,6 +413,8 @@ You need to add timetrap's zsh completions directory to your `$fpath`,
 so add the following to your `.zshrc`:
 
 ```zsh
+autoload -U compinit
+compinit
 fpath=(/path/to/timetrap-1.x.y/gem/completions/zsh $fpath)
 ```
 
