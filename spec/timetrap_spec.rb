@@ -682,6 +682,20 @@ END:VCALENDAR
         end
       end
 
+      describe "yesterday" do
+        it "should only show entries for yesterday" do
+          yesterday = Time.now - (24 * 60 * 60)
+          create_entry(
+            :start => yesterday,
+            :end => yesterday
+          )
+          create_entry
+          invoke 'yesterday'
+          $stdout.string.should include yesterday.strftime('%a %b %d, %Y')
+          $stdout.string.should_not include Time.now.strftime('%a %b %d, %Y')
+        end
+      end
+
       describe "week" do
         it "should only show entries from this week" do
           create_entry(
