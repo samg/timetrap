@@ -68,7 +68,7 @@ module Timetrap
 
       if the_auto_sheet = auto_sheet
         unless @auto_sheet_warned
-          warn "Sheet #{the_auto_sheet.inspect} auto-chosen by #{::Timetrap::Config['auto_sheet']}.rb"
+          warn "Sheet #{the_auto_sheet.inspect} selected by Timetrap::AutoSheets::#{::Timetrap::Config['auto_sheet'].capitalize}"
           @auto_sheet_warned = true
         end
         the_auto_sheet
