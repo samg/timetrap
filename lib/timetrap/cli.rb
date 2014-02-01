@@ -97,6 +97,9 @@ COMMAND is one of:
   * today - Shortcut for display with start date as the current day
     usage: t today [--ids] [--format FMT] [SHEET | all]
 
+  * yesterday - Shortcut for display with start and end dates as the day before the current day
+    usage: t yesterday [--ids] [--format FMT] [SHEET | all]
+
   * week - Shortcut for display with start date set to monday of this week.
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
 
@@ -393,6 +396,13 @@ COMMAND is one of:
     def today
         args['-s'] = Date.today.to_s
         display
+    end
+
+    def yesterday
+      yesterday = (Date.today - 1).to_s
+      args['-s'] = yesterday
+      args['-e'] = yesterday
+      display
     end
 
     def week
