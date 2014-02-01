@@ -67,6 +67,10 @@ module Timetrap
       end
 
       if the_auto_sheet = auto_sheet
+        unless @auto_sheet_warned
+          warn "Sheet #{the_auto_sheet.inspect} auto-chosen by #{::Timetrap::Config['auto_sheet']}.rb"
+          @auto_sheet_warned = true
+        end
         the_auto_sheet
       else
         Meta.find(:key => 'current_sheet').value
