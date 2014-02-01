@@ -326,6 +326,17 @@ Commands
 
   usage: ``t sheet [TIMESHEET]``
 
+**today** 
+  Shortcut for display with start date as the current day
+
+  usage: ``t today [--ids] [--format FMT] [SHEET | all]``
+
+**yesterday** 
+  Shortcut for display with start and end dates as the day before the current
+  day
+
+  usage: ``t yesterday [--ids] [--format FMT] [SHEET | all]``
+
 **week**
   Shortcut for display with start date set to monday of this week
 
