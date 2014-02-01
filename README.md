@@ -422,14 +422,14 @@ source /path/to/timetrap-1.x.y/gem/completions/bash/timetrap-autocomplete.bash
 
 If it isn't already, add the following to your `.zshrc`:
 
-```zsh
+```bash
 autoload -U compinit
 compinit
 ```
 
 Then add this to source the completions:
 
-```zsh
+```bash
 fpath=(/path/to/timetrap-1.x.y/gem/completions/zsh $fpath)
 ```
 
