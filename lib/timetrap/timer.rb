@@ -135,7 +135,7 @@ module Timetrap
 
     def auto_sheet
       if Timetrap::Config['auto_sheet']
-        load_auto_sheet(Config['auto_sheet']).new(Meta.find(:key => 'current_sheet').value).sheet
+        load_auto_sheet(Config['auto_sheet']).new.sheet
       end
     end
   end
