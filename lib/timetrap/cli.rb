@@ -399,8 +399,9 @@ COMMAND is one of:
     end
 
     def yesterday
-      args['-s'] = Date.today.prev_day.to_s
-      args['-e'] = Date.today.prev_day.to_s
+      yesterday = (Date.today - 1).to_s
+      args['-s'] = yesterday
+      args['-e'] = yesterday
       display
     end
 
