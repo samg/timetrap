@@ -1,6 +1,6 @@
 module Timetrap
   module Timer
-    extend Helpers
+    extend Helpers::AutoLoad
 
     class AlreadyRunning < StandardError
       def message

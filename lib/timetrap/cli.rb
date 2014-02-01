@@ -440,6 +440,7 @@ COMMAND is one of:
       $stdin.gets =~ /\Aye?s?\Z/i
     end
 
+    extend Helpers::AutoLoad
     def format_entries(entries)
       load_formatter(args['-f'] || Config['default_formatter']).new(Array(entries)).output
     end
