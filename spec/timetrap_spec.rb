@@ -219,6 +219,66 @@ describe Timetrap do
         end
       end
 
+      describe 'auto_sheet' do
+        describe "using dotfiles auto_sheet" do
+          describe 'with a .timetrap-sheet in cwd' do
+            it 'should use sheet defined in dorfile' do
+              Dir.chdir('spec/dotfile') do
+                with_stubbed_config('auto_sheet' => 'dotfiles')
+                Timetrap::Timer.current_sheet.should == 'dotfile-sheet'
+              end
+            end
+          end
+        end
+
+        describe "using YamlCwd autosheet" do
+          describe 'with cwd in auto_sheet_paths' do
+            it 'should use sheet defined in config' do
+              with_stubbed_config(
+                'auto_sheet_paths' => {
+                'a sheet' => ['/not/cwd/', Dir.getwd]
+              }, 'auto_sheet' => 'yaml_cwd')
+              Timetrap::Timer.current_sheet.should == 'a sheet'
+            end
+          end
+
+          describe 'with ancestor of cwd in auto_sheet_paths' do
+            it 'should use sheet defined in config' do
+              with_stubbed_config(
+                'auto_sheet_paths' => {'a sheet' => '/'},
+                'auto_sheet' => 'yaml_cwd'
+              )
+              Timetrap::Timer.current_sheet.should == 'a sheet'
+            end
+          end
+
+          describe 'with cwd not in auto_sheet_paths' do
+            it 'should not use sheet defined in config' do
+              with_stubbed_config(
+                'auto_sheet_paths' => {
+                  'a sheet' => '/not/the/current/working/directory/'
+              },'auto_sheet' => 'yaml_cwd')
+              Timetrap::Timer.current_sheet.should == 'default'
+            end
+          end
+
+          describe 'with cwd and ancestor in auto_sheet_paths' do
+            it 'should use the most specific config' do
+              with_stubbed_config(
+                'auto_sheet_paths' => {
+                  'general sheet' => '/', 'more specific sheet' => Dir.getwd
+              }, 'auto_sheet' => 'yaml_cwd')
+              Timetrap::Timer.current_sheet.should == 'more specific sheet'
+              with_stubbed_config(
+                'auto_sheet_paths' => {
+                  'more specific sheet' => Dir.getwd, 'general sheet' => '/'
+                }, 'auto_sheet' => 'yaml_cwd')
+              Timetrap::Timer.current_sheet.should == 'more specific sheet'
+            end
+          end
+        end
+      end
+
       describe "backend" do
         it "should open an sqlite console to the db" do
           Timetrap::CLI.should_receive(:exec).with("sqlite3 #{Timetrap::DB_NAME}")
@@ -406,7 +466,7 @@ Grand Total                                 10:00:00
             )
             invoke 'd SpecSheet'
             # check it doesn't error and produces valid looking output
-            $stdout.string.should include('Timesheet: SpecSheet') 
+            $stdout.string.should include('Timesheet: SpecSheet')
           end
         end
 

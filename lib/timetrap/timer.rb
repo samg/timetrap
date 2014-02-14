@@ -1,5 +1,7 @@
 module Timetrap
   module Timer
+    extend Helpers::AutoLoad
+
     class AlreadyRunning < StandardError
       def message
         "Timetrap is already running"
@@ -63,7 +65,16 @@ module Timetrap
       unless Meta.find(:key => 'current_sheet')
         Meta.create(:key => 'current_sheet', :value => 'default')
       end
-      Meta.find(:key => 'current_sheet').value
+
+      if the_auto_sheet = auto_sheet
+        unless @auto_sheet_warned
+          warn "Sheet #{the_auto_sheet.inspect} selected by Timetrap::AutoSheets::#{::Timetrap::Config['auto_sheet'].capitalize}"
+          @auto_sheet_warned = true
+        end
+        the_auto_sheet
+      else
+        Meta.find(:key => 'current_sheet').value
+      end
     end
 
     def last_sheet
@@ -122,5 +133,10 @@ module Timetrap
       Entry.create(:sheet => Timer.current_sheet, :note => note, :start => time).save
     end
 
+    def auto_sheet
+      if Timetrap::Config['auto_sheet']
+        load_auto_sheet(Config['auto_sheet']).new.sheet
+      end
+    end
   end
 end

@@ -399,8 +399,9 @@ COMMAND is one of:
     end
 
     def yesterday
-      args['-s'] = Date.today.prev_day.to_s
-      args['-e'] = Date.today.prev_day.to_s
+      yesterday = (Date.today - 1).to_s
+      args['-s'] = yesterday
+      args['-e'] = yesterday
       display
     end
 
@@ -439,6 +440,7 @@ COMMAND is one of:
       $stdin.gets =~ /\Aye?s?\Z/i
     end
 
+    extend Helpers::AutoLoad
     def format_entries(entries)
       load_formatter(args['-f'] || Config['default_formatter']).new(Array(entries)).output
     end

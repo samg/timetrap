@@ -326,6 +326,17 @@ Commands
 
   usage: ``t sheet [TIMESHEET]``
 
+**today** 
+  Shortcut for display with start date as the current day
+
+  usage: ``t today [--ids] [--format FMT] [SHEET | all]``
+
+**yesterday** 
+  Shortcut for display with start and end dates as the day before the current
+  day
+
+  usage: ``t yesterday [--ids] [--format FMT] [SHEET | all]``
+
 **week**
   Shortcut for display with start date set to monday of this week
 
@@ -409,10 +420,16 @@ source /path/to/timetrap-1.x.y/gem/completions/bash/timetrap-autocomplete.bash
 
 ### zsh
 
-You need to add timetrap's zsh completions directory to your `$fpath`,
-so add the following to your `.zshrc`:
+If it isn't already, add the following to your `.zshrc`:
 
-```zsh
+```bash
+autoload -U compinit
+compinit
+```
+
+Then add this to source the completions:
+
+```bash
 fpath=(/path/to/timetrap-1.x.y/gem/completions/zsh $fpath)
 ```
 

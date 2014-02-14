@@ -1,30 +1,40 @@
 module Timetrap
   module Helpers
+    module AutoLoad
+      def load_formatter(formatter)
+        auto_load(formatter, 'formatter')
+      end
 
-    def load_formatter(formatter)
-      err_msg = "Can't load #{formatter.inspect} formatter."
-      begin
-        paths = (
-          Array(Config['formatter_search_paths']) +
-          [ File.join( File.dirname(__FILE__), 'formatters') ]
-        )
-       if paths.detect do |path|
-           begin
-             fp = File.join(path, formatter)
-             require File.join(path, formatter)
-             true
-           rescue LoadError
-             nil
-           end
-         end
-       else
-         raise LoadError, "Couldn't find #{formatter}.rb in #{paths.inspect}"
-       end
-       Timetrap::Formatters.const_get(formatter.camelize)
-      rescue LoadError, NameError => e
-        err = e.class.new("#{err_msg} (#{e.message})")
-        err.set_backtrace(e.backtrace)
-        raise err
+      def load_auto_sheet(auto_sheet)
+        auto_load(auto_sheet, 'auto_sheet')
+      end
+
+      def auto_load(name, type)
+        err_msg = "Can't load #{name.inspect} #{type}."
+        begin
+          paths = (
+            Array(Config["#{type}_search_paths"]) +
+            [ File.join( File.dirname(__FILE__), type.pluralize) ]
+          )
+        if paths.detect do |path|
+            begin
+              fp = File.join(path, name)
+              require File.join(path, name)
+              true
+            rescue LoadError
+              nil
+            end
+          end
+        else
+          raise LoadError, "Couldn't find #{name}.rb in #{paths.inspect}"
+        end
+        namespace = Timetrap.const_get(type.pluralize.camelize)
+        namespace.const_get(name.camelize)
+        rescue LoadError, NameError => e
+          err = e.class.new("#{err_msg} (#{e.message})")
+          err.set_backtrace(e.backtrace)
+          raise err
+        end
       end
     end
 
