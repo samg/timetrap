@@ -258,7 +258,9 @@ workflow.  You're encouraged to submit these back to timetrap for inclusion in
 a future version.
 
 To create a custom auto sheet module you create a ruby class and implement one
-method on it `#sheet`.
+method on it `#sheet`.  This method should return the name of the sheet
+timetrap should use (as a string) or `nil` if a sheet shouldn't be
+automatically selected.
 
 All timetrap auto sheets live under the namespace `Timetrap::AutoSheets`
 
