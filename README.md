@@ -237,6 +237,48 @@ Timetrap Formatters Repository
 A community focused repository of custom formatters is available at
 https://github.com/samg/timetrap_formatters.
 
+## AutoSheets
+
+Timetrap ships with some auto sheets to help automate your workflow
+
+[Here are the current ones](lib/timetrap/auto_sheets)
+
+You can set the sheet you want to use in `~/.timetrap.yml` by changing
+the `auto_sheet` value.
+
+#### Custom AutoSheets
+
+Timetrap tries to make it easy to define custom auto sheet modules.
+
+You're encouraged to submit these back to timetrap for inclusion in a future
+version.
+
+To create a custom auto sheet module you create a ruby class and implement one method
+on it `#sheet`.
+
+All timetrap auto sheets live under the namespace `Timetrap::AutoSheets`
+
+To ensure that timetrap can find your auto sheet put it in
+`~/.timetrap/auto_sheets/dotfiles.rb`.  The filename should be the same as the
+string you will set in the configuration.  If you want to put your
+auto sheet in a different place you can run `t configure` and edit the
+`auto sheet_search_paths` option.
+
+As an example here's the dotfiles auto sheet
+
+```ruby
+module Timetrap
+  module AutoSheets
+    class Dotfiles
+      def sheet
+        dotfile = File.join(Dir.pwd, '.timetrap-sheet')
+        File.read(dotfile).chomp if File.exist?(dotfile)
+      end
+    end
+  end
+end
+```
+
 Commands
 --------
 **archive**
@@ -326,12 +368,12 @@ Commands
 
   usage: ``t sheet [TIMESHEET]``
 
-**today** 
+**today**
   Shortcut for display with start date as the current day
 
   usage: ``t today [--ids] [--format FMT] [SHEET | all]``
 
-**yesterday** 
+**yesterday**
   Shortcut for display with start and end dates as the day before the current
   day
 
@@ -392,6 +434,8 @@ See ``t configure`` for details.  Currently supported options are:
                      in or out
 
   **require_note**: Prompt for a note if one isn't provided when checking in
+
+  **auto_sheet**: Which auto sheet module to use.
 
 Autocomplete
 ------------
