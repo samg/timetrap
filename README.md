@@ -416,7 +416,7 @@ Commands
 
 ### Configuration
 
-Configuration of TimeTrap's behavior can be done through an ERB interpolated
+Configuration of Timetrap's behavior can be done through an ERB interpolated
 YAML config file.
 
 See ``t configure`` for details.  Currently supported options are:
