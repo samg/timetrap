@@ -287,6 +287,7 @@ end
 
 Commands
 --------
+
 **archive**
   Archives the selected entries (by moving them to a sheet called ``_[SHEET]``)
   These entries can be seen by running ``t display _[SHEET]``.
@@ -398,8 +399,7 @@ Commands
   usage: ``t month [--ids] [--start MONTH] [--format FMT] [TIMESHEET | all]``
 
 
-Global Options
---------
+### Global Options
 
 **rounding**
   passing a ``--round`` or ``-r`` flag to any command will round entry start
@@ -414,8 +414,7 @@ Global Options
   confirmation (such as ``kill``) to assume an affirmative response to any
   prompt. This is useful when timetrap is used in a scripted environment.
 
-Configuration
---------
+### Configuration
 
 Configuration of TimeTrap's behavior can be done through an ERB interpolated
 YAML config file.
@@ -448,8 +447,7 @@ See ``t configure`` for details.  Currently supported options are:
                               defined auto_sheet classes
 
 
-Autocomplete
-------------
+### Autocomplete
 
 Timetrap has some basic support for autocomplete in bash and zsh.
 There are completions for commands and for sheets.
@@ -457,7 +455,7 @@ There are completions for commands and for sheets.
 **HINT** If you don't know where timetrap is installed,
 have a look in the directories listed in `echo $GEM_PATH`.
 
-### bash
+#### bash
 
 If it isn't already, add the following to your `.bashrc`/`.bash_profile`:
 
@@ -473,7 +471,7 @@ Then add this to source the completions:
 source /path/to/timetrap-1.x.y/gem/completions/bash/timetrap-autocomplete.bash
 ```
 
-### zsh
+#### zsh
 
 If it isn't already, add the following to your `.zshrc`:
 
