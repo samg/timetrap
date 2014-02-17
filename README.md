@@ -231,13 +231,12 @@ Now when I invoke it:
     working on issue #123
     working on issue #234
 
-Timetrap Formatters Repository
-------------------------------
+#### Timetrap Formatters Repository
 
 A community focused repository of custom formatters is available at
 https://github.com/samg/timetrap_formatters.
 
-## AutoSheets
+### AutoSheets
 
 Timetrap has a feature called auto sheets that allows you to automatically
 select which timesheet to check into.
