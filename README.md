@@ -267,7 +267,7 @@ To ensure that timetrap can find your auto sheet put it in
 string you will set in the configuration (for example
 `~/.timetrap/auto_sheets/dotfiles.rb`.  If you want to put your auto sheet in a
 different place you can run `t configure` and edit the
-`auto sheet_search_paths` option.
+`auto_sheet_search_paths` option.
 
 As an example here's the dotfiles auto sheet
 
@@ -441,6 +441,10 @@ See ``t configure`` for details.  Currently supported options are:
   **require_note**: Prompt for a note if one isn't provided when checking in
 
   **auto_sheet**: Which auto sheet module to use.
+
+  **auto_sheet_search_paths**: an array of directories to search for user
+                              defined auto_sheet classes
+
 
 Autocomplete
 ------------
