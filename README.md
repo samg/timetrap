@@ -239,29 +239,34 @@ https://github.com/samg/timetrap_formatters.
 
 ## AutoSheets
 
-Timetrap ships with some auto sheets to help automate your workflow
+Timetrap has a feature called auto sheets that allows you to automatically
+select which timesheet to check into.
 
-[Here are the current ones](lib/timetrap/auto_sheets)
+Timetrap ships with a couple auto sheets.  The default auto sheet is called
+`dotfiles` and will read the sheetname to check into from a `.timetrap-sheet`
+file in the current directory.
 
-You can set the sheet you want to use in `~/.timetrap.yml` by changing
-the `auto_sheet` value.
+[Here are all the included auto sheets](lib/timetrap/auto_sheets)
+
+You can specify which auto sheet logic you want to use in `~/.timetrap.yml` by
+changing the `auto_sheet` value.
 
 #### Custom AutoSheets
 
-Timetrap tries to make it easy to define custom auto sheet modules.
+It's also easy to write your own auto sheet logic that matches your personal
+workflow.  You're encouraged to submit these back to timetrap for inclusion in
+a future version.
 
-You're encouraged to submit these back to timetrap for inclusion in a future
-version.
-
-To create a custom auto sheet module you create a ruby class and implement one method
-on it `#sheet`.
+To create a custom auto sheet module you create a ruby class and implement one
+method on it `#sheet`.
 
 All timetrap auto sheets live under the namespace `Timetrap::AutoSheets`
 
 To ensure that timetrap can find your auto sheet put it in
-`~/.timetrap/auto_sheets/dotfiles.rb`.  The filename should be the same as the
-string you will set in the configuration.  If you want to put your
-auto sheet in a different place you can run `t configure` and edit the
+`~/.timetrap/auto_sheets/`.  The filename should be the same as the
+string you will set in the configuration (for example
+`~/.timetrap/auto_sheets/dotfiles.rb`.  If you want to put your auto sheet in a
+different place you can run `t configure` and edit the
 `auto sheet_search_paths` option.
 
 As an example here's the dotfiles auto sheet
