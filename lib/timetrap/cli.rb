@@ -41,6 +41,8 @@ COMMAND is one of:
                               you check in or out
       require_note:           Prompt for a note if one isn't provided when
                               checking in
+      hooks_path:             Specify a directory containing callback hook
+                              scripts if not ~/.timetrap/hooks
 
   * display - Display the current timesheet or a specific. Pass `all' as SHEET
       to display all unarchived sheets or `full' to display archived and
@@ -166,6 +168,7 @@ COMMAND is one of:
       else
         handle_invalid_command(command)
       end
+      Timetrap::Hooks.send valid[0]
     end
 
     def valid_command(command)
