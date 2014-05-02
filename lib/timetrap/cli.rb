@@ -202,6 +202,11 @@ COMMAND is one of:
     end
 
     def configure
+      if ARGV.size > 1
+        puts Config[ARGV[1]]
+        return
+      end
+
       Config.configure!
       puts "Config file is at #{Config::PATH.inspect}"
     end
