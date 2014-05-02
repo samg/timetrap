@@ -1,31 +1,203 @@
 #compdef t
+#autoload
 
-_t() {
-  local curcontext="$curcontext" state line
-  typeset -A opt_args
+alias r="unfunction _t; autoload -U _t"
 
-  _arguments \
-      '1: :->t_command'\
-      '2: :->first_arg'
-
-  case $state in
-  t_command)
-    compadd "$@" archive backend configure display edit in kill\
-                 list now out resume sheet week month
-  ;;
-
-  first_arg)
-    # If the first argument starts with s or d (sheet or display),
-    # the second argument can be autocompleted to one of the existing
-    # non-archived sheets.
-    if [[ $words[2] == s* || $words[2] == d* ]]; then
-      query='SELECT DISTINCT(sheet) FROM entries WHERE sheet NOT LIKE "\_%" ESCAPE "\";'
-      echo $query | t b | while read sheet; do
-        compadd "$@" $sheet
-      done
-    fi
-  ;;
-  esac
+_timetrap_list_items() {
+  #available_timesheets=(`timetrap list | cut -f1,2 -d' ' | sed -e '1d' | sed 's/[\ ,*]//'`)
+  available_timesheets=($(echo 'SELECT DISTINCT(sheet) FROM entries WHERE sheet NOT LIKE "\_%" ESCAPE "\";' | timetrap backend))
 }
 
-_t "$@"
+local -a _timetrap_commands
+_timetrap_commands=(
+  "archive:Move entries to a hidden sheet (by default named _[SHEET]) so theyre out of the way."
+  "backend:Open an sqlite shell to the database."
+  "configure:Write out a YAML config file. Print path to config file.  The file may contain ERB."
+  "display:Display the current timesheet or a specific. Pass all as SHEET to display all unarchived sheets or full to display archived and unarchived sheets."
+  "edit:Alter an entrys note, start, or end time. Defaults to the active entry. Defaults to the last entry to be checked out of if no entry is active."
+  "in:Start the timer for the current timesheet."
+  "kill:Delete a timesheet or an entry."
+  "list:Show the available timesheets."
+  "now:Show all running entries."
+  "out:Stop the timer for a timesheet."
+  "resume:Start the timer for the current time sheet with the same note as the last entry on the sheet. If there is no entry it takes the passed note."
+  "sheet:Switch to a timesheet creating it if necessary. When no sheet is specified list all sheets. The special sheetname - will switch to the last active sheet."
+  "today:Shortcut for display with start date as the current day"
+  "yesterday:Shortcut for display with start and end dates as the day before the current day"
+  "week:Shortcut for display with start date set to monday of this week."
+  "month:Shortcut for display with start date set to the beginning of either this month or a specified month."
+)
+
+local expl
+
+_arguments \
+  '(--help)-h[Display this help.]' \
+  '(-h)--help[Display this help.]' \
+  '(--round)-r[Round output to 15 minute start and end times.]' \
+  '(-r)--round[Round output to 15 minute start and end times.]' \
+  '(--yes)-y[Noninteractive, assume yes as answer to all prompts.]' \
+  '(-y)--yes[Noninteractive, assume yes as answer to all prompts.]' \
+  '(--debug)--debug[Display stack traces for errors.]' \
+  '*:: :->commands' && return 0
+
+if (( CURRENT == 1 )); then
+  _describe -t commands "timetrap commands" _timetrap_commands
+  return
+fi
+
+case "$words[1]" in
+  display)
+
+#* display - Display the current timesheet or a specific. Pass `all' as SHEET
+#    to display all unarchived sheets or `full' to display archived and
+#    unarchived sheets.
+#  usage: t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all | full]
+#  -v, --ids                 Print database ids (for use with edit)
+#  -s, --start <date:qs>     Include entries that start on this date or later
+#  -e, --end <date:qs>       Include entries that start on this date or earlier
+#  -f, --format <format>     The output format.  Valid built-in formats are ical, csv, json, ids, factor, and text (default).  Documentation on defining custom formats can be found in the README included in this distribution.
+#
+    _arguments \
+      '(-v)-I+[display info]:info code:"abc def"' \
+      '(-v)--ids[Print database ids (for use with edit)]' \
+      '(--ids)-v[Print database ids (for use with edit)]' \
+      '(-s)--start+[start <date:qs> Include entries that start on this date or later]:info code:(-1 0 1 2 3 4)' \
+      '(--start)-s[start <date:qs> Include entries that start on this date or later]' \
+      '(-e)--end[end <date:qs> Include entries that start on this date or earlier]' \
+      '(--end)-e[end <date:qs> Include entries that start on this date or earlier]' \
+      '(-f)--format[format <format> The output format.  Valid built-in formats are ical, csv, json, ids, factor, and text (default)]' \
+      '(--format)-f[format <format> The output format.  Valid built-in formats are ical, csv, json, ids, factor, and text (default)]' \
+      '1: :->timesheet' && return 0
+
+    if [[ "$state" == timesheet ]]; then
+      _timetrap_list_items
+      _wanted available_timesheets expl 'available timesheets' compadd -a available_timesheets
+    fi ;;
+
+    #TODO: implement autocompletion with parameters for other commands
+esac
+
+# Timetrap - Simple Time Tracking
+#
+# Usage: timetrap COMMAND [OPTIONS] [ARGS...]
+#
+# COMMAND can be abbreviated. For example `t in` and `t i` are equivalent.
+#
+# COMMAND is one of:
+#
+#   * archive - Move entries to a hidden sheet (by default named '_[SHEET]') so
+#       they're out of the way.
+#     usage: t archive [--start DATE] [--end DATE] [SHEET]
+#     -s, --start <date:qs>     Include entries that start on this date or later
+#     -e, --end <date:qs>       Include entries that start on this date or earlier
+#
+#   * backend - Open an sqlite shell to the database.
+#     usage: t backend
+#
+#   * configure - Write out a YAML config file. Print path to config file.  The
+#       file may contain ERB.
+#     usage: t configure
+#     Currently supported options are:
+#       round_in_seconds:       The duration of time to use for rounding with
+#                               the -r flag
+#       database_file:          The file path of the sqlite database
+#       append_notes_delimiter: delimiter used when appending notes via
+#                               t edit --append
+#       formatter_search_paths: an array of directories to search for user
+#                               defined fomatter classes
+#       default_formatter:      The format to use when display is invoked without a
+#                               `--format` option
+#       default_command:        The default command to run when calling t.
+#       auto_checkout:          Automatically check out of running entries when
+#                               you check in or out
+#       require_note:           Prompt for a note if one isn't provided when
+#                               checking in
+#
+#   * display - Display the current timesheet or a specific. Pass `all' as SHEET
+#       to display all unarchived sheets or `full' to display archived and
+#       unarchived sheets.
+#     usage: t display [--ids] [--start DATE] [--end DATE] [--format FMT] [SHEET | all | full]
+#     -v, --ids                 Print database ids (for use with edit)
+#     -s, --start <date:qs>     Include entries that start on this date or later
+#     -e, --end <date:qs>       Include entries that start on this date or earlier
+#     -f, --format <format>     The output format.  Valid built-in formats are
+#                               ical, csv, json, ids, factor, and text (default).
+#                               Documentation on defining custom formats can be
+#                               found in the README included in this
+#                               distribution.
+#
+#   * edit - Alter an entry's note, start, or end time. Defaults to the active
+#     entry. Defaults to the last entry to be checked out of if no entry is active.
+#     usage: t edit [--id ID] [--start TIME] [--end TIME] [--append] [NOTES]
+#     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
+#     -s, --start <time:qs>     Change the start time to <time>
+#     -e, --end <time:qs>       Change the end time to <time>
+#     -z, --append              Append to the current note instead of replacing it
+#                                 the delimiter between appended notes is
+#                                 configurable (see configure)
+#     -m, --move <sheet>        Move to another sheet
+#
+#   * in - Start the timer for the current timesheet.
+#     usage: t in [--at TIME] [NOTES]
+#     -a, --at <time:qs>        Use this time instead of now
+#
+#   * kill - Delete a timesheet or an entry.
+#     usage: t kill [--id ID] [TIMESHEET]
+#     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
+#
+#   * list - Show the available timesheets.
+#     usage: t list
+#
+#   * now - Show all running entries.
+#     usage: t now
+#
+#   * out - Stop the timer for a timesheet.
+#     usage: t out [--at TIME] [TIMESHEET]
+#     -a, --at <time:qs>        Use this time instead of now
+#
+#   * resume - Start the timer for the current time sheet with the same note as
+#       the last entry on the sheet. If there is no entry it takes the passed note.
+#     usage: t resume [--at TIME] [NOTES]
+#     -a, --at <time:qs>        Use this time instead of now
+#
+#   * sheet - Switch to a timesheet creating it if necessary. When no sheet is
+#       specified list all sheets. The special sheetname '-' will switch to the
+#       last active sheet.
+#     usage: t sheet [TIMESHEET]
+#
+#   * today - Shortcut for display with start date as the current day
+#     usage: t today [--ids] [--format FMT] [SHEET | all]
+#
+#   * yesterday - Shortcut for display with start and end dates as the day before the current day
+#     usage: t yesterday [--ids] [--format FMT] [SHEET | all]
+#
+#   * week - Shortcut for display with start date set to monday of this week.
+#     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
+#
+#   * month - Shortcut for display with start date set to the beginning of either
+#       this month or a specified month.
+#     usage: t month [--ids] [--start MONTH] [--format FMT] [SHEET | all]
+#
+#   OTHER OPTIONS
+#
+#   -h, --help              Display this help.
+#   -r, --round             Round output to 15 minute start and end times.
+#   -y, --yes               Noninteractive, assume yes as answer to all prompts.
+#   --debug                 Display stack traces for errors.
+#
+#   EXAMPLES
+#
+#   # create the "MyTimesheet" timesheet
+#   $ t sheet MyTimesheet
+#
+#   # check in 5 minutes ago with a note
+#   $ t in --at '5 minutes ago' doing some stuff
+#
+#   # check out
+#   $ t out
+#
+#   # view current timesheet
+#   $ t display
+#
+#   Submit bugs and feature requests to http://github.com/samg/timetrap/issues
+
