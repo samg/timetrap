@@ -2,7 +2,11 @@ module Timetrap
   class Hooks
 
     class << self
-      def method_missing(m, *args)
+
+      __display = instance_method(:display)
+      define_method(:display){ |*args| method_missing(:display, args) }
+
+      def method_missing(m, *args, &block)
         hook = hook_path(Timer.current_sheet, m)
         require hook if File.exist? hook
       end
