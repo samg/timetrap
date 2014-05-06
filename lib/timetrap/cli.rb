@@ -164,11 +164,12 @@ COMMAND is one of:
       command = args.unused.shift
       set_global_options
       case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
-      when 1 then send valid[0]
+      when 1 then
+        send valid[0]
+        Timetrap::Hooks.send valid[0]
       else
         handle_invalid_command(command)
       end
-      Timetrap::Hooks.send valid[0]
     end
 
     def valid_command(command)
