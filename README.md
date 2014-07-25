@@ -236,6 +236,15 @@ Now when I invoke it:
 A community focused repository of custom formatters is available at
 https://github.com/samg/timetrap_formatters.
 
+#### Harvest Integration
+
+For timetrap users who use [Harvest][harvest] to manage timesheets,
+[Devon Blandin][dblandin] created [timetrap-harvest][timetrap-harvest], a custom
+formatter which allows you to easily submit your timetrap entries to Harvest
+timeheets.
+
+See its [README][timetrap-harvest] for more details.
+
 ### AutoSheets
 
 Timetrap has a feature called auto sheets that allows you to automatically
@@ -498,3 +507,7 @@ http://bitbucket.org/trevor/timebook/src/
 Bugs and Feature Requests
 --------
 Submit to http://github.com/samg/timetrap/issues
+
+[harvest]:          http://www.getharvest.com
+[timetrap-harvest]: https://github.com/dblandin/timetrap-harvest
+[dblandin]:         https://github.com/dblandin
