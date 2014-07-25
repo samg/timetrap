@@ -241,7 +241,7 @@ https://github.com/samg/timetrap_formatters.
 For timetrap users who use [Harvest][harvest] to manage timesheets,
 [Devon Blandin][dblandin] created [timetrap-harvest][timetrap-harvest], a custom
 formatter which allows you to easily submit your timetrap entries to Harvest
-timeheets.
+timesheets.
 
 See its [README][timetrap-harvest] for more details.
 
