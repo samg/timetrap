@@ -50,6 +50,11 @@ module Timetrap
       end
       ee = ee.filter('start >= ?', Date.parse(Timer.process_time(args['-s']).to_s)) if args['-s']
       ee = ee.filter('start <= ?', Date.parse(Timer.process_time(args['-e']).to_s) + 1) if args['-e']
+      ee = ee.order(:start)
+      if args['-g']
+        re = Regexp::new(args['-g'])
+        ee = ee.find_all{|e| re.match(e.note)}
+      end
       ee
     end
 
