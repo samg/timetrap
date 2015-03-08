@@ -317,7 +317,8 @@ The "format" command is deprecated in favor of "display". Sorry for the inconven
               :note => 'entry 4', :start => '2008-10-05 18:00:00'
             )
 
-            Time.stub(:now).and_return local_time('2008-10-05 20:00:00')
+            now = local_time('2008-10-05 20:00:00')
+            Time.stub(:now).and_return now
             @desired_output = <<-OUTPUT
 Timesheet: SpecSheet
     Day                Start      End        Duration   Notes
@@ -843,7 +844,8 @@ END:VCALENDAR
 
         describe "with a numeric sheet name" do
           before do
-            Time.stub(:now).and_return local_time("2008-10-05 18:00:00")
+            now = local_time("2008-10-05 18:00:00")
+            Time.stub(:now).and_return now
             create_entry( :sheet => 1234, :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
           end
@@ -866,7 +868,8 @@ END:VCALENDAR
 
         describe "with a numeric sheet name" do
           before do
-            Time.stub(:now).and_return local_time("2008-10-05 18:00:00")
+            now = local_time("2008-10-05 18:00:00")
+            Time.stub(:now).and_return now
             create_entry( :sheet => '1234', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
           end
@@ -890,7 +893,8 @@ END:VCALENDAR
 
         describe "with sheets defined" do
           before :each do
-            Time.stub(:now).and_return local_time("2008-10-05 18:00:00")
+            now = local_time("2008-10-05 18:00:00")
+            Time.stub(:now).and_return now
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
@@ -1352,9 +1356,9 @@ END:VCALENDAR
         it "should use round start if the global round attribute is set" do
           with_rounding_on do
             with_stubbed_config('round_in_seconds' => 900) do
-              @time = Chronic.parse("12:55am")
+              @time = Chronic.parse("12:55")
               @entry.start = @time
-              @entry.start.should == Chronic.parse("1am")
+              @entry.start.should == Chronic.parse("1")
             end
           end
         end
@@ -1362,18 +1366,18 @@ END:VCALENDAR
         it "should use round start if the global round attribute is set" do
           with_rounding_on do
             with_stubbed_config('round_in_seconds' => 900) do
-              @time = Chronic.parse("12:50am")
+              @time = Chronic.parse("12:50")
               @entry.start = @time
-              @entry.start.should == Chronic.parse("12:45am")
+              @entry.start.should == Chronic.parse("12:45")
             end
           end
         end
 
         it "should have a rounded start" do
           with_stubbed_config('round_in_seconds' => 900) do
-            @time = Chronic.parse("12:50am")
+            @time = Chronic.parse("12:50")
             @entry.start = @time
-            @entry.rounded_start.should == Chronic.parse("12:45am")
+            @entry.rounded_start.should == Chronic.parse("12:45")
           end
         end
 
