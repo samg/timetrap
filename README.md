@@ -110,7 +110,7 @@ check in 5 minutes ago using `in`'s `--at` flag.
 
 Command line flags also have short versions.
 
-    $ # equivilent to the command above
+    $ # equivalent to the command above
     $ t i -a "5 minutes ago"
 
 You can consult the Chronic gem (http://chronic.rubyforge.org/) for a full
@@ -397,7 +397,7 @@ Commands
   usage: ``t yesterday [--ids] [--format FMT] [SHEET | all]``
 
 **week**
-  Shortcut for display with start date set to monday of this week
+  Shortcut for display with start date set to Monday of this week
 
   usage: ``t week [--ids] [--end DATE] [--format FMT] [TIMESHEET | all]``
 
