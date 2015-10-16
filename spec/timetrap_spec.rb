@@ -1045,6 +1045,10 @@ END:VCALENDAR
           @time = Time.now
           Time.stub(:now).and_return @time
 
+          invoke 'in A previous task that isnt last'
+          @previous = Timetrap::Timer.active_entry
+          invoke 'out'
+
           invoke 'in Some strange task'
           @last_active = Timetrap::Timer.active_entry
           invoke 'out'
@@ -1058,6 +1062,20 @@ END:VCALENDAR
 
           Timetrap::Timer.active_entry.note.should ==(@last_active.note)
           Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+        end
+
+        it "should allow to resume a specific entry" do
+          invoke "resume --id #{@previous.id}"
+
+          Timetrap::Timer.active_entry.note.should ==(@previous.note)
+          Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+        end
+
+        it "should allow to resume a specific entry with a given time" do
+          invoke "resume --id #{@previous.id} --at \"10am 2008-10-03\""
+
+          Timetrap::Timer.active_entry.note.should ==(@previous.note)
+          Timetrap::Timer.active_entry.start.should eql(Time.parse('2008-10-03 10:00'))
         end
 
         it "should allow to resume the activity with a given time" do
@@ -1076,17 +1094,6 @@ END:VCALENDAR
             Timetrap::Timer.active_entry.should be_nil
           end
 
-          it "starts a new entry if no entry exists" do
-            invoke "resume"
-            Timetrap::Timer.active_entry.should_not be_nil
-            Timetrap::Timer.active_entry.note.should ==("")
-          end
-
-          it "allows to pass a note that is used for the new entry" do
-            invoke "resume New Note"
-            Timetrap::Timer.active_entry.should_not be_nil
-            Timetrap::Timer.active_entry.note.should ==("New Note")
-          end
         end
 
         describe "with only archived entries" do
