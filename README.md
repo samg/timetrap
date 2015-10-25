@@ -372,11 +372,10 @@ Commands
   usage: ``t out [--at TIME] [TIMESHEET]``
 
 **resume**
-  Start the timer for the current timesheet with the same notes as the last entry.
-  If there is no last entry the new one has blank notes ore uses the optional
-  NOTES parameter.
+  Start the timer for the current time sheet for an entry. Defaults to the
+  active entry.
 
-  usage: ``t resume [--at TIME] [NOTES]``
+  usage: ``t resume [--id ID] [--at TIME]``
 
 **sheet**
   Switch to a timesheet creating it if necessary. The default timesheet is

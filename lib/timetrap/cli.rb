@@ -86,7 +86,7 @@ COMMAND is one of:
 
   * resume - Start the timer for the current time sheet for an entry. Defaults
       to the active entry.
-    usage: t resume [--id ID] [--at TIME] [NOTES]
+    usage: t resume [--id ID] [--at TIME]
     -i, --id <id:i>           Resume entry with id <id> instead of the last entry
     -a, --at <time:qs>        Use this time instead of now
 
