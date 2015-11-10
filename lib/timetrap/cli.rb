@@ -86,9 +86,10 @@ COMMAND is one of:
     usage: t out [--at TIME] [TIMESHEET]
     -a, --at <time:qs>        Use this time instead of now
 
-  * resume - Start the timer for the current time sheet with the same note as
-      the last entry on the sheet. If there is no entry it takes the passed note.
-    usage: t resume [--at TIME] [NOTES]
+  * resume - Start the timer for the current time sheet for an entry. Defaults
+      to the active entry.
+    usage: t resume [--id ID] [--at TIME]
+    -i, --id <id:i>           Resume entry with id <id> instead of the last entry
     -a, --at <time:qs>        Use this time instead of now
 
   * sheet - Switch to a timesheet creating it if necessary. When no sheet is
@@ -271,13 +272,23 @@ COMMAND is one of:
     end
 
     def resume
-      last_entry = Timer.entries(Timer.current_sheet).last
-      last_entry ||= Timer.entries("_#{Timer.current_sheet}").last
-      warn "No entry yet on this sheet yet. Started a new entry." unless last_entry
-      note = (last_entry ? last_entry.note : nil)
-      warn "Resuming #{note.inspect} from entry ##{last_entry.id}" if note
+      entry = case
+              when args['-i']
+                entry = Entry[args['-i']]
+                warn "Resuming entry with id #{args['-i'].inspect} (#{entry.note})"
+                entry
+              when Timer.last_checkout
+                last = Timer.last_checkout
+                warn "Resuming last enrty you checked out of (#{last.note})"
+                last
+              end
 
-      self.unused_args = note || unused_args
+      unless entry
+        warn "Can't find entry"
+        return
+      end
+
+      self.unused_args = entry.note || unused_args
 
       self.in
     end
