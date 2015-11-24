@@ -279,7 +279,7 @@ COMMAND is one of:
                 entry
               when Timer.last_checkout
                 last = Timer.last_checkout
-                warn "Resuming last enrty you checked out of (#{last.note})"
+                warn "Resuming last entry you checked out of (#{last.note})"
                 last
               end
 
