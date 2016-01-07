@@ -277,6 +277,32 @@ describe Timetrap do
             end
           end
         end
+
+        describe "using nested_dotfiles auto_sheet" do
+          describe 'with a .timetrap-sheet in cwd' do
+            it 'should use sheet defined in dotfile' do
+              Dir.chdir('spec/dotfile') do
+                with_stubbed_config('auto_sheet' => 'nested_dotfiles')
+                Timetrap::Timer.current_sheet.should == 'dotfile-sheet'
+              end
+            end
+            it 'should use top-most sheet found in dir heirarchy' do
+              Dir.chdir('spec/dotfile/nested') do
+                with_stubbed_config('auto_sheet' => 'nested_dotfiles')
+                Timetrap::Timer.current_sheet.should == 'nested-sheet'
+              end
+            end
+          end
+
+          describe 'with no .timetrap-sheet in cwd' do
+            it 'should use sheet defined in ancestor\'s dotfile' do
+              Dir.chdir('spec/dotfile/nested/no-sheet') do
+                with_stubbed_config('auto_sheet' => 'nested_dotfiles')
+                Timetrap::Timer.current_sheet.should == 'nested-sheet'
+              end
+            end
+          end
+        end
       end
 
       describe "backend" do
