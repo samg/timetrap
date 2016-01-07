@@ -19,6 +19,7 @@ COMMAND is one of:
     usage: t archive [--start DATE] [--end DATE] [SHEET]
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier
+    -g, --grep <regexp>       Include entries where the note matches this regexp.
 
   * backend - Open an sqlite shell to the database.
     usage: t backend
@@ -54,6 +55,7 @@ COMMAND is one of:
                               Documentation on defining custom formats can be
                               found in the README included in this
                               distribution.
+    -g, --grep <regexp>       Include entries where the note matches this regexp.
 
   * edit - Alter an entry's note, start, or end time. Defaults to the active
     entry. Defaults to the last entry to be checked out of if no entry is active.
@@ -193,7 +195,7 @@ COMMAND is one of:
     def archive
       ee = selected_entries
       if ask_user "Archive #{ee.count} entries? "
-        ee.all.each do |e|
+        ee.each do |e|
           next unless e.end
           e.update :sheet => "_#{e.sheet}"
         end
@@ -334,7 +336,7 @@ COMMAND is one of:
     end
 
     def display
-      entries = selected_entries.order(:start).all
+      entries = selected_entries
       if entries == []
         warn "No entries were selected to display."
       else

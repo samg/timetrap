@@ -88,7 +88,22 @@ describe Timetrap do
       describe 'archive' do
         before do
           3.times do |i|
+            create_entry({:note => 'grep'})
+          end
+          3.times do |i|
             create_entry
+          end
+        end
+
+        it "should only archive entries matched by the provided regex" do
+          $stdin.string = "yes\n"
+          invoke 'archive --grep [g][r][e][p]'
+          Timetrap::Entry.each do |e|
+            if e.note == 'grep'
+              e.sheet.should == '_default'
+            else
+              e.sheet.should == 'default'
+            end
           end
         end
 
@@ -358,6 +373,17 @@ Timesheet: SpecSheet
     Total                                    8:00:00
             OUTPUT
 
+            @desired_output_grepped = <<-OUTPUT
+Timesheet: SpecSheet
+    Day                Start      End        Duration   Notes
+    Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
+                                             2:00:00
+    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
+                                             2:00:00
+    -----------------------------------------------------------
+    Total                                    4:00:00
+            OUTPUT
+
             @desired_output_with_ids = <<-OUTPUT
 Timesheet: SpecSheet
 Id  Day                Start      End        Duration   Notes
@@ -432,6 +458,12 @@ Grand Total                                 10:00:00
             )
             invoke 'display Spec'
             $stdout.string.should include("entry 5")
+          end
+
+          it "should only display entries that are matched by the provided regex" do
+            Timetrap::Timer.current_sheet = 'SpecSheet'
+            invoke 'display --grep [13]'
+            $stdout.string.should == @desired_output_grepped
           end
 
           it "should display a timesheet with ids" do
