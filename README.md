@@ -494,6 +494,13 @@ Then add this to source the completions:
 fpath=(/path/to/timetrap-1.x.y/gem/completions/zsh $fpath)
 ```
 
+### Callback Hooks
+
+You can extend Timetrap commands by adding your own custom Ruby scripts at
+`~/.timetrap/hooks/#{current_sheet}/#{command}.rb`.
+
+This script will be loaded after the command has finished executing.
+
 Special Thanks
 --------------
 

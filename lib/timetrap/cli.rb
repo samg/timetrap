@@ -42,6 +42,8 @@ COMMAND is one of:
                               you check in or out
       require_note:           Prompt for a note if one isn't provided when
                               checking in
+      hooks_path:             Specify a directory containing callback hook
+                              scripts if not ~/.timetrap/hooks
 
   * display - Display the current timesheet or a specific. Pass `all' as SHEET
       to display all unarchived sheets or `full' to display archived and
@@ -165,7 +167,9 @@ COMMAND is one of:
       command = args.unused.shift
       set_global_options
       case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
-      when 1 then send valid[0]
+      when 1 then
+        send valid[0]
+        Timetrap::Hooks.send valid[0]
       else
         handle_invalid_command(command)
       end
