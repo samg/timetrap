@@ -301,7 +301,7 @@ Commands
   Archives the selected entries (by moving them to a sheet called ``_[SHEET]``)
   These entries can be seen by running ``t display _[SHEET]``.
 
-  usage: ``t archive [--start DATE] [--end DATE] [SHEET]``
+  usage: ``t archive [--start DATE] [--end DATE] [--grep REGEX] [SHEET]``
 
 **backend**
   Run an interactive database session on the timetrap database. Requires the
@@ -331,7 +331,7 @@ Commands
   Display also allows the use of a ``--round`` or ``-r`` flag which will round
   all times in the output. See global options below.
 
-  usage: ``t display [--ids] [--round] [--start DATE] [--end DATE] [--format FMT] [SHEET | all | full]``
+  usage: ``t display [--ids] [--round] [--start DATE] [--end DATE] [--format FMT] [--grep REGEX] [SHEET | all | full]``
 
 **edit**
   Inserts a note associated with the an entry in the timesheet, or edits the
