@@ -74,7 +74,7 @@ COMMAND is one of:
 
   * kill - Delete a timesheet or an entry.
     usage: t kill [--id ID] [TIMESHEET]
-    -i, --id <id:i>           Alter entry with id <id> instead of the running entry
+    -i, --id <id:i>           Delete entry with id <id> instead of timesheet
 
   * list - Show the available timesheets.
     usage: t list
