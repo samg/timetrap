@@ -384,6 +384,19 @@ Timesheet: SpecSheet
     Total                                    4:00:00
             OUTPUT
 
+            @desired_output_filtered = <<-OUTPUT
+Timesheet: SpecSheet
+    Day                Start      End        Duration   Notes
+    Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
+                       16:00:00 - 18:00:00   2:00:00    entry 2
+                                             4:00:00
+    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
+                       18:00:00 -            2:00:00    entry 4
+                                             4:00:00
+    -----------------------------------------------------------
+    Total                                    8:00:00
+            OUTPUT
+
             @desired_output_with_ids = <<-OUTPUT
 Timesheet: SpecSheet
 Id  Day                Start      End        Duration   Notes
@@ -464,6 +477,12 @@ Grand Total                                 10:00:00
             Timetrap::Timer.current_sheet = 'SpecSheet'
             invoke 'display --grep [13]'
             $stdout.string.should == @desired_output_grepped
+          end
+
+          it "should only display entries from sheet names matching the provided regex" do
+            Timetrap::Timer.current_sheet = 'SpecSheet'
+            invoke 'display -m Spec.* all'
+            $stdout.string.should == @desired_output_filtered
           end
 
           it "should display a timesheet with ids" do

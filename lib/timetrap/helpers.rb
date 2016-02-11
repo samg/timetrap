@@ -55,6 +55,10 @@ module Timetrap
         re = Regexp::new(args['-g'])
         ee = ee.find_all{|e| re.match(e.note)}
       end
+      if args['-m']
+        re = Regexp::new(args['-m'])
+        ee = ee.find_all{|e| re.match(e.sheet)}
+      end
       ee
     end
 

@@ -20,6 +20,8 @@ COMMAND is one of:
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier
     -g, --grep <regexp>       Include entries where the note matches this regexp.
+    -m, --filter <regexp>     Include entries where the sheet name matches this
+                              regexp.
 
   * backend - Open an sqlite shell to the database.
     usage: t backend
@@ -56,6 +58,8 @@ COMMAND is one of:
                               found in the README included in this
                               distribution.
     -g, --grep <regexp>       Include entries where the note matches this regexp.
+    -m, --filter <regexp>     Include entries where the sheet name matches this
+                              regexp.
 
   * edit - Alter an entry's note, start, or end time. Defaults to the active
     entry. Defaults to the last entry to be checked out of if no entry is active.
