@@ -14,7 +14,7 @@ end
 module Timetrap::StubConfig
   def with_stubbed_config options = {}
     defaults = Timetrap::Config.defaults.dup
-    Timetrap::Config.stub(:[]).and_return do |k|
+    Timetrap::Config.stub(:[]) do |k|
       defaults.merge(options)[k]
     end
     yield if block_given?
@@ -129,9 +129,9 @@ describe Timetrap do
             FileUtils.mkdir_p(ENV['HOME'])
             config_file = ENV['HOME'] + '/.timetrap.yml'
             FileUtils.rm(config_file) if File.exist? config_file
-            File.exist?(config_file).should be_false
+            File.exist?(config_file).should be_falsey
             invoke "configure"
-            File.exist?(config_file).should be_true
+            File.exist?(config_file).should be_truthy
           end
         end
 
@@ -617,17 +617,17 @@ start,end,note,sheet
             invoke 'in'
             invoke 'display --format ical'
 
-            $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
+            expect($stdout.string.scan(/BEGIN:VEVENT/).size).to eq(2)
           end
 
           it "should filter events by the passed dates" do
             invoke 'display --format ical --start 2008-10-03 --end 2008-10-03'
-            $stdout.string.scan(/BEGIN:VEVENT/).should have(1).item
+            expect($stdout.string.scan(/BEGIN:VEVENT/).size).to eq(1)
           end
 
           it "should not filter events by date when none are passed" do
             invoke 'display --format ical'
-            $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
+            expect($stdout.string.scan(/BEGIN:VEVENT/).size).to eq(2)
           end
 
           it "should export a sheet to an ical format" do
@@ -868,10 +868,10 @@ END:VCALENDAR
       describe "kill" do
         it "should give me a chance not to fuck up" do
           entry = create_entry
-          lambda do
+          expect do
             $stdin.string = ""
             invoke "kill #{entry.sheet}"
-          end.should_not change(Timetrap::Entry, :count).by(-1)
+          end.not_to change(Timetrap::Entry, :count)
         end
 
         it "should delete a timesheet" do
