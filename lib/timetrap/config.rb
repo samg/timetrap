@@ -35,7 +35,9 @@ module Timetrap
         # automatically check out of any running tasks when checking in.
         'auto_checkout' => false,
         # interactively prompt for a note if one isn't passed when checking in.
-        'require_note' => false
+        'require_note' => false,
+        # command to launch external editor (false if no external editor used)
+        'note_editor' => false
       }
     end
 
