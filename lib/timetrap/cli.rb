@@ -42,6 +42,8 @@ COMMAND is one of:
                               you check in or out
       require_note:           Prompt for a note if one isn't provided when
                               checking in
+      use_system_editor:      Use the system editor to write notes when
+                              checking in
 
   * display - Display the current timesheet or a specific. Pass `all' as SHEET
       to display all unarchived sheets or `full' to display archived and
@@ -263,8 +265,19 @@ COMMAND is one of:
       end
 
       if Config['require_note'] && !Timer.running? && unused_args.empty?
-        $stderr.print("Please enter a note for this entry:\n> ")
-        self.unused_args = $stdin.gets
+        if Config['use_system_editor'] && ENV['EDITOR']
+          file = Tempfile.new('get_note')
+          begin
+            system("#{ENV['EDITOR']} #{file.path}")
+            self.unused_args = IO.read(file.path)
+          ensure
+             file.close
+             file.unlink
+          end
+        else
+          $stderr.print("Please enter a note for this entry:\n> ")
+          self.unused_args = $stdin.gets
+        end
       end
 
       Timer.start unused_args, args['-a']
