@@ -237,7 +237,7 @@ describe Timetrap do
       describe 'auto_sheet' do
         describe "using dotfiles auto_sheet" do
           describe 'with a .timetrap-sheet in cwd' do
-            it 'should use sheet defined in dorfile' do
+            it 'should use sheet defined in dotfile' do
               Dir.chdir('spec/dotfile') do
                 with_stubbed_config('auto_sheet' => 'dotfiles')
                 Timetrap::Timer.current_sheet.should == 'dotfile-sheet'
@@ -701,28 +701,47 @@ END:VCALENDAR
         end
 
         describe "with require_note config option set" do
-          before do
-            with_stubbed_config 'require_note' => true
+          context "without a note_editor" do
+            before do
+              with_stubbed_config 'require_note' => true, 'note_editor' => false
+            end
+
+            it "should prompt for a note if one isn't passed" do
+              $stdin.string = "an interactive note\n"
+              invoke "in"
+              $stderr.string.should include('enter a note')
+              Timetrap::Timer.active_entry.note.should == "an interactive note"
+            end
+
+            it "should not prompt for a note if one is passed" do
+              $stdin.string = "an interactive note\n"
+              invoke "in a normal note"
+              Timetrap::Timer.active_entry.note.should == "a normal note"
+            end
+
+            it "should not stop the running entry or prompt" do
+              invoke "in a normal note"
+              $stdin.string = "an interactive note\n"
+              invoke "in"
+              Timetrap::Timer.active_entry.note.should == "a normal note"
+            end
           end
 
-          it "should prompt for a note if one isn't passed" do
-            $stdin.string = "an interactive note\n"
-            invoke "in"
-            $stderr.string.should include('enter a note')
-            Timetrap::Timer.active_entry.note.should == "an interactive note"
-          end
+          context "with a note editor" do
+            let(:note_editor_command) { 'vim' }
+            before do
+              with_stubbed_config 'require_note' => true, 'note_editor' => note_editor_command
+            end
 
-          it "should not prompt for a note if one is passed" do
-            $stdin.string = "an interactive note\n"
-            invoke "in a normal note"
-            Timetrap::Timer.active_entry.note.should == "a normal note"
-          end
-
-          it "should not stop the running entry or prompt" do
-            invoke "in a normal note"
-            $stdin.string = "an interactive note\n"
-            invoke "in"
-            Timetrap::Timer.active_entry.note.should == "a normal note"
+            it "should open an editor for writing the note" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "written in editor")
+              end
+              invoke "in"
+              $stderr.string.should_not include('enter a note')
+              Timetrap::Timer.active_entry.note.should == "written in editor"
+            end
           end
         end
 
