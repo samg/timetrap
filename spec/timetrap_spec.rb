@@ -3,6 +3,18 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'timetra
 require 'rspec'
 require 'fakefs/safe'
 
+RSpec.configure do |config|
+  # as we are stubbing stderr and stdout, if you want to capture
+  # any of your output in tests, simply add :write_stdout_stderr => true
+  # as metadata to the end of your test
+  config.after(:each, :write_stdout_stderr => true) do
+    $stderr.rewind
+    $stdout.rewind
+    File.write("stderr.txt", $stderr.read)
+    File.write("stdout.txt", $stdout.read)
+  end
+end
+
 def local_time(str)
   Timetrap::Timer.process_time(str)
 end
