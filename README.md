@@ -453,6 +453,10 @@ See ``t configure`` for details.  Currently supported options are:
 
   **auto_sheet_search_paths**: an array of directories to search for user
                               defined auto_sheet classes
+  *note_editor*: The command to start editing notes. Defaults to false which
+               means no external editor is used. Please see the section below
+               on Notes Editing for tips on using non-terminal based editors.
+               Example: note_editor: "vim"
 
 
 ### Autocomplete
@@ -493,6 +497,17 @@ Then add this to source the completions:
 ```bash
 fpath=(/path/to/timetrap-1.x.y/gem/completions/zsh $fpath)
 ```
+
+#### Notes editing
+If you use the note_editor setting, then it is possible to use
+an editor for writing your notes. If you use a non terminal based
+editor (like atom, sublime etc.) then you will need to make timetrap
+wait until the editor has finished. If you're using the "core.editor"
+flag in git, then it'll be the same flags you'll use.
+
+As of when this command was added, for atom you would use `atom --wait`
+and for sublime `subl -w`. If you use a console based editor (vim, emacs,
+nano) then it should just work.
 
 Special Thanks
 --------------

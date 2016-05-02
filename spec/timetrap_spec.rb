@@ -3,6 +3,18 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'timetra
 require 'rspec'
 require 'fakefs/safe'
 
+RSpec.configure do |config|
+  # as we are stubbing stderr and stdout, if you want to capture
+  # any of your output in tests, simply add :write_stdout_stderr => true
+  # as metadata to the end of your test
+  config.after(:each, :write_stdout_stderr => true) do
+    $stderr.rewind
+    $stdout.rewind
+    File.write("stderr.txt", $stderr.read)
+    File.write("stdout.txt", $stdout.read)
+  end
+end
+
 def local_time(str)
   Timetrap::Timer.process_time(str)
 end
@@ -14,7 +26,7 @@ end
 module Timetrap::StubConfig
   def with_stubbed_config options = {}
     defaults = Timetrap::Config.defaults.dup
-    Timetrap::Config.stub(:[]).and_return do |k|
+    Timetrap::Config.stub(:[]) do |k|
       defaults.merge(options)[k]
     end
     yield if block_given?
@@ -129,9 +141,9 @@ describe Timetrap do
             FileUtils.mkdir_p(ENV['HOME'])
             config_file = ENV['HOME'] + '/.timetrap.yml'
             FileUtils.rm(config_file) if File.exist? config_file
-            File.exist?(config_file).should be_false
+            File.exist?(config_file).should be_falsey
             invoke "configure"
-            File.exist?(config_file).should be_true
+            File.exist?(config_file).should be_truthy
           end
         end
 
@@ -237,7 +249,7 @@ describe Timetrap do
       describe 'auto_sheet' do
         describe "using dotfiles auto_sheet" do
           describe 'with a .timetrap-sheet in cwd' do
-            it 'should use sheet defined in dorfile' do
+            it 'should use sheet defined in dotfile' do
               Dir.chdir('spec/dotfile') do
                 with_stubbed_config('auto_sheet' => 'dotfiles')
                 Timetrap::Timer.current_sheet.should == 'dotfile-sheet'
@@ -617,17 +629,17 @@ start,end,note,sheet
             invoke 'in'
             invoke 'display --format ical'
 
-            $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
+            expect($stdout.string.scan(/BEGIN:VEVENT/).size).to eq(2)
           end
 
           it "should filter events by the passed dates" do
             invoke 'display --format ical --start 2008-10-03 --end 2008-10-03'
-            $stdout.string.scan(/BEGIN:VEVENT/).should have(1).item
+            expect($stdout.string.scan(/BEGIN:VEVENT/).size).to eq(1)
           end
 
           it "should not filter events by date when none are passed" do
             invoke 'display --format ical'
-            $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
+            expect($stdout.string.scan(/BEGIN:VEVENT/).size).to eq(2)
           end
 
           it "should export a sheet to an ical format" do
@@ -701,28 +713,47 @@ END:VCALENDAR
         end
 
         describe "with require_note config option set" do
-          before do
-            with_stubbed_config 'require_note' => true
+          context "without a note_editor" do
+            before do
+              with_stubbed_config 'require_note' => true, 'note_editor' => false
+            end
+
+            it "should prompt for a note if one isn't passed" do
+              $stdin.string = "an interactive note\n"
+              invoke "in"
+              $stderr.string.should include('enter a note')
+              Timetrap::Timer.active_entry.note.should == "an interactive note"
+            end
+
+            it "should not prompt for a note if one is passed" do
+              $stdin.string = "an interactive note\n"
+              invoke "in a normal note"
+              Timetrap::Timer.active_entry.note.should == "a normal note"
+            end
+
+            it "should not stop the running entry or prompt" do
+              invoke "in a normal note"
+              $stdin.string = "an interactive note\n"
+              invoke "in"
+              Timetrap::Timer.active_entry.note.should == "a normal note"
+            end
           end
 
-          it "should prompt for a note if one isn't passed" do
-            $stdin.string = "an interactive note\n"
-            invoke "in"
-            $stderr.string.should include('enter a note')
-            Timetrap::Timer.active_entry.note.should == "an interactive note"
-          end
+          context "with a note editor" do
+            let(:note_editor_command) { 'vim' }
+            before do
+              with_stubbed_config 'require_note' => true, 'note_editor' => note_editor_command
+            end
 
-          it "should not prompt for a note if one is passed" do
-            $stdin.string = "an interactive note\n"
-            invoke "in a normal note"
-            Timetrap::Timer.active_entry.note.should == "a normal note"
-          end
-
-          it "should not stop the running entry or prompt" do
-            invoke "in a normal note"
-            $stdin.string = "an interactive note\n"
-            invoke "in"
-            Timetrap::Timer.active_entry.note.should == "a normal note"
+            it "should open an editor for writing the note" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "written in editor")
+              end
+              invoke "in"
+              $stderr.string.should_not include('enter a note')
+              Timetrap::Timer.active_entry.note.should == "written in editor"
+            end
           end
         end
 
@@ -868,10 +899,10 @@ END:VCALENDAR
       describe "kill" do
         it "should give me a chance not to fuck up" do
           entry = create_entry
-          lambda do
+          expect do
             $stdin.string = ""
             invoke "kill #{entry.sheet}"
-          end.should_not change(Timetrap::Entry, :count).by(-1)
+          end.not_to change(Timetrap::Entry, :count)
         end
 
         it "should delete a timesheet" do
