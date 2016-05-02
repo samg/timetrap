@@ -453,7 +453,8 @@ See ``t configure`` for details.  Currently supported options are:
 
   **auto_sheet_search_paths**: an array of directories to search for user
                               defined auto_sheet classes
-  *note_editor*: The command to start editing notes. Defaults to false which
+
+  **note_editor**: The command to start editing notes. Defaults to false which
                means no external editor is used. Please see the section below
                on Notes Editing for tips on using non-terminal based editors.
                Example: note_editor: "vim"
