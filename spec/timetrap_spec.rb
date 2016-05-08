@@ -244,6 +244,57 @@ describe Timetrap do
           not_running.refresh.sheet.should == 'default'
           Timetrap::Timer.current_sheet.should == 'another second sheet'
         end
+
+        context "with external editor" do
+          let(:note_editor_command) { 'vim' }
+
+          before do
+            with_stubbed_config 'note_editor' => note_editor_command, 'append_notes_delimiter' => '//'
+          end
+
+          it "should open an editor for editing the note" do |example|
+            Timetrap::CLI.stub(:system) do |editor_command|
+              path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+              File.write(path[:path], "edited note")
+            end
+            Timetrap::Timer.active_entry.note.should == 'running entry'
+            invoke "edit"
+            Timetrap::Timer.active_entry.note.should == 'edited note'
+          end
+
+          it "should pass existing note to editor" do |example|
+            capture = nil
+            Timetrap::CLI.stub(:system) do |editor_command|
+              path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+
+              capture = File.read(path[:path])
+            end
+            invoke "edit"
+            expect(capture).to eq("running entry")
+          end
+
+          context "appending" do
+            it "should open an editor for editing the note with -z" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "appended in editor")
+              end
+              Timetrap::Timer.active_entry.note.should == 'running entry'
+              invoke "edit -z"
+              Timetrap::Timer.active_entry.note.should == 'running entry//appended in editor'
+            end
+
+            it "should open a editor for editing the note with --append" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "appended in editor")
+              end
+              Timetrap::Timer.active_entry.note.should == 'running entry'
+              invoke "edit --append"
+              Timetrap::Timer.active_entry.note.should == 'running entry//appended in editor'
+            end
+          end
+        end
       end
 
       describe 'auto_sheet' do

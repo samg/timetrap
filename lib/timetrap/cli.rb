@@ -242,14 +242,23 @@ COMMAND is one of:
         entry.update :sheet => args['-m']
       end
 
-      # update notes
-      if unused_args =~ /.+/
-        note = unused_args
+      if Config['note_editor']
         if args['-z']
-          note = [entry.note, note].join(Config['append_notes_delimiter'])
+          note = [entry.note, get_note_from_external_editor].join(Config['append_notes_delimiter'])
+          entry.update :note => note
+        elsif args.size == 0 # no arguments supplied
+          entry.update :note => get_note_from_external_editor(entry.note)
         end
-        entry.update :note => note
+      else
+        if unused_args =~ /.+/
+          note = unused_args
+          if args['-z']
+            note = [entry.note, note].join(Config['append_notes_delimiter'])
+          end
+          entry.update :note => note
+        end
       end
+
 
       puts format_entries(entry)
     end
@@ -267,14 +276,7 @@ COMMAND is one of:
 
       if Config['require_note'] && !Timer.running? && unused_args.empty?
         if Config['note_editor']
-          file = Tempfile.new('get_note')
-          begin
-            system("#{Config['note_editor']} #{file.path}")
-            self.unused_args = file.open.read
-          ensure
-             file.close
-             file.unlink
-          end
+          self.unused_args = get_note_from_external_editor
         else
           $stderr.print("Please enter a note for this entry:\n> ")
           self.unused_args = $stdin.gets
@@ -465,6 +467,21 @@ COMMAND is one of:
       return true if args['-y']
       $stderr.print question
       $stdin.gets =~ /\Aye?s?\Z/i
+    end
+
+    def get_note_from_external_editor(contents = "")
+      file = Tempfile.new('get_note')
+      unless contents.empty?
+        file.open
+        file.write(contents)
+        file.close
+      end
+
+      system("#{Config['note_editor']} #{file.path}")
+      file.open.read
+    ensure
+     file.close
+     file.unlink
     end
 
     extend Helpers::AutoLoad
