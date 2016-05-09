@@ -7,7 +7,7 @@ RSpec.configure do |config|
   # as we are stubbing stderr and stdout, if you want to capture
   # any of your output in tests, simply add :write_stdout_stderr => true
   # as metadata to the end of your test
-  config.after(:each, :write_stdout_stderr => true) do
+  config.after(:each, write_stdout_stderr: true) do
     $stderr.rewind
     $stdout.rewind
     File.write("stderr.txt", $stderr.read)
@@ -839,6 +839,15 @@ END:VCALENDAR
               invoke "in"
               $stderr.string.should_not include('enter a note')
               Timetrap::Timer.active_entry.note.should == "written in editor"
+            end
+
+            it "should preserve linebreaks from editor" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "line1\nline2")
+              end
+              invoke "in"
+              Timetrap::Timer.active_entry.note.should == "line1\nline2"
             end
           end
         end

@@ -274,16 +274,17 @@ COMMAND is one of:
         end
       end
 
+      note = unused_args
       if Config['require_note'] && !Timer.running? && unused_args.empty?
         if Config['note_editor']
-          self.unused_args = get_note_from_external_editor
+          note = get_note_from_external_editor
         else
           $stderr.print("Please enter a note for this entry:\n> ")
-          self.unused_args = $stdin.gets
+          note = $stdin.gets.strip
         end
       end
 
-      Timer.start unused_args, args['-a']
+      Timer.start note, args['-a']
       warn "Checked into sheet #{Timer.current_sheet.inspect}."
     end
 
