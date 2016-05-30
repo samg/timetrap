@@ -1,6 +1,7 @@
 require "rubygems"
 
 require 'chronic'
+require 'tempfile'
 require 'sequel'
 require 'yaml'
 require 'erb'
