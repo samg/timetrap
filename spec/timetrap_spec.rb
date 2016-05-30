@@ -7,7 +7,7 @@ RSpec.configure do |config|
   # as we are stubbing stderr and stdout, if you want to capture
   # any of your output in tests, simply add :write_stdout_stderr => true
   # as metadata to the end of your test
-  config.after(:each, :write_stdout_stderr => true) do
+  config.after(:each, write_stdout_stderr: true) do
     $stderr.rewind
     $stdout.rewind
     File.write("stderr.txt", $stderr.read)
@@ -244,6 +244,57 @@ describe Timetrap do
           not_running.refresh.sheet.should == 'default'
           Timetrap::Timer.current_sheet.should == 'another second sheet'
         end
+
+        context "with external editor" do
+          let(:note_editor_command) { 'vim' }
+
+          before do
+            with_stubbed_config 'note_editor' => note_editor_command, 'append_notes_delimiter' => '//'
+          end
+
+          it "should open an editor for editing the note" do |example|
+            Timetrap::CLI.stub(:system) do |editor_command|
+              path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+              File.write(path[:path], "edited note")
+            end
+            Timetrap::Timer.active_entry.note.should == 'running entry'
+            invoke "edit"
+            Timetrap::Timer.active_entry.note.should == 'edited note'
+          end
+
+          it "should pass existing note to editor" do |example|
+            capture = nil
+            Timetrap::CLI.stub(:system) do |editor_command|
+              path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+
+              capture = File.read(path[:path])
+            end
+            invoke "edit"
+            expect(capture).to eq("running entry")
+          end
+
+          context "appending" do
+            it "should open an editor for editing the note with -z" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "appended in editor")
+              end
+              Timetrap::Timer.active_entry.note.should == 'running entry'
+              invoke "edit -z"
+              Timetrap::Timer.active_entry.note.should == 'running entry//appended in editor'
+            end
+
+            it "should open a editor for editing the note with --append" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "appended in editor")
+              end
+              Timetrap::Timer.active_entry.note.should == 'running entry'
+              invoke "edit --append"
+              Timetrap::Timer.active_entry.note.should == 'running entry//appended in editor'
+            end
+          end
+        end
       end
 
       describe 'auto_sheet' do
@@ -369,6 +420,12 @@ The "format" command is deprecated in favor of "display". Sorry for the inconven
             Timetrap::Entry.create( :sheet => 'SpecSheet',
               :note => 'entry 4', :start => '2008-10-05 18:00:00'
             )
+            Timetrap::Entry.create( :sheet => 'LongNoteSheet',
+              :note => "long notesheet " * 20, :start => '2008-10-05 16:00:00', :end => '2008-10-05 18:00:00'
+            )
+            Timetrap::Entry.create( :sheet => 'SheetWithLineBreakNote',
+              :note => "first line\nand a second line ", :start => '2008-10-05 16:00:00', :end => '2008-10-05 18:00:00'
+            )
 
             now = local_time('2008-10-05 20:00:00')
             Time.stub(:now).and_return now
@@ -422,26 +479,42 @@ Id    Day                Start      End        Duration   Notes
       Total                                    8:00:00
             OUTPUT
 
-            @desired_output_for_all = <<-OUTPUT
-Timesheet: SpecSheet
+            @desired_output_for_long_note_sheet = <<-OUTPUT
+Timesheet: LongNoteSheet
     Day                Start      End        Duration   Notes
-    Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
-                       16:00:00 - 18:00:00   2:00:00    entry 2
-                                             4:00:00
-    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
-                       18:00:00 -            2:00:00    entry 4
-                                             4:00:00
-    ---------------------------------------------------------------------
-    Total                                    8:00:00
-
-Timesheet: another
-    Day                Start      End        Duration   Notes
-    Sun Oct 05, 2008   18:00:00 -            2:00:00    a long entry note
+    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    long notesheet long notesheet long notesheet long notesheet
+                                                        long notesheet long notesheet long notesheet long
+                                                        notesheet long notesheet long notesheet long notesheet
+                                                        long notesheet long notesheet long notesheet long
+                                                        notesheet long notesheet long notesheet long notesheet
+                                                        long notesheet long notesheet
                                              2:00:00
-    ---------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------------
     Total                                    2:00:00
--------------------------------------------------------------------------
-Grand Total                                 10:00:00
+            OUTPUT
+
+            @desired_output_for_long_note_sheet_with_ids = <<-OUTPUT
+Timesheet: LongNoteSheet
+Id    Day                Start      End        Duration   Notes
+60000 Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    long notesheet long notesheet long notesheet long notesheet
+                                                          long notesheet long notesheet long notesheet long
+                                                          notesheet long notesheet long notesheet long notesheet
+                                                          long notesheet long notesheet long notesheet long
+                                                          notesheet long notesheet long notesheet long notesheet
+                                                          long notesheet long notesheet
+                                               2:00:00
+      ------------------------------------------------------------------------------------------------------
+      Total                                    2:00:00
+            OUTPUT
+
+            @desired_output_for_note_with_linebreak = <<-OUTPUT
+Timesheet: SheetWithLineBreakNote
+    Day                Start      End        Duration   Notes
+    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    first line
+                                                        and a second line
+                                             2:00:00
+    --------------------------------------------------------------------------------
+    Total                                    2:00:00
             OUTPUT
           end
 
@@ -496,10 +569,23 @@ Grand Total                                 10:00:00
           end
 
 
-          it "should display all timesheets" do
-            Timetrap::Timer.current_sheet = 'another'
-            invoke 'display all'
-            $stdout.string.should == @desired_output_for_all
+          it "should display long notes nicely" do
+            Timetrap::Timer.current_sheet = 'LongNoteSheet'
+            invoke 'display'
+            $stdout.string.should == @desired_output_for_long_note_sheet
+          end
+
+          it "should display long notes with linebreaks nicely" do
+            Timetrap::Timer.current_sheet = 'SheetWithLineBreakNote'
+            invoke 'display'
+            $stdout.string.should == @desired_output_for_note_with_linebreak
+          end
+
+          it "should display long notes with ids nicely" do
+            Timetrap::DB["UPDATE entries SET id = 60000 WHERE id = 6"].all
+            Timetrap::Timer.current_sheet = 'LongNoteSheet'
+            invoke 'display --ids'
+            $stdout.string.should == @desired_output_for_long_note_sheet_with_ids
           end
 
           it "should not display archived for all timesheets" do
@@ -753,6 +839,15 @@ END:VCALENDAR
               invoke "in"
               $stderr.string.should_not include('enter a note')
               Timetrap::Timer.active_entry.note.should == "written in editor"
+            end
+
+            it "should preserve linebreaks from editor" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "line1\nline2")
+              end
+              invoke "in"
+              Timetrap::Timer.active_entry.note.should == "line1\nline2"
             end
           end
         end
