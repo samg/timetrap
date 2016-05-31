@@ -289,6 +289,8 @@ COMMAND is one of:
     end
 
     def resume
+      raise Timer::AlreadyRunning if Timer.running?
+
       entry = case
               when args['-i']
                 entry = Entry[args['-i']]
