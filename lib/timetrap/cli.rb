@@ -71,9 +71,11 @@ COMMAND is one of:
                                 configurable (see configure)
     -m, --move <sheet>        Move to another sheet
 
-  * in - Start the timer for the current timesheet.
-    usage: t in [--at TIME] [NOTES]
+  * in - Start the timer for the timesheet. Defaults for the current timesheet.
+    usage: t in [--at TIME] [--sheet TIMESHEET] [NOTES]
     -a, --at <time:qs>        Use this time instead of now
+    -s, --sheet TIMESHEET     Make the specified timesheet current and start
+                              the timer for it
 
   * kill - Delete a timesheet or an entry.
     usage: t kill [--id ID] [TIMESHEET]
@@ -284,6 +286,9 @@ COMMAND is one of:
         end
       end
 
+      if args['-s']
+        Timer.current_sheet = args['-s']
+      end
       Timer.start note, args['-a']
       warn "Checked into sheet #{Timer.current_sheet.inspect}."
     end
