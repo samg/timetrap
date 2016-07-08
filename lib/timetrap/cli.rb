@@ -292,6 +292,10 @@ COMMAND is one of:
       entry = case
               when args['-i']
                 entry = Entry[args['-i']]
+                unless entry
+                  warn "No such entry (id #{args['-i'].inspect})!"
+                  return
+                end
                 warn "Resuming entry with id #{args['-i'].inspect} (#{entry.note})"
                 entry
               when Timer.last_checkout
