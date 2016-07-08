@@ -96,6 +96,7 @@ COMMAND is one of:
     usage: t resume [--id ID] [--at TIME]
     -i, --id <id:i>           Resume entry with id <id> instead of the last entry
     -a, --at <time:qs>        Use this time instead of now
+    -s, --sheet               Resume last entry in the CURRENT sheet instead of the LAST entry
 
   * sheet - Switch to a timesheet creating it if necessary. When no sheet is
       specified list all sheets. The special sheetname '-' will switch to the
@@ -298,6 +299,20 @@ COMMAND is one of:
               when args['-i']
                 entry = Entry[args['-i']]
                 warn "Resuming entry with id #{args['-i'].inspect} (#{entry.note})"
+                entry
+              when args['-s']
+                entry = Timer.entries(Timer.current_sheet).last
+                unless entry
+                  warn 'No entries in the current sheet!'
+                  return
+                end
+                warn "Resuming last entry in the current sheet (#{entry.note})"
+                unless entry.end
+                  warn 'It is still running! Cannot resume'
+                  return
+                end
+                # remove key "-s" as it affects `in` command
+                args['-s'] = nil
                 entry
               when Timer.last_checkout
                 last = Timer.last_checkout
