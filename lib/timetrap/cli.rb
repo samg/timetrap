@@ -71,9 +71,11 @@ COMMAND is one of:
                                 configurable (see configure)
     -m, --move <sheet>        Move to another sheet
 
-  * in - Start the timer for the current timesheet.
-    usage: t in [--at TIME] [NOTES]
+  * in - Start the timer for the timesheet. Defaults for the current timesheet.
+    usage: t in [--at TIME] [--sheet TIMESHEET] [NOTES]
     -a, --at <time:qs>        Use this time instead of now
+    -s, --sheet TIMESHEET     Make the specified timesheet current and start
+                              the timer for it
 
   * kill - Delete a timesheet or an entry.
     usage: t kill [--id ID] [TIMESHEET]
@@ -94,6 +96,7 @@ COMMAND is one of:
     usage: t resume [--id ID] [--at TIME]
     -i, --id <id:i>           Resume entry with id <id> instead of the last entry
     -a, --at <time:qs>        Use this time instead of now
+    -s, --sheet               Resume last entry in the CURRENT sheet instead of the LAST entry
 
   * sheet - Switch to a timesheet creating it if necessary. When no sheet is
       specified list all sheets. The special sheetname '-' will switch to the
@@ -284,6 +287,9 @@ COMMAND is one of:
         end
       end
 
+      if args['-s']
+        Timer.current_sheet = args['-s']
+      end
       Timer.start note, args['-a']
       warn "Checked into sheet #{Timer.current_sheet.inspect}."
     end
@@ -293,6 +299,18 @@ COMMAND is one of:
               when args['-i']
                 entry = Entry[args['-i']]
                 warn "Resuming entry with id #{args['-i'].inspect} (#{entry.note})"
+                entry
+              when args['-s']
+                entry = Timer.entries(Timer.current_sheet).last
+                unless entry
+                  warn 'No entries in the current sheet!'
+                  return
+                end
+                warn "Resuming last entry in the current sheet (#{entry.note})"
+                unless entry.end
+                  warn 'It is still running! Cannot resume'
+                  return
+                end
                 entry
               when Timer.last_checkout
                 last = Timer.last_checkout
