@@ -298,10 +298,13 @@ COMMAND is one of:
                 end
                 warn "Resuming entry with id #{args['-i'].inspect} (#{entry.note})"
                 entry
-              when Timer.last_checkout
-                last = Timer.last_checkout
-                warn "Resuming last entry you checked out of (#{last.note})"
-                last
+              else
+                last_entry = Timer.entries(Timer.current_sheet).order(:id).last
+                last_entry ||= Timer.entries("_#{Timer.current_sheet}").order(:id).last
+                warn "No entry yet on this sheet yet. Started a new entry." unless last_entry
+                note = (last_entry ? last_entry.note : nil)
+                warn "Resuming #{note.inspect} from entry ##{last_entry.id}" if note
+                last_entry
               end
 
       unless entry

@@ -1241,7 +1241,18 @@ END:VCALENDAR
           @last_active.should_not be_nil
         end
 
-        it "should allow to resume the last active sheet" do
+        it "should allow to resume the last active entry" do
+          invoke 'resume'
+
+          Timetrap::Timer.active_entry.note.should ==(@last_active.note)
+          Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+        end
+
+        it "should allow to resume the last entry from the current sheet" do
+          invoke 'sheet another another'
+          invoke 'in foo11998845'
+          invoke 'out'
+          invoke 'sheet -'
           invoke 'resume'
 
           Timetrap::Timer.active_entry.note.should ==(@last_active.note)
@@ -1322,6 +1333,10 @@ END:VCALENDAR
 
           describe "with a running entry on another sheet" do
             before do
+              invoke 'sheet sheet2'
+              invoke 'in second task'
+              invoke 'out'
+
               invoke 'sheet sheet1'
               invoke 'in first task'
               invoke 'sheet sheet2'
@@ -1329,7 +1344,7 @@ END:VCALENDAR
 
             it "should check out of the running entry" do
               Timetrap::Timer.active_entry('sheet1').should be_a(Timetrap::Entry)
-              invoke 'resume second task'
+              invoke 'resume'
               Timetrap::Timer.active_entry('sheet1').should be nil
             end
 
@@ -1337,7 +1352,7 @@ END:VCALENDAR
               now = Time.at(Time.now - 5 * 60) # 5 minutes ago
               entry = Timetrap::Timer.active_entry('sheet1')
               entry.should be_a(Timetrap::Entry)
-              invoke "resume -a '#{now}' second task"
+              invoke "resume -a '#{now}'"
               entry.reload.end.to_s.should == now.to_s
             end
           end
