@@ -406,7 +406,8 @@ Commands
   usage: ``t yesterday [--ids] [--format FMT] [SHEET | all]``
 
 **week**
-  Shortcut for display with start date set to Monday of this week
+  Shortcut for display with start date set to a day of this week. The default
+  start of the week is Monday.
 
   usage: ``t week [--ids] [--end DATE] [--format FMT] [TIMESHEET | all]``
 
@@ -469,6 +470,7 @@ See ``t configure`` for details.  Currently supported options are:
                on Notes Editing for tips on using non-terminal based editors.
                Example: note_editor: "vim"
 
+  **week_start**: The day of the week to use as the start of the week for t week.
 
 ### Autocomplete
 
