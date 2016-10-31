@@ -18,7 +18,7 @@ COMMAND is one of:
       they're out of the way.
     usage: t archive [--start DATE] [--end DATE] [SHEET]
     -s, --start <date:qs>     Include entries that start on this date or later
-    -e, --end <date:qs>       Include entries that start on this date or earlier
+    -e, --end <date:qs>       Include entries that end on this date or earlier
     -g, --grep <regexp>       Include entries where the note matches this regexp.
 
   * backend - Open an sqlite shell to the database.
