@@ -246,7 +246,7 @@ COMMAND is one of:
         if args['-z']
           note = [entry.note, get_note_from_external_editor].join(Config['append_notes_delimiter'])
           entry.update :note => note
-        elsif args.size == 0 # no arguments supplied
+        elsif editing_a_note?
           entry.update :note => get_note_from_external_editor(entry.note)
         end
       else
@@ -490,6 +490,15 @@ COMMAND is one of:
     ensure
      file.close
      file.unlink
+    end
+
+    def editing_a_note?
+      return true if args.size == 0
+
+      args.each do |(k,_v)|
+        return false unless ["--id", "-i"].include?(k)
+      end
+      true
     end
 
     extend Helpers::AutoLoad

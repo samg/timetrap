@@ -273,6 +273,39 @@ describe Timetrap do
             expect(capture).to eq("running entry")
           end
 
+
+          it "should edit a non running entry with an external editor" do |example|
+            not_running = Timetrap::Timer.active_entry
+            Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+            Timetrap::Timer.start "another entry", nil
+
+            # create a few more entries to ensure we're not falling back on "last
+            # checked out of" feature.
+            Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+            Timetrap::Timer.start "another entry", nil
+
+            Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+
+            Timetrap::CLI.stub(:system) do |editor_command|
+              path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+              File.write(path[:path], "id passed note")
+            end
+
+            invoke "edit --id #{not_running.id}"
+
+            not_running.refresh.note.should == "id passed note"
+          end
+
+          it "should not call the editor if there are arguments other than --id" do
+            not_running = Timetrap::Timer.active_entry
+            Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+            Timetrap::Timer.start "another entry", nil
+
+            Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+            expect(Timetrap::CLI).not_to receive(:system)
+            invoke "edit --id #{not_running.id} --start \"yesterday 10am\""
+          end
+
           context "appending" do
             it "should open an editor for editing the note with -z" do |example|
               Timetrap::CLI.stub(:system) do |editor_command|
