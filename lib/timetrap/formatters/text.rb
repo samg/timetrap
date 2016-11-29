@@ -74,20 +74,22 @@ module Timetrap
         end
       end
 
+      def word_wrap(text, line_width: LONGEST_NOTE_LENGTH, break_sequence: "\n")
+      # https://github.com/rails/rails/blob/df63abe6d31cdbe426ff6dda9bdd878acc602728/actionview/lib/action_view/helpers/text_helper.rb#L258-L262
+
+        text.split("\n").collect! do |line|
+          line.length > line_width ? line.gsub(/(.{1,#{line_width}})(\s+|$)/, "\\1#{break_sequence}").strip : line
+        end * break_sequence
+      end
+
       def format_note(note)
         return "" unless note
-
+        wrapped_note = word_wrap(note.gsub("\n"," "))
         lines = []
-        line_number = 0
-        note.lines.each do |line|
-          while index = line.index(/\s/, LONGEST_NOTE_LENGTH) do
-            shorter_line = line.slice!(0..(index - 1))
-            lines << padded_line(shorter_line.strip, line_number)
-            line_number += 1
-          end
-          lines << padded_line(line.strip, line_number)
-          line_number += 1
+        wrapped_note.lines.each_with_index do |line, index|
+          lines << padded_line(line.strip, index)
         end
+
         lines.join("\n")
       end
 

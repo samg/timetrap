@@ -454,7 +454,7 @@ The "format" command is deprecated in favor of "display". Sorry for the inconven
               :note => 'entry 4', :start => '2008-10-05 18:00:00'
             )
             Timetrap::Entry.create( :sheet => 'LongNoteSheet',
-              :note => "long notesheet " * 20, :start => '2008-10-05 16:00:00', :end => '2008-10-05 18:00:00'
+              :note => test_long_text, :start => '2008-10-05 16:00:00', :end => '2008-10-05 18:00:00'
             )
             Timetrap::Entry.create( :sheet => 'SheetWithLineBreakNote',
               :note => "first line\nand a second line ", :start => '2008-10-05 16:00:00', :end => '2008-10-05 18:00:00'
@@ -515,12 +515,13 @@ Id    Day                Start      End        Duration   Notes
             @desired_output_for_long_note_sheet = <<-OUTPUT
 Timesheet: LongNoteSheet
     Day                Start      End        Duration   Notes
-    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    long notesheet long notesheet long notesheet long notesheet
-                                                        long notesheet long notesheet long notesheet long
-                                                        notesheet long notesheet long notesheet long notesheet
-                                                        long notesheet long notesheet long notesheet long
-                                                        notesheet long notesheet long notesheet long notesheet
-                                                        long notesheet long notesheet
+    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    chatting with bob about upcoming task, district
+                                                        sharing of images, how the user settings currently
+                                                        works etc. Discussing the fingerprinting / cache
+                                                        busting issue with CKEDITOR, suggesting perhaps
+                                                        looking into forking the rubygem and seeing if we
+                                                        can work in our own changes, however hard that
+                                                        might be.
                                              2:00:00
     ------------------------------------------------------------------------------------------------------
     Total                                    2:00:00
@@ -529,12 +530,13 @@ Timesheet: LongNoteSheet
             @desired_output_for_long_note_sheet_with_ids = <<-OUTPUT
 Timesheet: LongNoteSheet
 Id    Day                Start      End        Duration   Notes
-60000 Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    long notesheet long notesheet long notesheet long notesheet
-                                                          long notesheet long notesheet long notesheet long
-                                                          notesheet long notesheet long notesheet long notesheet
-                                                          long notesheet long notesheet long notesheet long
-                                                          notesheet long notesheet long notesheet long notesheet
-                                                          long notesheet long notesheet
+60000 Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    chatting with bob about upcoming task, district
+                                                          sharing of images, how the user settings currently
+                                                          works etc. Discussing the fingerprinting / cache
+                                                          busting issue with CKEDITOR, suggesting perhaps
+                                                          looking into forking the rubygem and seeing if we
+                                                          can work in our own changes, however hard that
+                                                          might be.
                                                2:00:00
       ------------------------------------------------------------------------------------------------------
       Total                                    2:00:00
@@ -543,8 +545,7 @@ Id    Day                Start      End        Duration   Notes
             @desired_output_for_note_with_linebreak = <<-OUTPUT
 Timesheet: SheetWithLineBreakNote
     Day                Start      End        Duration   Notes
-    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    first line
-                                                        and a second line
+    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    first line and a second line
                                              2:00:00
     --------------------------------------------------------------------------------
     Total                                    2:00:00
@@ -1675,5 +1676,18 @@ END:VCALENDAR
       t.read.should == timetrap.read
       t.stat.mode.should == timetrap.stat.mode
     end
+  end
+
+
+  private
+
+  def test_long_text
+<<TEXT
+chatting with bob about upcoming task, district sharing of images, how the
+user settings currently works etc. Discussing the fingerprinting / cache
+busting issue with CKEDITOR, suggesting perhaps looking into forking the
+rubygem and seeing if we can work in our own changes, however hard that might
+be.
+TEXT
   end
 end
