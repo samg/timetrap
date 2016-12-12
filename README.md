@@ -245,6 +245,16 @@ timesheets.
 
 See its [README][timetrap-harvest] for more details.
 
+#### Toggl Integration
+
+For timetrap users who use [Toggl][toggl] to manage timesheets,
+[Miguel Palhas][naps62] created [timetrap-toggl][timetrap-toggl] (a fork of the
+[timetrap-harvest][timetrap-harvest] integration mentioned above.
+
+Like the Harvest integration, this one allows you to easily submit your timetrap entries to Toggl.
+
+See its [README][timetrap-toggl] for more details.
+
 ### AutoSheets
 
 Timetrap has a feature called auto sheets that allows you to automatically
@@ -526,3 +536,6 @@ Submit to http://github.com/samg/timetrap/issues
 [harvest]:          http://www.getharvest.com
 [timetrap-harvest]: https://github.com/dblandin/timetrap-harvest
 [dblandin]:         https://github.com/dblandin
+[toggl]:            https://toggl.com
+[timetrap-toggl]:   https://github.com/naps62/timetrap-toggl
+[naps62]:           https://github.com/naps62
