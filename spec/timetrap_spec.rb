@@ -722,6 +722,21 @@ start,end,note,sheet
 "2008-10-05 12:00:00","2008-10-05 14:00:00","note","default"
             EOF
           end
+
+          it "should escape quoted notes" do
+            create_entry(
+              :start => local_time_cli('2008-10-07 12:00:00'),
+              :end => local_time_cli('2008-10-07 14:00:00'),
+              :note => %q{"note"}
+            )
+            invoke 'display --format csv'
+            $stdout.string.should == <<-EOF
+start,end,note,sheet
+"2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
+"2008-10-05 12:00:00","2008-10-05 14:00:00","note","default"
+"2008-10-07 12:00:00","2008-10-07 14:00:00","""note""","default"
+            EOF
+          end
         end
 
         describe 'json' do
