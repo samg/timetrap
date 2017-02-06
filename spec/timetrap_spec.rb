@@ -734,7 +734,21 @@ start,end,note,sheet
             invoke 'in'
             invoke 'display -f json'
             JSON.parse($stdout.string).should == JSON.parse(<<-EOF)
-[{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-03 14:00:00')}\",\"start\":\"#{local_time('2008-10-03 12:00:00')}\",\"note\":\"note\",\"id\":1},{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-05 14:00:00')}\",\"start\":\"#{local_time('2008-10-05 12:00:00')}\",\"note\":\"note\",\"id\":2}]
+{\"total_time\": \"4:00:00\",
+ \"sheets\":[{\"name\":\"default\",
+              \"sheet_time\": \"4:00:00\",
+              \"entries\":[{\"end\":\"#{local_time('2008-10-03 14:00:00')}\",
+                            \"start\":\"#{local_time('2008-10-03 12:00:00')}\",
+                            \"note\":\"note\",
+                            \"id\":1,
+                            \"duration\":\"2:00:00\"},
+                           {\"end\":\"#{local_time('2008-10-05 14:00:00')}\",
+                            \"start\":\"#{local_time('2008-10-05 12:00:00')}\",
+                            \"note\":\"note\",
+                            \"id\":2,
+                            \"duration\":\"2:00:00\"}]
+             }]
+}
             EOF
           end
         end
