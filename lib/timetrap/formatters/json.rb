@@ -25,7 +25,7 @@ module Timetrap
         @content_sheets = []
         @sheets_total = 0
         (sheet_names = sheets.keys.sort).each do |sheet|
-          @content_sheet = {"name":sheet}
+          @content_sheet = {"name" => sheet}
           @content_entries = []
           @sheet_total = 0
           sheets[sheet].each_with_index do |e, i|
