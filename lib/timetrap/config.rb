@@ -2,6 +2,10 @@ module Timetrap
   module Config
     extend self
     PATH = ENV['TIMETRAP_CONFIG_FILE'] || File.join(ENV['HOME'], '.timetrap.yml')
+    # Path to $HOME/.config/
+    CONFIG_PATH = File.join(ENV['HOME'], ".config")
+    # Path to timetrap dir, inside $HOME/.config
+    TIMETRAP_DIR = File.join(CONFIG_PATH, "timetrap")
 
     # Application defaults.
     #
@@ -12,14 +16,14 @@ module Timetrap
     def defaults
       {
         # Path to the sqlite db
-        'database_file' => "#{ENV['HOME']}/.timetrap.db",
+        'database_file' => "#{TIMETRAP_DIR}/timetrap.db",
         # Unit of time for rounding (-r) in seconds
         'round_in_seconds' => 900,
         # delimiter used when appending notes with `t edit --append`
         'append_notes_delimiter' => ' ',
         # an array of directories to search for user defined fomatter classes
         'formatter_search_paths' => [
-          "#{ENV['HOME']}/.timetrap/formatters"
+          "#{TIMETRAP_DIR}/.timetrap/formatters"
         ],
         # formatter to use when display is invoked without a --format option
         'default_formatter' => 'text',
@@ -27,7 +31,7 @@ module Timetrap
         'auto_sheet' => 'dotfiles',
         # an array of directories to search for user defined auto_sheet classes
         'auto_sheet_search_paths' => [
-          "#{ENV['HOME']}/.timetrap/auto_sheets"
+          "#{TIMETRAP_DIR}/auto_sheets"
         ],
         # the default command to when you run `t`.  default to printing usage.
         'default_command' => nil,
