@@ -447,7 +447,12 @@ COMMAND is one of:
     end
 
     def week
-      args['-s'] = Date.today.wday == Date.parse(Config['week_start']).wday ? Date.today.to_s : Date.parse(Chronic.parse('last '.concat(Config['week_start'])).to_s).to_s
+      d = Chronic.parse( args['-s'] || Date.today )
+
+      today = Date.new( d.year, d.month, d.day )
+      last_week_start = Date.parse(Chronic.parse('last '.concat(Config['week_start']).to_s, :now => today).to_s)
+      args['-s'] = today.wday == Date.parse(Config['week_start']).wday ? today.to_s : last_week_start.to_s
+      args['-e'] = today.to_s
       display
     end
 
