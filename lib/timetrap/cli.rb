@@ -450,9 +450,10 @@ COMMAND is one of:
       d = Chronic.parse( args['-s'] || Date.today )
 
       today = Date.new( d.year, d.month, d.day )
+      end_of_week = Date.new( d.year, d.month, d.day + 6 )
       last_week_start = Date.parse(Chronic.parse('last '.concat(Config['week_start']).to_s, :now => today).to_s)
       args['-s'] = today.wday == Date.parse(Config['week_start']).wday ? today.to_s : last_week_start.to_s
-      args['-e'] = today.to_s
+      args['-e'] = end_of_week.to_s
       display
     end
 

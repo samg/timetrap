@@ -1035,6 +1035,28 @@ END:VCALENDAR
             $stdout.string.should_not include 'Jan 31, 2012'
             $stdout.string.should_not include 'Feb 05, 2012'
           end
+
+          it "should not show entries 7 days past start of week" do
+            create_entry(
+              :start => Time.local(2012, 2, 9, 1, 2, 3),
+              :end => Time.local(2012, 2, 9, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 14, 1, 2, 3),
+              :end => Time.local(2012, 2, 14, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 16, 1, 2, 3),
+              :end => Time.local(2012, 2, 16, 2, 2, 3)
+            )
+
+            Date.should_receive(:today).and_return(Date.new(2012, 2, 7))
+            invoke 'week'
+
+            $stdout.string.should include 'Feb 09, 2012'
+            $stdout.string.should_not include 'Feb 14, 2012'
+            $stdout.string.should_not include 'Feb 16, 2012'
+          end
         end
       end
 
