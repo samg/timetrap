@@ -1673,8 +1673,14 @@ END:VCALENDAR
     it 'should include a t bin and an equivalent timetrap bin' do
       timetrap = File.open(File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 'timetrap')))
       t = File.open(File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 't')))
-      t.read.should == timetrap.read
       t.stat.mode.should == timetrap.stat.mode
+    end
+
+    it 'should give a deprecation warning on using t bin' do
+      cmd = File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 't')) + ' 2>&1'
+      %x(#{cmd}).should match /The `t` command is deprecated in favor of `timetrap`, and will be removed in a future version! Sorry for the inconvenience\./
+      %x(#{cmd}).should match /.*Consider aliasing `timetrap` to `t` if you wish to keep using it with `t` as command\..*/
+      %x(#{cmd}).should match %r(.*You can find the reasoning and more information at https://github.com/samg/timetrap/pull/80\.)
     end
   end
 
