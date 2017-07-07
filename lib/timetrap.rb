@@ -6,14 +6,14 @@ require 'sequel'
 require 'yaml'
 require 'erb'
 require 'sequel/extensions/inflector'
-require File.join(File.dirname(__FILE__), 'timetrap', 'version')
-require File.join(File.dirname(__FILE__), 'Getopt/Declare')
-require File.join(File.dirname(__FILE__), 'timetrap', 'config')
-require File.join(File.dirname(__FILE__), 'timetrap', 'helpers')
-require File.join(File.dirname(__FILE__), 'timetrap', 'cli')
-require File.join(File.dirname(__FILE__), 'timetrap', 'timer')
-require File.join(File.dirname(__FILE__), 'timetrap', 'formatters')
-require File.join(File.dirname(__FILE__), 'timetrap', 'auto_sheets')
+require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'version'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'Getopt/Declare'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'config'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'helpers'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'cli'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'timer'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'formatters'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'auto_sheets'))
 module Timetrap
   DB_NAME = defined?(TEST_MODE) ? nil : Timetrap::Config['database_file']
   # connect to database.  This will create one if it doesn't exist
@@ -22,4 +22,4 @@ module Timetrap
     #{CLI::USAGE}
   EOF
 end
-require File.join(File.dirname(__FILE__), 'timetrap', 'models')
+require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'models'))

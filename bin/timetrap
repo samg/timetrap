@@ -1,11 +1,3 @@
 #!/usr/bin/env ruby
-begin
-  require 'timetrap'
-rescue LoadError
-  if File.symlink? __FILE__
-    require File.dirname(File.readlink(__FILE__)) + '/../lib/timetrap'
-  else
-    require File.dirname(__FILE__) + '/../lib/timetrap'
-  end
-end
+require File.expand_path(File.dirname(__FILE__) + '/../lib/timetrap')
 Timetrap::CLI.invoke
