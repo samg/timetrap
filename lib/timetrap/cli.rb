@@ -45,6 +45,8 @@ COMMAND is one of:
       note_editor:            Command to launch notes editor or false if no editor use.
                               If you use a non terminal based editor (e.g. sublime, atom)
                               please read the notes in the README.
+      week_start:             The day of the week to use as the start of the
+                              week for t week.
 
   * display - Display the current timesheet or a specific. Pass `all' as SHEET
       to display all unarchived sheets or `full' to display archived and
@@ -106,7 +108,9 @@ COMMAND is one of:
   * yesterday - Shortcut for display with start and end dates as the day before the current day
     usage: t yesterday [--ids] [--format FMT] [SHEET | all]
 
-  * week - Shortcut for display with start date set to monday of this week.
+  * week - Shortcut for display with start date set to a day of this week.
+    The default start of the week is Monday.
+.
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
 
   * month - Shortcut for display with start date set to the beginning of either
@@ -443,7 +447,13 @@ COMMAND is one of:
     end
 
     def week
-      args['-s'] = Date.today.wday == 1 ? Date.today.to_s : Date.parse(Chronic.parse(%q(last monday)).to_s).to_s
+      d = Chronic.parse( args['-s'] || Date.today )
+
+      today = Date.new( d.year, d.month, d.day )
+      end_of_week = Date.new( d.year, d.month, d.day + 6 )
+      last_week_start = Date.parse(Chronic.parse('last '.concat(Config['week_start']).to_s, :now => today).to_s)
+      args['-s'] = today.wday == Date.parse(Config['week_start']).wday ? today.to_s : last_week_start.to_s
+      args['-e'] = end_of_week.to_s
       display
     end
 

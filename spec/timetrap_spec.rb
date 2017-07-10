@@ -986,6 +986,78 @@ END:VCALENDAR
           $stdout.string.should include Time.now.strftime('%a %b %d, %Y')
           $stdout.string.should_not include 'Feb 01, 2012'
         end
+
+        describe "with week_start config option set" do
+          let(:week_start_config) { 'Tuesday' }
+          before do
+            with_stubbed_config 'week_start' => week_start_config
+          end
+          it "should not show entries prior to defined start of week" do
+            create_entry(
+              :start => Time.local(2012, 2, 5, 1, 2, 3),
+              :end => Time.local(2012, 2, 5, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 8, 1, 2, 3),
+              :end => Time.local(2012, 2, 8, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 9, 1, 2, 3),
+              :end => Time.local(2012, 2, 9, 2, 2, 3)
+            )
+
+            Date.should_receive(:today).and_return(Date.new(2012, 2, 9))
+            invoke 'week'
+
+            $stdout.string.should include 'Feb 08, 2012'
+            $stdout.string.should include 'Feb 09, 2012'
+            $stdout.string.should_not include 'Feb 05, 2012'
+          end
+
+          it "should only show entries from today if today is start of week" do
+            create_entry(
+              :start => Time.local(2012, 1, 31, 1, 2, 3),
+              :end => Time.local(2012, 1, 31, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 5, 1, 2, 3),
+              :end => Time.local(2012, 2, 5, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 7, 1, 2, 3),
+              :end => Time.local(2012, 2, 7, 2, 2, 3)
+            )
+
+            Date.should_receive(:today).and_return(Date.new(2012, 2, 7))
+            invoke 'week'
+
+            $stdout.string.should include 'Feb 07, 2012'
+            $stdout.string.should_not include 'Jan 31, 2012'
+            $stdout.string.should_not include 'Feb 05, 2012'
+          end
+
+          it "should not show entries 7 days past start of week" do
+            create_entry(
+              :start => Time.local(2012, 2, 9, 1, 2, 3),
+              :end => Time.local(2012, 2, 9, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 14, 1, 2, 3),
+              :end => Time.local(2012, 2, 14, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 16, 1, 2, 3),
+              :end => Time.local(2012, 2, 16, 2, 2, 3)
+            )
+
+            Date.should_receive(:today).and_return(Date.new(2012, 2, 7))
+            invoke 'week'
+
+            $stdout.string.should include 'Feb 09, 2012'
+            $stdout.string.should_not include 'Feb 14, 2012'
+            $stdout.string.should_not include 'Feb 16, 2012'
+          end
+        end
       end
 
       describe "month" do

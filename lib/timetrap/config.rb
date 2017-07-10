@@ -37,7 +37,9 @@ module Timetrap
         # interactively prompt for a note if one isn't passed when checking in.
         'require_note' => false,
         # command to launch external editor (false if no external editor used)
-        'note_editor' => false
+        'note_editor' => false,
+        # set day of the week when determining start of the week.
+        'week_start' => "Monday",
       }
     end
 
