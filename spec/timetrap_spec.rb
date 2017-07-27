@@ -992,6 +992,20 @@ END:VCALENDAR
           before do
             with_stubbed_config 'week_start' => week_start_config
           end
+
+          #https://github.com/samg/timetrap/issues/161
+          it "should work at the end of the month" do
+            Date.should_receive(:today).and_return(Date.new(2017, 7, 30))
+
+            create_entry(
+              :start => Time.local(2017, 7, 29, 1, 2, 3),
+              :end => Time.local(2017, 7, 29, 2, 2, 3)
+            )
+            invoke "week"
+            $stdout.string.should include 'Jul 29, 2017'
+
+          end
+
           it "should not show entries prior to defined start of week" do
             create_entry(
               :start => Time.local(2012, 2, 5, 1, 2, 3),
