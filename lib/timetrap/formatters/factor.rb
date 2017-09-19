@@ -1,19 +1,12 @@
 module Timetrap
   module Formatters
-    require File.join( File.dirname(__FILE__), 'text' )
-
-    class Factor < Text
-      def initialize entries
-        entries.map! do |e|
-          factor = 1
-          if e.note =~ /\bf(actor)?:([\d\.]+)\b/
-            factor = $2.to_f
-          end
-          e.duration = (e.end_or_now.to_i - e.start.to_i) * factor
-          e
-        end
-        super
-      end
+    class Factor
+      raise <<-WARN
+The factor formatter has been moved out of timetrap core in and into timetrap_formatters.
+See https://github.com/samg/timetrap_formatters for more info.
+      WARN
+      def output; end
+      def initialize(*args); end
     end
   end
 end

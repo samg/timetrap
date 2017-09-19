@@ -19,6 +19,7 @@ COMMAND is one of:
     usage: t archive [--start DATE] [--end DATE] [SHEET]
     -s, --start <date:qs>     Include entries that start on this date or later
     -e, --end <date:qs>       Include entries that start on this date or earlier
+    -g, --grep <regexp>       Include entries where the note matches this regexp.
 
   * backend - Open an sqlite shell to the database.
     usage: t backend
@@ -32,6 +33,20 @@ COMMAND is one of:
       database_file:          The file path of the sqlite database
       append_notes_delimiter: delimiter used when appending notes via
                               t edit --append
+      formatter_search_paths: an array of directories to search for user
+                              defined fomatter classes
+      default_formatter:      The format to use when display is invoked without a
+                              `--format` option
+      default_command:        The default command to run when calling t.
+      auto_checkout:          Automatically check out of running entries when
+                              you check in or out
+      require_note:           Prompt for a note if one isn't provided when
+                              checking in
+      note_editor:            Command to launch notes editor or false if no editor use.
+                              If you use a non terminal based editor (e.g. sublime, atom)
+                              please read the notes in the README.
+      week_start:             The day of the week to use as the start of the
+                              week for t week.
 
   * display - Display the current timesheet or a specific. Pass `all' as SHEET
       to display all unarchived sheets or `full' to display archived and
@@ -45,8 +60,10 @@ COMMAND is one of:
                               Documentation on defining custom formats can be
                               found in the README included in this
                               distribution.
+    -g, --grep <regexp>       Include entries where the note matches this regexp.
 
-  * edit - Alter an entry's note, start, or end time. Defaults to the active entry.
+  * edit - Alter an entry's note, start, or end time. Defaults to the active
+    entry. Defaults to the last entry to be checked out of if no entry is active.
     usage: t edit [--id ID] [--start TIME] [--end TIME] [--append] [NOTES]
     -i, --id <id:i>           Alter entry with id <id> instead of the running entry
     -s, --start <time:qs>     Change the start time to <time>
@@ -62,7 +79,7 @@ COMMAND is one of:
 
   * kill - Delete a timesheet or an entry.
     usage: t kill [--id ID] [TIMESHEET]
-    -i, --id <id:i>           Alter entry with id <id> instead of the running entry
+    -i, --id <id:i>           Delete entry with id <id> instead of timesheet
 
   * list - Show the available timesheets.
     usage: t list
@@ -70,13 +87,14 @@ COMMAND is one of:
   * now - Show all running entries.
     usage: t now
 
-  * out - Stop the timer for the a timesheet.
+  * out - Stop the timer for a timesheet.
     usage: t out [--at TIME] [TIMESHEET]
     -a, --at <time:qs>        Use this time instead of now
 
-  * resume - Start the timer for the current time sheet with the same note as
-      the last entry on the sheet. If there is no entry it takes the passed note.
-    usage: t resume [--at TIME] [NOTES]
+  * resume - Start the timer for the current time sheet for an entry. Defaults
+      to the active entry.
+    usage: t resume [--id ID] [--at TIME]
+    -i, --id <id:i>           Resume entry with id <id> instead of the last entry
     -a, --at <time:qs>        Use this time instead of now
 
   * sheet - Switch to a timesheet creating it if necessary. When no sheet is
@@ -84,8 +102,20 @@ COMMAND is one of:
       last active sheet.
     usage: t sheet [TIMESHEET]
 
-  * week - Shortcut for display with start date set to monday of this week.
+  * today - Shortcut for display with start date as the current day
+    usage: t today [--ids] [--format FMT] [SHEET | all]
+
+  * yesterday - Shortcut for display with start and end dates as the day before the current day
+    usage: t yesterday [--ids] [--format FMT] [SHEET | all]
+
+  * week - Shortcut for display with start date set to a day of this week.
+    The default start of the week is Monday.
+.
     usage: t week [--ids] [--end DATE] [--format FMT] [SHEET | all]
+
+  * month - Shortcut for display with start date set to the beginning of either
+      this month or a specified month.
+    usage: t month [--ids] [--start MONTH] [--format FMT] [SHEET | all]
 
   OTHER OPTIONS
 
@@ -136,6 +166,9 @@ COMMAND is one of:
     end
 
     def invoke_command_if_valid
+      if args.unused.empty? && Timetrap::Config['default_command']
+        self.args = Getopt::Declare.new(USAGE.dup, Timetrap::Config['default_command'])
+      end
       command = args.unused.shift
       set_global_options
       case (valid = commands.select{|name| name =~ %r|^#{command}|}).size
@@ -143,6 +176,10 @@ COMMAND is one of:
       else
         handle_invalid_command(command)
       end
+    end
+
+    def valid_command(command)
+       return commands.include?(command)
     end
 
     def handle_invalid_command(command)
@@ -165,7 +202,7 @@ COMMAND is one of:
     def archive
       ee = selected_entries
       if ask_user "Archive #{ee.count} entries? "
-        ee.all.each do |e|
+        ee.each do |e|
           next unless e.end
           e.update :sheet => "_#{e.sheet}"
         end
@@ -180,13 +217,24 @@ COMMAND is one of:
     end
 
     def edit
-      entry = args['-i'] ? Entry[args['-i']] : Timer.active_entry
+      entry = case
+              when args['-i']
+                warn "Editing entry with id #{args['-i'].inspect}"
+                Entry[args['-i']]
+              when Timer.active_entry
+                warn "Editing running entry"
+                Timer.active_entry
+              when Timer.last_checkout
+                warn  "Editing last entry you checked out of"
+                Timer.last_checkout
+              end
+
       unless entry
-        warn "can't find entry"
+        warn "Can't find entry"
         return
-      else
-        warn "editing entry ##{entry.id.inspect}"
       end
+      warn ""
+
       entry.update :start => args['-s'] if args['-s'] =~ /.+/
       entry.update :end => args['-e'] if args['-e'] =~ /.+/
 
@@ -198,14 +246,25 @@ COMMAND is one of:
         entry.update :sheet => args['-m']
       end
 
-      # update notes
-      if unused_args =~ /.+/
-        note = unused_args
+      if Config['note_editor']
         if args['-z']
-          note = [entry.note, note].join(Config['append_notes_delimiter'])
+          note = [entry.note, get_note_from_external_editor].join(Config['append_notes_delimiter'])
+          entry.update :note => note
+        elsif editing_a_note?
+          entry.update :note => get_note_from_external_editor(entry.note)
         end
-        entry.update :note => note
+      else
+        if unused_args =~ /.+/
+          note = unused_args
+          if args['-z']
+            note = [entry.note, note].join(Config['append_notes_delimiter'])
+          end
+          entry.update :note => note
+        end
       end
+
+
+      puts format_entries(entry)
     end
 
     def backend
@@ -213,27 +272,70 @@ COMMAND is one of:
     end
 
     def in
-      Timer.start unused_args, args['-a']
+      if Config['auto_checkout']
+        Timer.stop_all(args['-a']).each do |checked_out_of|
+          warn "Checked out of sheet #{checked_out_of.sheet.inspect}."
+        end
+      end
+
+      note = unused_args
+      if Config['require_note'] && !Timer.running? && unused_args.empty?
+        if Config['note_editor']
+          note = get_note_from_external_editor
+        else
+          $stderr.print("Please enter a note for this entry:\n> ")
+          note = $stdin.gets.strip
+        end
+      end
+
+      Timer.start note, args['-a']
       warn "Checked into sheet #{Timer.current_sheet.inspect}."
     end
 
     def resume
-      last_entry = Timer.entries(Timer.current_sheet).last
-      warn "No entry yet on this sheet yet. Started a new entry." unless last_entry
-      note = (last_entry ? last_entry.note : nil)
-      warn "Resuming #{note.inspect} from entry ##{last_entry.id}" if note
+      entry = case
+              when args['-i']
+                entry = Entry[args['-i']]
+                unless entry
+                  warn "No such entry (id #{args['-i'].inspect})!"
+                  return
+                end
+                warn "Resuming entry with id #{args['-i'].inspect} (#{entry.note})"
+                entry
+              else
+                last_entry = Timer.entries(Timer.current_sheet).order(:id).last
+                last_entry ||= Timer.entries("_#{Timer.current_sheet}").order(:id).last
+                warn "No entry yet on this sheet yet. Started a new entry." unless last_entry
+                note = (last_entry ? last_entry.note : nil)
+                warn "Resuming #{note.inspect} from entry ##{last_entry.id}" if note
+                last_entry
+              end
 
-      self.unused_args = note || unused_args
+      unless entry
+        warn "Can't find entry"
+        return
+      end
+
+      self.unused_args = entry.note || unused_args
 
       self.in
     end
 
     def out
-      sheet = sheet_name_from_string(unused_args)
-      if Timer.stop sheet, args['-a']
-        warn "Checked out of sheet #{sheet.inspect}."
+      if Config['auto_checkout']
+        stopped = Timer.stop_all(args['-a']).each do |checked_out_of|
+          warn "Checked out of sheet #{checked_out_of.sheet.inspect}."
+        end
+        if stopped.empty?
+          warn "No running entries to stop."
+        end
       else
-        warn "No running entry on sheet #{sheet.inspect}."
+        sheet = sheet_name_from_string(unused_args)
+        if Timer.stop sheet, args['-a']
+          warn "Checked out of sheet #{sheet.inspect}."
+        else
+          warn "No running entry on sheet #{sheet.inspect}."
+        end
       end
     end
 
@@ -262,11 +364,11 @@ COMMAND is one of:
     end
 
     def display
-      entries = selected_entries.order(:start).all
+      entries = selected_entries
       if entries == []
         warn "No entries were selected to display."
       else
-        puts load_formatter(args['-f'] || Config['default_formatter']).new(entries).output
+        puts format_entries(entries)
       end
     end
 
@@ -310,7 +412,7 @@ COMMAND is one of:
       width = 10 if width < 10
       puts " %-#{width}s%-12s%-12s%s" % ["Timesheet", "Running", "Today", "Total Time"]
       sheets.each do |sheet|
-        star = sheet[:name] == Timer.current_sheet ? '*' : ' '
+        star = sheet[:name] == Timer.current_sheet ? '*' : sheet[:name] == Timer.last_sheet ? '-' : ' '
         puts "#{star}%-#{width}s%-12s%-12s%s" % [
           sheet[:running],
           sheet[:today],
@@ -321,7 +423,7 @@ COMMAND is one of:
 
     def now
       if !Timer.running?
-        puts "*#{Timer.current_sheet}: not running"
+        warn "*#{Timer.current_sheet}: not running"
       end
       Timer.running_entries.each do |entry|
         current = entry.sheet == Timer.current_sheet
@@ -332,8 +434,40 @@ COMMAND is one of:
       end
     end
 
+    def today
+        args['-s'] = Date.today.to_s
+        display
+    end
+
+    def yesterday
+      yesterday = (Date.today - 1).to_s
+      args['-s'] = yesterday
+      args['-e'] = yesterday
+      display
+    end
+
     def week
-      args['-s'] = Date.today.wday == 1 ? Date.today.to_s : Date.parse(Chronic.parse(%q(last monday)).to_s).to_s
+      d = Chronic.parse( args['-s'] || Date.today )
+
+      today = Date.new( d.year, d.month, d.day )
+      end_of_week = today + 6
+      last_week_start = Date.parse(Chronic.parse('last '.concat(Config['week_start']).to_s, :now => today).to_s)
+      args['-s'] = today.wday == Date.parse(Config['week_start']).wday ? today.to_s : last_week_start.to_s
+      args['-e'] = end_of_week.to_s
+      display
+    end
+
+    def month
+      d = Chronic.parse( args['-s'] || Date.today )
+
+      beginning_of_month = Date.new( d.year, d.month )
+      end_of_month = if d.month == 12 # handle edgecase
+        Date.new( d.year + 1, 1) - 1
+      else
+        Date.new( d.year, d.month+1 ) - 1
+      end
+      args['-s'] = beginning_of_month.to_s
+      args['-e'] = end_of_month.to_s
       display
     end
 
@@ -351,6 +485,35 @@ COMMAND is one of:
       return true if args['-y']
       $stderr.print question
       $stdin.gets =~ /\Aye?s?\Z/i
+    end
+
+    def get_note_from_external_editor(contents = "")
+      file = Tempfile.new('get_note')
+      unless contents.empty?
+        file.open
+        file.write(contents)
+        file.close
+      end
+
+      system("#{Config['note_editor']} #{file.path}")
+      file.open.read
+    ensure
+     file.close
+     file.unlink
+    end
+
+    def editing_a_note?
+      return true if args.size == 0
+
+      args.each do |(k,_v)|
+        return false unless ["--id", "-i"].include?(k)
+      end
+      true
+    end
+
+    extend Helpers::AutoLoad
+    def format_entries(entries)
+      load_formatter(args['-f'] || Config['default_formatter']).new(Array(entries)).output
     end
 
   end

@@ -1,30 +1,40 @@
 module Timetrap
   module Helpers
+    module AutoLoad
+      def load_formatter(formatter)
+        auto_load(formatter, 'formatter')
+      end
 
-    def load_formatter(formatter)
-      err_msg = "Can't load #{formatter.inspect} formatter."
-      begin
-        paths = (
-          Array(Config['formatter_search_paths']) +
-          [ File.join( File.dirname(__FILE__), 'formatters') ]
-        )
-       if paths.detect do |path|
-           begin
-             fp = File.join(path, formatter)
-             require File.join(path, formatter)
-             true
-           rescue LoadError
-             nil
-           end
-         end
-       else
-         raise LoadError, "Couldn't find #{formatter}.rb in #{paths.inspect}"
-       end
-       Timetrap::Formatters.const_get(formatter.camelize)
-      rescue LoadError, NameError => e
-        err = e.class.new("#{err_msg} (#{e.message})")
-        err.set_backtrace(e.backtrace)
-        raise err
+      def load_auto_sheet(auto_sheet)
+        auto_load(auto_sheet, 'auto_sheet')
+      end
+
+      def auto_load(name, type)
+        err_msg = "Can't load #{name.inspect} #{type}."
+        begin
+          paths = (
+            Array(Config["#{type}_search_paths"]) +
+            [ File.join( File.dirname(__FILE__), type.pluralize) ]
+          )
+        if paths.detect do |path|
+            begin
+              fp = File.join(path, name)
+              require File.join(path, name)
+              true
+            rescue LoadError
+              nil
+            end
+          end
+        else
+          raise LoadError, "Couldn't find #{name}.rb in #{paths.inspect}"
+        end
+        namespace = Timetrap.const_get(type.pluralize.camelize)
+        namespace.const_get(name.camelize)
+        rescue LoadError, NameError => e
+          err = e.class.new("#{err_msg} (#{e.message})")
+          err.set_backtrace(e.backtrace)
+          raise err
+        end
       end
     end
 
@@ -40,6 +50,11 @@ module Timetrap
       end
       ee = ee.filter('start >= ?', Date.parse(Timer.process_time(args['-s']).to_s)) if args['-s']
       ee = ee.filter('start <= ?', Date.parse(Timer.process_time(args['-e']).to_s) + 1) if args['-e']
+      ee = ee.order(:start)
+      if args['-g']
+        re = Regexp::new(args['-g'])
+        ee = ee.find_all{|e| re.match(e.note)}
+      end
       ee
     end
 
@@ -63,7 +78,11 @@ module Timetrap
     end
 
     def format_seconds secs
-      "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
+      negative = secs < 0
+      secs = secs.abs
+      formatted = "%2s:%02d:%02d" % [secs/3600, (secs%3600)/60, secs%60]
+      formatted = "-#{formatted}" if negative
+      formatted
     end
     alias :format_duration :format_seconds
 
@@ -81,8 +100,8 @@ module Timetrap
       when /^\W*full\W*$/ then "full"
       when /^$/ then Timer.current_sheet
       else
-        entry = DB[:entries].filter(:sheet.like("#{string}")).first ||
-          DB[:entries].filter(:sheet.like("#{string}%")).first
+        entry = DB[:entries].filter(Sequel.like(:sheet,string)).first ||
+          DB[:entries].filter(Sequel.like(:sheet, "#{string}%")).first
         if entry
           entry[:sheet]
         else

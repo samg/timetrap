@@ -1,4 +1,4 @@
-Timetrap
+Timetrap [![Build Status](https://secure.travis-ci.org/samg/timetrap.png)](http://travis-ci.org/samg/timetrap)
 ========
 
 Timetrap is a simple command line time tracker written in ruby. It provides an
@@ -16,6 +16,8 @@ This will place a ``t`` executable in your path.
 ### Basic Usage
 
     $ # get help
+    $ timetrap --help
+    $ # or
     $ t --help
 
 Timetrap maintains a list of *timesheets*.
@@ -57,12 +59,18 @@ If you make a mistake use the `edit` command.
 
     $ # edit the running entry's note
     $ t edit writing readme
-    editing entry #42
+    Editing running entry
 
 You check out with the `out` command.
 
     $ t out
     Checked out of sheet "coding"
+
+Running `edit` when you're checked out will edit the last entry you checked out
+of.
+
+    $ t edit --append "oh and that"
+    Editing last entry you checked out of
 
 You can edit entries that aren't running using `edit`'s `--id` or `-i` flag.
 `t display --ids`  (or `t display -v`) will tell you the ids.
@@ -78,7 +86,7 @@ You can edit entries that aren't running using `edit`'s `--id` or `-i` flag.
 
     $ # -i43 to edit entry 43
     $ t e -i43 --end "2010-11-28 13:45"
-    editing entry #43
+    Editing entry with id 43
 
     $ t d
     Timesheet: coding
@@ -102,7 +110,7 @@ check in 5 minutes ago using `in`'s `--at` flag.
 
 Command line flags also have short versions.
 
-    $ # equivilent to the command above
+    $ # equivalent to the command above
     $ t i -a "5 minutes ago"
 
 You can consult the Chronic gem (http://chronic.rubyforge.org/) for a full
@@ -120,7 +128,7 @@ list of parsable time formats, but all of these should work.
 
 Timetrap has built-in support for 6 output formats.
 
-These are **text**, **csv**, **ical**, **json**, **factor** and **ids**
+These are **text**, **csv**, **ical**, **json**, and **ids**
 
 The default is a plain **text** format.  (You can change the default format using
 `t configure`).
@@ -171,25 +179,6 @@ A *json* formatter is provided because hackers love json.
 
     $ t d -fjson
 
-The *factor* formatter is like the default *text* formatter, except it reads special
-notes in your entry descriptions, and multiplies the entry's duration by them.
-A note like *f:2* will multiply the entry's duration by two in the output.
-See https://github.com/samg/timetrap/issues#issue/13 for more details.
-
-    $ # note durations are multiplications of start and end times, based on notes
-    $ t d -ffactor
-    Timesheet: nopoconi
-        Day                Start      End        Duration   Notes
-        Mon Mar 07, 2011   19:56:06 - 20:18:37   0:22:31    merge factor in timetrap, f:3
-                           20:19:04 - 20:23:02   0:01:59    document factor formatter f:0.5
-
-                                                 0:22:34
-        ---------------------------------------------------------
-        Total                                    0:22:34
-
-
-
-
 #### Custom Formatters
 
 Timetrap tries to make it easy to define custom output formats.
@@ -212,8 +201,10 @@ formatter in a different place you can run `t configure` and edit the
 All timetrap formatters live under the namespace `Timetrap::Formatters` so
 define your class like this:
 
-    class Timetrap::Formatters::Notes
-    end
+```ruby
+class Timetrap::Formatters::Notes
+end
+```
 
 When `t display` is invoked, timetrap initializes a new instance of the
 formatter passing it an Array of entries.  It then calls `#output` which should
@@ -222,15 +213,17 @@ return a string to be printed to the screen.
 This means we need to implement an `#initialize` method and an `#output`
 method for the class.  Something like this:
 
-    class Timetrap::Formatters::Notes
-      def initialize(entries)
-        @entries = entries
-      end
+```ruby
+class Timetrap::Formatters::Notes
+  def initialize(entries)
+    @entries = entries
+  end
 
-      def output
-        @entries.map{|entry| entry[:note]}.join("\n")
-      end
-    end
+  def output
+    @entries.map{|entry| entry[:note]}.join("\n")
+  end
+end
+```
 
 Now when I invoke it:
 
@@ -238,12 +231,87 @@ Now when I invoke it:
     working on issue #123
     working on issue #234
 
+#### Timetrap Formatters Repository
+
+A community focused repository of custom formatters is available at
+https://github.com/samg/timetrap_formatters.
+
+#### Harvest Integration
+
+For timetrap users who use [Harvest][harvest] to manage timesheets,
+[Devon Blandin][dblandin] created [timetrap-harvest][timetrap-harvest], a custom
+formatter which allows you to easily submit your timetrap entries to Harvest
+timesheets.
+
+See its [README][timetrap-harvest] for more details.
+
+#### Toggl Integration
+
+For timetrap users who use [Toggl][toggl] to manage timesheets,
+[Miguel Palhas][naps62] created [timetrap-toggl][timetrap-toggl] (a fork of the
+[timetrap-harvest][timetrap-harvest] integration mentioned above.
+
+Like the Harvest integration, this one allows you to easily submit your timetrap entries to Toggl.
+
+See its [README][timetrap-toggl] for more details.
+
+### AutoSheets
+
+Timetrap has a feature called auto sheets that allows you to automatically
+select which timesheet to check into.
+
+Timetrap ships with a couple auto sheets.  The default auto sheet is called
+`dotfiles` and will read the sheetname to check into from a `.timetrap-sheet`
+file in the current directory.
+
+[Here are all the included auto sheets](lib/timetrap/auto_sheets)
+
+You can specify which auto sheet logic you want to use in `~/.timetrap.yml` by
+changing the `auto_sheet` value.
+
+#### Custom AutoSheets
+
+It's also easy to write your own auto sheet logic that matches your personal
+workflow.  You're encouraged to submit these back to timetrap for inclusion in
+a future version.
+
+To create a custom auto sheet module you create a ruby class and implement one
+method on it `#sheet`.  This method should return the name of the sheet
+timetrap should use (as a string) or `nil` if a sheet shouldn't be
+automatically selected.
+
+All timetrap auto sheets live under the namespace `Timetrap::AutoSheets`
+
+To ensure that timetrap can find your auto sheet put it in
+`~/.timetrap/auto_sheets/`.  The filename should be the same as the
+string you will set in the configuration (for example
+`~/.timetrap/auto_sheets/dotfiles.rb`.  If you want to put your auto sheet in a
+different place you can run `t configure` and edit the
+`auto_sheet_search_paths` option.
+
+As an example here's the dotfiles auto sheet
+
+```ruby
+module Timetrap
+  module AutoSheets
+    class Dotfiles
+      def sheet
+        dotfile = File.join(Dir.pwd, '.timetrap-sheet')
+        File.read(dotfile).chomp if File.exist?(dotfile)
+      end
+    end
+  end
+end
+```
+
 Commands
 --------
+
 **archive**
   Archives the selected entries (by moving them to a sheet called ``_[SHEET]``)
   These entries can be seen by running ``t display _[SHEET]``.
-  usage: ``t archive [--start DATE] [--end DATE] [SHEET]``
+
+  usage: ``t archive [--start DATE] [--end DATE] [--grep REGEX] [SHEET]``
 
 **backend**
   Run an interactive database session on the timetrap database. Requires the
@@ -273,12 +341,12 @@ Commands
   Display also allows the use of a ``--round`` or ``-r`` flag which will round
   all times in the output. See global options below.
 
-  usage: ``t display [--ids] [--round] [--start DATE] [--end DATE] [--format FMT] [SHEET | all | full]``
+  usage: ``t display [--ids] [--round] [--start DATE] [--end DATE] [--format FMT] [--grep REGEX] [SHEET | all | full]``
 
 **edit**
   Inserts a note associated with the an entry in the timesheet, or edits the
-  start or end times.  Defaults to the current time although an ``--id`` flag can
-  be passed with the entry's id (see display.)
+  start or end times.  Defaults to the current entry, or previously running
+  entry. An ``--id`` flag can be passed with the entry's id (see display.)
 
   usage: ``t edit [--id ID] [--start TIME] [--end TIME] [--append] [NOTES]``
 
@@ -290,7 +358,7 @@ Commands
   usage: ``t in [--at TIME] [NOTES]``
 
 **kill**
-  Delete a timesheet or an entry.  Entry's are referenced using an ``--id``
+  Delete a timesheet or an entry.  Entries are referenced using an ``--id``
   flag (see display).  Sheets are referenced by name.
 
   usage: ``t kill [--id ID] [TIMESHEET]``
@@ -308,16 +376,16 @@ Commands
 **out**
   Stop the timer for the current timesheet. Must be called after in. Accepts an
   optional --at flag. Accepts an optional TIMESHEET name to check out of a
-  running, non-current sheet.
+  running, non-current sheet. Will check out of all running sheets if the
+  auto_checkout configuration option is enabled.
 
   usage: ``t out [--at TIME] [TIMESHEET]``
 
 **resume**
-  Start the timer for the current timesheet with the same notes as the last entry.
-  If there is no last entry the new one has blank notes ore uses the optional
-  NOTES parameter.
+  Start the timer for the current time sheet for an entry. Defaults to the
+  active entry.
 
-  usage: ``t resume [--at TIME] [NOTES]``
+  usage: ``t resume [--id ID] [--at TIME]``
 
 **sheet**
   Switch to a timesheet creating it if necessary. The default timesheet is
@@ -326,13 +394,31 @@ Commands
 
   usage: ``t sheet [TIMESHEET]``
 
+**today**
+  Shortcut for display with start date as the current day
+
+  usage: ``t today [--ids] [--format FMT] [SHEET | all]``
+
+**yesterday**
+  Shortcut for display with start and end dates as the day before the current
+  day
+
+  usage: ``t yesterday [--ids] [--format FMT] [SHEET | all]``
+
 **week**
-  Shortcut for display with start date set to monday of this week
+  Shortcut for display with start date set to a day of this week. The default
+  start of the week is Monday.
 
   usage: ``t week [--ids] [--end DATE] [--format FMT] [TIMESHEET | all]``
 
-Global Options
---------
+**month**
+  Shortcut for display with start date set to the beginning of this month
+  (or a specified month) and end date set to the end of the month.
+
+  usage: ``t month [--ids] [--start MONTH] [--format FMT] [TIMESHEET | all]``
+
+
+### Global Options
 
 **rounding**
   passing a ``--round`` or ``-r`` flag to any command will round entry start
@@ -347,10 +433,9 @@ Global Options
   confirmation (such as ``kill``) to assume an affirmative response to any
   prompt. This is useful when timetrap is used in a scripted environment.
 
-Configuration
---------
+### Configuration
 
-Configuration of TimeTrap's behavior can be done through an ERB interpolated
+Configuration of Timetrap's behavior can be done through an ERB interpolated
 YAML config file.
 
 See ``t configure`` for details.  Currently supported options are:
@@ -359,11 +444,83 @@ See ``t configure`` for details.  Currently supported options are:
 
   **database_file**: The file path of the sqlite database
 
-  **append_notes_delimiter**: delimiter used when appending notes via `t edit --append`
+  **append_notes_delimiter**: delimiter used when appending notes via
+                              `t edit --append`
 
-  **formatter_search_paths**: an array of directories to search for user defined fomatter classes
+  **formatter_search_paths**: an array of directories to search for user
+                              defined fomatter classes
 
-  **default_formatter**: The format to use when display is invoked without a `--format` option
+  **default_formatter**: The format to use when display is invoked without a
+                         `--format` option
+
+  **default_command**: The default command to invoke when you call `t`
+
+  **auto_checkout**: Automatically check out of running entries when you check
+                     in or out
+
+  **require_note**: Prompt for a note if one isn't provided when checking in
+
+  **auto_sheet**: Which auto sheet module to use.
+
+  **auto_sheet_search_paths**: an array of directories to search for user
+                              defined auto_sheet classes
+
+  **note_editor**: The command to start editing notes. Defaults to false which
+               means no external editor is used. Please see the section below
+               on Notes Editing for tips on using non-terminal based editors.
+               Example: note_editor: "vim"
+
+  **week_start**: The day of the week to use as the start of the week for t week.
+
+### Autocomplete
+
+Timetrap has some basic support for autocomplete in bash and zsh.
+There are completions for commands and for sheets.
+
+**HINT** If you don't know where timetrap is installed,
+have a look in the directories listed in `echo $GEM_PATH`.
+
+#### bash
+
+If it isn't already, add the following to your `.bashrc`/`.bash_profile`:
+
+```bash
+if [ -f /etc/bash_completion ]; then
+  . /etc/bash_completion
+fi
+```
+
+Then add this to source the completions:
+
+```bash
+source /path/to/timetrap-1.x.y/gem/completions/bash/timetrap-autocomplete.bash
+```
+
+#### zsh
+
+If it isn't already, add the following to your `.zshrc`:
+
+```bash
+autoload -U compinit
+compinit
+```
+
+Then add this to source the completions:
+
+```bash
+fpath=(/path/to/timetrap-1.x.y/gem/completions/zsh $fpath)
+```
+
+#### Notes editing
+If you use the note_editor setting, then it is possible to use
+an editor for writing your notes. If you use a non terminal based
+editor (like atom, sublime etc.) then you will need to make timetrap
+wait until the editor has finished. If you're using the "core.editor"
+flag in git, then it'll be the same flags you'll use.
+
+As of when this command was added, for atom you would use `atom --wait`
+and for sublime `subl -w`. If you use a console based editor (vim, emacs,
+nano) then it should just work.
 
 Special Thanks
 --------------
@@ -377,3 +534,10 @@ http://bitbucket.org/trevor/timebook/src/
 Bugs and Feature Requests
 --------
 Submit to http://github.com/samg/timetrap/issues
+
+[harvest]:          http://www.getharvest.com
+[timetrap-harvest]: https://github.com/dblandin/timetrap-harvest
+[dblandin]:         https://github.com/dblandin
+[toggl]:            https://toggl.com
+[timetrap-toggl]:   https://github.com/naps62/timetrap-toggl
+[naps62]:           https://github.com/naps62

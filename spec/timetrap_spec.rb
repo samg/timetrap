@@ -3,6 +3,18 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'timetra
 require 'rspec'
 require 'fakefs/safe'
 
+RSpec.configure do |config|
+  # as we are stubbing stderr and stdout, if you want to capture
+  # any of your output in tests, simply add :write_stdout_stderr => true
+  # as metadata to the end of your test
+  config.after(:each, write_stdout_stderr: true) do
+    $stderr.rewind
+    $stdout.rewind
+    File.write("stderr.txt", $stderr.read)
+    File.write("stdout.txt", $stdout.read)
+  end
+end
+
 def local_time(str)
   Timetrap::Timer.process_time(str)
 end
@@ -12,15 +24,20 @@ def local_time_cli(str)
 end
 
 module Timetrap::StubConfig
-  def with_stubbed_config options
-    options.each do |k, v|
-      Timetrap::Config.stub(:[]).with(k).and_return v
+  def with_stubbed_config options = {}
+    defaults = Timetrap::Config.defaults.dup
+    Timetrap::Config.stub(:[]) do |k|
+      defaults.merge(options)[k]
     end
+    yield if block_given?
   end
 end
 
 describe Timetrap do
   include Timetrap::StubConfig
+  before do
+    with_stubbed_config
+  end
   def create_entry atts = {}
     Timetrap::Entry.create({
       :sheet => 'default',
@@ -47,8 +64,28 @@ describe Timetrap do
 
       describe 'with no command' do
         it "should invoke --help" do
-          invoke ''
-          $stdout.string.should include "Usage"
+          with_stubbed_config('default_command' => nil) do
+            invoke ''
+            $stdout.string.should include "Usage"
+          end
+        end
+      end
+
+      describe 'with default command configured' do
+        it "should invoke the default command" do
+          with_stubbed_config('default_command' => 'n') do
+            invoke ''
+            $stderr.string.should include('*default: not running')
+          end
+        end
+
+        it "should allow a complicated default command" do
+          with_stubbed_config('default_command' => 'display -f csv', 'formatter_search_paths' => '/tmp') do
+            invoke 'in foo bar'
+            invoke 'out'
+            invoke ''
+            $stdout.string.should include(',"foo bar"')
+          end
         end
       end
 
@@ -63,7 +100,22 @@ describe Timetrap do
       describe 'archive' do
         before do
           3.times do |i|
+            create_entry({:note => 'grep'})
+          end
+          3.times do |i|
             create_entry
+          end
+        end
+
+        it "should only archive entries matched by the provided regex" do
+          $stdin.string = "yes\n"
+          invoke 'archive --grep [g][r][e][p]'
+          Timetrap::Entry.each do |e|
+            if e.note == 'grep'
+              e.sheet.should == '_default'
+            else
+              e.sheet.should == 'default'
+            end
           end
         end
 
@@ -87,10 +139,11 @@ describe Timetrap do
         it "should write a config file" do
           FakeFS do
             FileUtils.mkdir_p(ENV['HOME'])
-            FileUtils.rm(ENV['HOME'] + '/.timetrap.yml')
-            File.exist?(ENV['HOME'] + '/.timetrap.yml').should be_false
+            config_file = ENV['HOME'] + '/.timetrap.yml'
+            FileUtils.rm(config_file) if File.exist? config_file
+            File.exist?(config_file).should be_falsey
             invoke "configure"
-            File.exist?(ENV['HOME'] + '/.timetrap.yml').should be_true
+            File.exist?(config_file).should be_truthy
           end
         end
 
@@ -162,8 +215,204 @@ describe Timetrap do
           not_running = Timetrap::Timer.active_entry
           Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
           Timetrap::Timer.start "another entry", nil
+
+          # create a few more entries to ensure we're not falling back on "last
+          # checked out of" feature.
+          Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+          Timetrap::Timer.start "another entry", nil
+
+          Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+          Timetrap::Timer.start "another entry", nil
+
           invoke "edit --id #{not_running.id} a new description"
           not_running.refresh.note.should == 'a new description'
+        end
+
+        it "should edit the entry last checked out of if none is running" do
+          not_running = Timetrap::Timer.active_entry
+          Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+          invoke "edit -z 'a new description'"
+          not_running.refresh.note.should include 'a new description'
+        end
+
+        it "should edit the entry last checked out of if none is running even if the sheet is changed" do
+          not_running = Timetrap::Timer.active_entry
+          Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+          invoke "edit -z 'a new description'"
+          invoke "sheet another second sheet"
+          not_running.refresh.note.should include 'a new description'
+          not_running.refresh.sheet.should == 'default'
+          Timetrap::Timer.current_sheet.should == 'another second sheet'
+        end
+
+        context "with external editor" do
+          let(:note_editor_command) { 'vim' }
+
+          before do
+            with_stubbed_config 'note_editor' => note_editor_command, 'append_notes_delimiter' => '//'
+          end
+
+          it "should open an editor for editing the note" do |example|
+            Timetrap::CLI.stub(:system) do |editor_command|
+              path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+              File.write(path[:path], "edited note")
+            end
+            Timetrap::Timer.active_entry.note.should == 'running entry'
+            invoke "edit"
+            Timetrap::Timer.active_entry.note.should == 'edited note'
+          end
+
+          it "should pass existing note to editor" do |example|
+            capture = nil
+            Timetrap::CLI.stub(:system) do |editor_command|
+              path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+
+              capture = File.read(path[:path])
+            end
+            invoke "edit"
+            expect(capture).to eq("running entry")
+          end
+
+
+          it "should edit a non running entry with an external editor" do |example|
+            not_running = Timetrap::Timer.active_entry
+            Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+            Timetrap::Timer.start "another entry", nil
+
+            # create a few more entries to ensure we're not falling back on "last
+            # checked out of" feature.
+            Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+            Timetrap::Timer.start "another entry", nil
+
+            Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+
+            Timetrap::CLI.stub(:system) do |editor_command|
+              path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+              File.write(path[:path], "id passed note")
+            end
+
+            invoke "edit --id #{not_running.id}"
+
+            not_running.refresh.note.should == "id passed note"
+          end
+
+          it "should not call the editor if there are arguments other than --id" do
+            not_running = Timetrap::Timer.active_entry
+            Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+            Timetrap::Timer.start "another entry", nil
+
+            Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
+            expect(Timetrap::CLI).not_to receive(:system)
+            invoke "edit --id #{not_running.id} --start \"yesterday 10am\""
+          end
+
+          context "appending" do
+            it "should open an editor for editing the note with -z" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "appended in editor")
+              end
+              Timetrap::Timer.active_entry.note.should == 'running entry'
+              invoke "edit -z"
+              Timetrap::Timer.active_entry.note.should == 'running entry//appended in editor'
+            end
+
+            it "should open a editor for editing the note with --append" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "appended in editor")
+              end
+              Timetrap::Timer.active_entry.note.should == 'running entry'
+              invoke "edit --append"
+              Timetrap::Timer.active_entry.note.should == 'running entry//appended in editor'
+            end
+          end
+        end
+      end
+
+      describe 'auto_sheet' do
+        describe "using dotfiles auto_sheet" do
+          describe 'with a .timetrap-sheet in cwd' do
+            it 'should use sheet defined in dotfile' do
+              Dir.chdir('spec/dotfile') do
+                with_stubbed_config('auto_sheet' => 'dotfiles')
+                Timetrap::Timer.current_sheet.should == 'dotfile-sheet'
+              end
+            end
+          end
+        end
+
+        describe "using YamlCwd autosheet" do
+          describe 'with cwd in auto_sheet_paths' do
+            it 'should use sheet defined in config' do
+              with_stubbed_config(
+                'auto_sheet_paths' => {
+                'a sheet' => ['/not/cwd/', Dir.getwd]
+              }, 'auto_sheet' => 'yaml_cwd')
+              Timetrap::Timer.current_sheet.should == 'a sheet'
+            end
+          end
+
+          describe 'with ancestor of cwd in auto_sheet_paths' do
+            it 'should use sheet defined in config' do
+              with_stubbed_config(
+                'auto_sheet_paths' => {'a sheet' => '/'},
+                'auto_sheet' => 'yaml_cwd'
+              )
+              Timetrap::Timer.current_sheet.should == 'a sheet'
+            end
+          end
+
+          describe 'with cwd not in auto_sheet_paths' do
+            it 'should not use sheet defined in config' do
+              with_stubbed_config(
+                'auto_sheet_paths' => {
+                  'a sheet' => '/not/the/current/working/directory/'
+              },'auto_sheet' => 'yaml_cwd')
+              Timetrap::Timer.current_sheet.should == 'default'
+            end
+          end
+
+          describe 'with cwd and ancestor in auto_sheet_paths' do
+            it 'should use the most specific config' do
+              with_stubbed_config(
+                'auto_sheet_paths' => {
+                  'general sheet' => '/', 'more specific sheet' => Dir.getwd
+              }, 'auto_sheet' => 'yaml_cwd')
+              Timetrap::Timer.current_sheet.should == 'more specific sheet'
+              with_stubbed_config(
+                'auto_sheet_paths' => {
+                  'more specific sheet' => Dir.getwd, 'general sheet' => '/'
+                }, 'auto_sheet' => 'yaml_cwd')
+              Timetrap::Timer.current_sheet.should == 'more specific sheet'
+            end
+          end
+        end
+
+        describe "using nested_dotfiles auto_sheet" do
+          describe 'with a .timetrap-sheet in cwd' do
+            it 'should use sheet defined in dotfile' do
+              Dir.chdir('spec/dotfile') do
+                with_stubbed_config('auto_sheet' => 'nested_dotfiles')
+                Timetrap::Timer.current_sheet.should == 'dotfile-sheet'
+              end
+            end
+            it 'should use top-most sheet found in dir heirarchy' do
+              Dir.chdir('spec/dotfile/nested') do
+                with_stubbed_config('auto_sheet' => 'nested_dotfiles')
+                Timetrap::Timer.current_sheet.should == 'nested-sheet'
+              end
+            end
+          end
+
+          describe 'with no .timetrap-sheet in cwd' do
+            it 'should use sheet defined in ancestor\'s dotfile' do
+              Dir.chdir('spec/dotfile/nested/no-sheet') do
+                with_stubbed_config('auto_sheet' => 'nested_dotfiles')
+                Timetrap::Timer.current_sheet.should == 'nested-sheet'
+              end
+            end
+          end
         end
       end
 
@@ -190,7 +439,7 @@ The "format" command is deprecated in favor of "display". Sorry for the inconven
         describe "text" do
           before do
             Timetrap::Entry.create( :sheet => 'another',
-              :note => 'entry 4', :start => '2008-10-05 18:00:00'
+              :note => 'a long entry note', :start => '2008-10-05 18:00:00'
             )
             Timetrap::Entry.create( :sheet => 'SpecSheet',
               :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
@@ -204,8 +453,15 @@ The "format" command is deprecated in favor of "display". Sorry for the inconven
             Timetrap::Entry.create( :sheet => 'SpecSheet',
               :note => 'entry 4', :start => '2008-10-05 18:00:00'
             )
+            Timetrap::Entry.create( :sheet => 'LongNoteSheet',
+              :note => test_long_text, :start => '2008-10-05 16:00:00', :end => '2008-10-05 18:00:00'
+            )
+            Timetrap::Entry.create( :sheet => 'SheetWithLineBreakNote',
+              :note => "first line\nand a second line ", :start => '2008-10-05 16:00:00', :end => '2008-10-05 18:00:00'
+            )
 
-            Time.stub!(:now).and_return local_time('2008-10-05 20:00:00')
+            now = local_time('2008-10-05 20:00:00')
+            Time.stub(:now).and_return now
             @desired_output = <<-OUTPUT
 Timesheet: SpecSheet
     Day                Start      End        Duration   Notes
@@ -215,8 +471,19 @@ Timesheet: SpecSheet
     Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
                        18:00:00 -            2:00:00    entry 4
                                              4:00:00
-    ---------------------------------------------------------
+    -----------------------------------------------------------
     Total                                    8:00:00
+            OUTPUT
+
+            @desired_output_grepped = <<-OUTPUT
+Timesheet: SpecSheet
+    Day                Start      End        Duration   Notes
+    Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
+                                             2:00:00
+    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
+                                             2:00:00
+    -----------------------------------------------------------
+    Total                                    4:00:00
             OUTPUT
 
             @desired_output_with_ids = <<-OUTPUT
@@ -228,30 +495,60 @@ Id  Day                Start      End        Duration   Notes
 4   Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
 5                      18:00:00 -            2:00:00    entry 4
                                              4:00:00
-    ---------------------------------------------------------
+    -----------------------------------------------------------
     Total                                    8:00:00
             OUTPUT
 
-            @desired_output_for_all = <<-OUTPUT
+            @desired_output_with_long_ids = <<-OUTPUT
 Timesheet: SpecSheet
-    Day                Start      End        Duration   Notes
-    Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
-                       16:00:00 - 18:00:00   2:00:00    entry 2
-                                             4:00:00
-    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
-                       18:00:00 -            2:00:00    entry 4
-                                             4:00:00
-    ---------------------------------------------------------
-    Total                                    8:00:00
+Id    Day                Start      End        Duration   Notes
+3     Fri Oct 03, 2008   12:00:00 - 14:00:00   2:00:00    entry 1
+2                        16:00:00 - 18:00:00   2:00:00    entry 2
+                                               4:00:00
+40000 Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    entry 3
+5                        18:00:00 -            2:00:00    entry 4
+                                               4:00:00
+      -----------------------------------------------------------
+      Total                                    8:00:00
+            OUTPUT
 
-Timesheet: another
+            @desired_output_for_long_note_sheet = <<-OUTPUT
+Timesheet: LongNoteSheet
     Day                Start      End        Duration   Notes
-    Sun Oct 05, 2008   18:00:00 -            2:00:00    entry 4
+    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    chatting with bob about upcoming task, district
+                                                        sharing of images, how the user settings currently
+                                                        works etc. Discussing the fingerprinting / cache
+                                                        busting issue with CKEDITOR, suggesting perhaps
+                                                        looking into forking the rubygem and seeing if we
+                                                        can work in our own changes, however hard that
+                                                        might be.
                                              2:00:00
-    ---------------------------------------------------------
+    ------------------------------------------------------------------------------------------------------
     Total                                    2:00:00
--------------------------------------------------------------
-Grand Total                                 10:00:00
+            OUTPUT
+
+            @desired_output_for_long_note_sheet_with_ids = <<-OUTPUT
+Timesheet: LongNoteSheet
+Id    Day                Start      End        Duration   Notes
+60000 Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    chatting with bob about upcoming task, district
+                                                          sharing of images, how the user settings currently
+                                                          works etc. Discussing the fingerprinting / cache
+                                                          busting issue with CKEDITOR, suggesting perhaps
+                                                          looking into forking the rubygem and seeing if we
+                                                          can work in our own changes, however hard that
+                                                          might be.
+                                               2:00:00
+      ------------------------------------------------------------------------------------------------------
+      Total                                    2:00:00
+            OUTPUT
+
+            @desired_output_for_note_with_linebreak = <<-OUTPUT
+Timesheet: SheetWithLineBreakNote
+    Day                Start      End        Duration   Notes
+    Sun Oct 05, 2008   16:00:00 - 18:00:00   2:00:00    first line and a second line
+                                             2:00:00
+    --------------------------------------------------------------------------------
+    Total                                    2:00:00
             OUTPUT
           end
 
@@ -282,15 +579,47 @@ Grand Total                                 10:00:00
             $stdout.string.should include("entry 5")
           end
 
+          it "should only display entries that are matched by the provided regex" do
+            Timetrap::Timer.current_sheet = 'SpecSheet'
+            invoke 'display --grep [13]'
+            $stdout.string.should == @desired_output_grepped
+          end
+
           it "should display a timesheet with ids" do
             invoke 'display S --ids'
             $stdout.string.should == @desired_output_with_ids
           end
 
-          it "should display all timesheets" do
-            Timetrap::Timer.current_sheet = 'another'
-            invoke 'display all'
-            $stdout.string.should == @desired_output_for_all
+          it "should properly format a timesheet with long ids" do
+            Timetrap::DB["UPDATE entries SET id = 40000 WHERE id = 4"].all
+            invoke 'display S --ids'
+            $stdout.string.should == @desired_output_with_long_ids
+          end
+
+          it "should properly format a timesheet with no ids even if long ids are in the db" do
+            Timetrap::DB["UPDATE entries SET id = 40000 WHERE id = 4"].all
+            invoke 'display S'
+            $stdout.string.should == @desired_output
+          end
+
+
+          it "should display long notes nicely" do
+            Timetrap::Timer.current_sheet = 'LongNoteSheet'
+            invoke 'display'
+            $stdout.string.should == @desired_output_for_long_note_sheet
+          end
+
+          it "should display long notes with linebreaks nicely" do
+            Timetrap::Timer.current_sheet = 'SheetWithLineBreakNote'
+            invoke 'display'
+            $stdout.string.should == @desired_output_for_note_with_linebreak
+          end
+
+          it "should display long notes with ids nicely" do
+            Timetrap::DB["UPDATE entries SET id = 60000 WHERE id = 6"].all
+            Timetrap::Timer.current_sheet = 'LongNoteSheet'
+            invoke 'display --ids'
+            $stdout.string.should == @desired_output_for_long_note_sheet_with_ids
           end
 
           it "should not display archived for all timesheets" do
@@ -321,37 +650,14 @@ Grand Total                                 10:00:00
             $stdout.string.should == "yeah I did it\n"
             FileUtils.rm_r dir
           end
-        end
 
-        describe "factor" do
-          before do
+          it "should work when there's no note" do
             Timetrap::Entry.create( :sheet => 'SpecSheet',
-              :note => 'entry f:2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
+              :note => nil
             )
-            Timetrap::Entry.create( :sheet => 'SpecSheet',
-              :note => 'entry f:0.5', :start => '2008-10-04 16:00:00', :end => '2008-10-04 18:00:00'
-            )
-            Timetrap::Entry.create( :sheet => 'SpecSheet',
-              :note => 'entry', :start => '2008-10-04 19:00:00'
-            )
-            Time.stub!(:now).and_return local_time('2008-10-04 20:00:00')
-            @desired_output = <<-OUTPUT
-Timesheet: SpecSheet
-    Day                Start      End        Duration   Notes
-    Fri Oct 03, 2008   16:00:00 - 18:00:00   4:00:00    entry f:2
-                                             4:00:00
-    Sat Oct 04, 2008   16:00:00 - 18:00:00   1:00:00    entry f:0.5
-                       19:00:00 -            1:00:00    entry
-                                             2:00:00
-    ---------------------------------------------------------
-    Total                                    6:00:00
-            OUTPUT
-          end
-
-          it "should correctly handle factors in notes" do
-            Timetrap::Timer.current_sheet = 'SpecSheet'
-            invoke 'display --format factor'
-            $stdout.string.should == @desired_output
+            invoke 'd SpecSheet'
+            # check it doesn't error and produces valid looking output
+            $stdout.string.should include('Timesheet: SpecSheet')
           end
         end
 
@@ -443,17 +749,17 @@ start,end,note,sheet
             invoke 'in'
             invoke 'display --format ical'
 
-            $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
+            expect($stdout.string.scan(/BEGIN:VEVENT/).size).to eq(2)
           end
 
           it "should filter events by the passed dates" do
             invoke 'display --format ical --start 2008-10-03 --end 2008-10-03'
-            $stdout.string.scan(/BEGIN:VEVENT/).should have(1).item
+            expect($stdout.string.scan(/BEGIN:VEVENT/).size).to eq(1)
           end
 
           it "should not filter events by date when none are passed" do
             invoke 'display --format ical'
-            $stdout.string.scan(/BEGIN:VEVENT/).should have(2).item
+            expect($stdout.string.scan(/BEGIN:VEVENT/).size).to eq(2)
           end
 
           it "should export a sheet to an ical format" do
@@ -493,13 +799,13 @@ END:VCALENDAR
 
         it "should set the start when starting a new entry" do
           @time = Time.now
-          Time.stub!(:now).and_return @time
+          Time.stub(:now).and_return @time
           invoke 'in working on something'
           Timetrap::Entry.order_by(:id).last.start.to_i.should == @time.to_i
         end
 
         it "should not start the time if the timetrap is running" do
-          Timetrap::Timer.stub!(:running?).and_return true
+          Timetrap::Timer.stub(:running?).and_return true
           lambda do
             invoke 'in'
           end.should_not change(Timetrap::Entry, :count)
@@ -512,7 +818,7 @@ END:VCALENDAR
 
         it "should fail with a warning for misformatted cli options it can't parse" do
           now = Time.now
-          Time.stub!(:now).and_return now
+          Time.stub(:now).and_return now
           invoke 'in work --at="18 minutes ago"'
           Timetrap::Entry.order_by(:id).last.should be_nil
           $stderr.string.should =~ /\w+/
@@ -520,20 +826,298 @@ END:VCALENDAR
 
         it "should fail with a time argurment of total garbage" do
           now = Time.now
-          Time.stub!(:now).and_return now
+          Time.stub(:now).and_return now
           invoke 'in work --at "total garbage"'
           Timetrap::Entry.order_by(:id).last.should be_nil
           $stderr.string.should =~ /\w+/
+        end
+
+        describe "with require_note config option set" do
+          context "without a note_editor" do
+            before do
+              with_stubbed_config 'require_note' => true, 'note_editor' => false
+            end
+
+            it "should prompt for a note if one isn't passed" do
+              $stdin.string = "an interactive note\n"
+              invoke "in"
+              $stderr.string.should include('enter a note')
+              Timetrap::Timer.active_entry.note.should == "an interactive note"
+            end
+
+            it "should not prompt for a note if one is passed" do
+              $stdin.string = "an interactive note\n"
+              invoke "in a normal note"
+              Timetrap::Timer.active_entry.note.should == "a normal note"
+            end
+
+            it "should not stop the running entry or prompt" do
+              invoke "in a normal note"
+              $stdin.string = "an interactive note\n"
+              invoke "in"
+              Timetrap::Timer.active_entry.note.should == "a normal note"
+            end
+          end
+
+          context "with a note editor" do
+            let(:note_editor_command) { 'vim' }
+            before do
+              with_stubbed_config 'require_note' => true, 'note_editor' => note_editor_command
+            end
+
+            it "should open an editor for writing the note" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "written in editor")
+              end
+              invoke "in"
+              $stderr.string.should_not include('enter a note')
+              Timetrap::Timer.active_entry.note.should == "written in editor"
+            end
+
+            it "should preserve linebreaks from editor" do |example|
+              Timetrap::CLI.stub(:system) do |editor_command|
+                path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
+                File.write(path[:path], "line1\nline2")
+              end
+              invoke "in"
+              Timetrap::Timer.active_entry.note.should == "line1\nline2"
+            end
+          end
+        end
+
+        describe "with auto_checkout config option set" do
+          before do
+            with_stubbed_config 'auto_checkout' => true
+          end
+
+          it "should check in normally if nothing else is running" do
+            Timetrap::Timer.should_not be_running #precondition
+            invoke 'in'
+            Timetrap::Timer.should be_running
+          end
+
+          describe "with a running entry on current sheet" do
+            before do
+              invoke 'sheet sheet1'
+              invoke 'in first task'
+            end
+
+            it "should check out and back in" do
+              entry = Timetrap::Timer.active_entry('sheet1')
+              invoke 'in second task'
+              Timetrap::Timer.active_entry('sheet1').note.should == 'second task'
+            end
+
+            it "should tell me what it's doing" do
+              invoke 'in second task'
+              $stderr.string.should include "Checked out"
+            end
+          end
+
+          describe "with a running entry on another sheet" do
+            before do
+              invoke 'sheet sheet1'
+              invoke 'in first task'
+              invoke 'sheet sheet2'
+            end
+
+            it "should check out of the running entry" do
+              Timetrap::Timer.active_entry('sheet1').should be_a(Timetrap::Entry)
+              invoke 'in second task'
+              Timetrap::Timer.active_entry('sheet1').should be nil
+            end
+
+            it "should check out of the running entry at another time" do
+              now = Time.at(Time.now - 5 * 60) # 5 minutes ago
+              entry = Timetrap::Timer.active_entry('sheet1')
+              entry.should be_a(Timetrap::Entry)
+              invoke "in -a '#{now}' second task"
+              entry.reload.end.to_s.should == now.to_s
+            end
+
+            it "should check out of the running entry without having to start a new entry" do
+              entry = Timetrap::Timer.active_entry('sheet1')
+              entry.should be_a(Timetrap::Entry)
+              entry.end.should be_nil
+              invoke "out"
+              entry.reload.end.should_not be_nil
+            end
+          end
+        end
+      end
+
+      describe "today" do
+        it "should only show entries for today" do
+          yesterday = Time.now - (24 * 60 * 60)
+          create_entry(
+            :start => yesterday,
+            :end => yesterday
+          )
+          create_entry
+          invoke 'today'
+          $stdout.string.should include Time.now.strftime('%a %b %d, %Y')
+          $stdout.string.should_not include yesterday.strftime('%a %b %d, %Y')
+        end
+      end
+
+      describe "yesterday" do
+        it "should only show entries for yesterday" do
+          yesterday = Time.now - (24 * 60 * 60)
+          create_entry(
+            :start => yesterday,
+            :end => yesterday
+          )
+          create_entry
+          invoke 'yesterday'
+          $stdout.string.should include yesterday.strftime('%a %b %d, %Y')
+          $stdout.string.should_not include Time.now.strftime('%a %b %d, %Y')
+        end
+      end
+
+      describe "week" do
+        it "should only show entries from this week" do
+          create_entry(
+            :start => Time.local(2012, 2, 1, 1, 2, 3),
+            :end => Time.local(2012, 2, 1, 2, 2, 3)
+          )
+          create_entry
+          invoke 'week'
+          $stdout.string.should include Time.now.strftime('%a %b %d, %Y')
+          $stdout.string.should_not include 'Feb 01, 2012'
+        end
+
+        describe "with week_start config option set" do
+          let(:week_start_config) { 'Tuesday' }
+          before do
+            with_stubbed_config 'week_start' => week_start_config
+          end
+
+          #https://github.com/samg/timetrap/issues/161
+          it "should work at the end of the month" do
+            Date.should_receive(:today).and_return(Date.new(2017, 7, 30))
+
+            create_entry(
+              :start => Time.local(2017, 7, 29, 1, 2, 3),
+              :end => Time.local(2017, 7, 29, 2, 2, 3)
+            )
+            invoke "week"
+            $stdout.string.should include 'Jul 29, 2017'
+
+          end
+
+          it "should not show entries prior to defined start of week" do
+            create_entry(
+              :start => Time.local(2012, 2, 5, 1, 2, 3),
+              :end => Time.local(2012, 2, 5, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 8, 1, 2, 3),
+              :end => Time.local(2012, 2, 8, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 9, 1, 2, 3),
+              :end => Time.local(2012, 2, 9, 2, 2, 3)
+            )
+
+            Date.should_receive(:today).and_return(Date.new(2012, 2, 9))
+            invoke 'week'
+
+            $stdout.string.should include 'Feb 08, 2012'
+            $stdout.string.should include 'Feb 09, 2012'
+            $stdout.string.should_not include 'Feb 05, 2012'
+          end
+
+          it "should only show entries from today if today is start of week" do
+            create_entry(
+              :start => Time.local(2012, 1, 31, 1, 2, 3),
+              :end => Time.local(2012, 1, 31, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 5, 1, 2, 3),
+              :end => Time.local(2012, 2, 5, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 7, 1, 2, 3),
+              :end => Time.local(2012, 2, 7, 2, 2, 3)
+            )
+
+            Date.should_receive(:today).and_return(Date.new(2012, 2, 7))
+            invoke 'week'
+
+            $stdout.string.should include 'Feb 07, 2012'
+            $stdout.string.should_not include 'Jan 31, 2012'
+            $stdout.string.should_not include 'Feb 05, 2012'
+          end
+
+          it "should not show entries 7 days past start of week" do
+            create_entry(
+              :start => Time.local(2012, 2, 9, 1, 2, 3),
+              :end => Time.local(2012, 2, 9, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 14, 1, 2, 3),
+              :end => Time.local(2012, 2, 14, 2, 2, 3)
+            )
+            create_entry(
+              :start => Time.local(2012, 2, 16, 1, 2, 3),
+              :end => Time.local(2012, 2, 16, 2, 2, 3)
+            )
+
+            Date.should_receive(:today).and_return(Date.new(2012, 2, 7))
+            invoke 'week'
+
+            $stdout.string.should include 'Feb 09, 2012'
+            $stdout.string.should_not include 'Feb 14, 2012'
+            $stdout.string.should_not include 'Feb 16, 2012'
+          end
+        end
+      end
+
+      describe "month" do
+        it "should display all entries for the month" do
+          create_entry(
+            :start => Time.local(2012, 2, 5, 1, 2, 3),
+            :end => Time.local(2012, 2, 5, 2, 2, 3)
+          )
+          create_entry(
+            :start => Time.local(2012, 2, 6, 1, 2, 3),
+            :end => Time.local(2012, 2, 6, 2, 2, 3)
+          )
+          create_entry(
+            :start => Time.local(2012, 1, 5, 1, 2, 3),
+            :end => Time.local(2012, 1, 5, 2, 2, 3)
+          )
+
+          Date.should_receive(:today).and_return(Date.new(2012, 2, 5))
+          invoke "month"
+
+
+          $stdout.string.should include 'Feb 05, 2012'
+          $stdout.string.should include 'Feb 06, 2012'
+          $stdout.string.should_not include 'Jan'
+        end
+
+        it "should work in December" do
+          create_entry(
+            :start => Time.local(2012, 12, 5, 1, 2, 3),
+            :end => Time.local(2012, 12, 5, 2, 2, 3)
+          )
+
+          Date.should_receive(:today).and_return(Date.new(2012, 12, 5))
+          invoke "month"
+
+          $stdout.string.should include 'Wed Dec 05, 2012   01:02:03 - 02:02:03'
         end
       end
 
       describe "kill" do
         it "should give me a chance not to fuck up" do
           entry = create_entry
-          lambda do
+          expect do
             $stdin.string = ""
             invoke "kill #{entry.sheet}"
-          end.should_not change(Timetrap::Entry, :count).by(-1)
+          end.not_to change(Timetrap::Entry, :count)
         end
 
         it "should delete a timesheet" do
@@ -564,7 +1148,8 @@ END:VCALENDAR
 
         describe "with a numeric sheet name" do
           before do
-            Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
+            now = local_time("2008-10-05 18:00:00")
+            Time.stub(:now).and_return now
             create_entry( :sheet => 1234, :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
           end
@@ -587,7 +1172,8 @@ END:VCALENDAR
 
         describe "with a numeric sheet name" do
           before do
-            Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
+            now = local_time("2008-10-05 18:00:00")
+            Time.stub(:now).and_return now
             create_entry( :sheet => '1234', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
           end
@@ -610,8 +1196,9 @@ END:VCALENDAR
         end
 
         describe "with sheets defined" do
-          before do
-            Time.stub!(:now).and_return local_time("2008-10-05 18:00:00")
+          before :each do
+            now = local_time("2008-10-05 18:00:00")
+            Time.stub(:now).and_return now
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
@@ -633,13 +1220,36 @@ END:VCALENDAR
             OUTPUT
           end
 
+          it "should mark the last sheet with '-' if it exists" do
+            invoke 'sheet Sheet 1'
+            $stdout.string = ''
+            invoke 'list'
+            $stdout.string.should == <<-OUTPUT
+ Timesheet                 Running     Today       Total Time
+-A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+*Sheet 1                    0:00:00     0:00:00     2:00:00
+            OUTPUT
+          end
+
+          it "should not mark the last sheet with '-' if it doesn't exist" do
+            invoke 'sheet Non-existent'
+            invoke 'sheet Sheet 1'
+            $stdout.string = ''
+            invoke 'list'
+            $stdout.string.should == <<-OUTPUT
+ Timesheet                 Running     Today       Total Time
+ A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+*Sheet 1                    0:00:00     0:00:00     2:00:00
+            OUTPUT
+          end
+
           it "should include the active timesheet even if it has no entries" do
             invoke 'sheet empty sheet'
             $stdout.string = ''
             invoke 'list'
             $stdout.string.should == <<-OUTPUT
  Timesheet                 Running     Today       Total Time
- A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
+-A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
 *empty sheet                0:00:00     0:00:00     0:00:00
  Sheet 1                    0:00:00     0:00:00     2:00:00
             OUTPUT
@@ -655,7 +1265,7 @@ END:VCALENDAR
         describe "when the current timesheet isn't running" do
           it "should show that it isn't running" do
             invoke 'now'
-            $stdout.string.should == <<-OUTPUT
+            $stderr.string.should == <<-OUTPUT
 *current sheet: not running
             OUTPUT
           end
@@ -667,7 +1277,7 @@ END:VCALENDAR
             @entry = Timetrap::Timer.active_entry
             @entry.start = Time.at(0)
             @entry.save
-            Time.stub!(:now).and_return Time.at(60)
+            Time.stub(:now).and_return Time.at(60)
           end
 
           it "should show how long the current item is running for" do
@@ -684,7 +1294,7 @@ END:VCALENDAR
               @entry = Timetrap::Timer.active_entry
               @entry.start = Time.at(0)
               @entry.save
-              Time.stub!(:now).and_return Time.at(60)
+              Time.stub(:now).and_return Time.at(60)
             end
 
             it "should show both entries" do
@@ -703,7 +1313,7 @@ END:VCALENDAR
           invoke 'in'
           @active = Timetrap::Timer.active_entry
           @now = Time.now
-          Time.stub!(:now).and_return @now
+          Time.stub(:now).and_return @now
         end
         it "should set the stop for the running entry" do
           @active.refresh.end.should == nil
@@ -737,7 +1347,11 @@ END:VCALENDAR
       describe "resume" do
         before :each do
           @time = Time.now
-          Time.stub!(:now).and_return @time
+          Time.stub(:now).and_return @time
+
+          invoke 'in A previous task that isnt last'
+          @previous = Timetrap::Timer.active_entry
+          invoke 'out'
 
           invoke 'in Some strange task'
           @last_active = Timetrap::Timer.active_entry
@@ -747,11 +1361,36 @@ END:VCALENDAR
           @last_active.should_not be_nil
         end
 
-        it "should allow to resume the last active sheet" do
+        it "should allow to resume the last active entry" do
           invoke 'resume'
 
           Timetrap::Timer.active_entry.note.should ==(@last_active.note)
           Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+        end
+
+        it "should allow to resume the last entry from the current sheet" do
+          invoke 'sheet another another'
+          invoke 'in foo11998845'
+          invoke 'out'
+          invoke 'sheet -'
+          invoke 'resume'
+
+          Timetrap::Timer.active_entry.note.should ==(@last_active.note)
+          Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+        end
+
+        it "should allow to resume a specific entry" do
+          invoke "resume --id #{@previous.id}"
+
+          Timetrap::Timer.active_entry.note.should ==(@previous.note)
+          Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+        end
+
+        it "should allow to resume a specific entry with a given time" do
+          invoke "resume --id #{@previous.id} --at \"10am 2008-10-03\""
+
+          Timetrap::Timer.active_entry.note.should ==(@previous.note)
+          Timetrap::Timer.active_entry.start.should eql(Time.parse('2008-10-03 10:00'))
         end
 
         it "should allow to resume the activity with a given time" do
@@ -770,16 +1409,72 @@ END:VCALENDAR
             Timetrap::Timer.active_entry.should be_nil
           end
 
-          it "starts a new entry if no entry exists" do
-            invoke "resume"
-            Timetrap::Timer.active_entry.should_not be_nil
-            Timetrap::Timer.active_entry.note.should ==("")
+        end
+
+        describe "with only archived entries" do
+          before(:each) do
+            $stdin.string = "yes\n"
+            invoke "archive"
+            Timetrap::Timer.entries(Timetrap::Timer.current_sheet).should be_empty
+            Timetrap::Timer.active_entry.should be_nil
           end
 
-          it "allows to pass a note that is used for the new entry" do
-            invoke "resume New Note"
+          it "retrieves the note of the most recent archived entry" do
+            invoke "resume"
             Timetrap::Timer.active_entry.should_not be_nil
-            Timetrap::Timer.active_entry.note.should ==("New Note")
+            Timetrap::Timer.active_entry.note.should == @last_active.note
+            Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+          end
+        end
+
+        describe "with auto_checkout config option set" do
+          before do
+            with_stubbed_config 'auto_checkout' => true
+          end
+
+          it "should check in normally if nothing else is running" do
+            Timetrap::Timer.should_not be_running #precondition
+            invoke 'resume'
+            Timetrap::Timer.should be_running
+          end
+
+          describe "with a running entry on current sheet" do
+            before do
+              invoke 'sheet sheet1'
+              invoke 'in first task'
+            end
+
+            it "should check out and back in" do
+              entry = Timetrap::Timer.active_entry('sheet1')
+              invoke 'resume second task'
+              Timetrap::Timer.active_entry('sheet1').id.should_not == entry.id
+            end
+          end
+
+          describe "with a running entry on another sheet" do
+            before do
+              invoke 'sheet sheet2'
+              invoke 'in second task'
+              invoke 'out'
+
+              invoke 'sheet sheet1'
+              invoke 'in first task'
+              invoke 'sheet sheet2'
+            end
+
+            it "should check out of the running entry" do
+              Timetrap::Timer.active_entry('sheet1').should be_a(Timetrap::Entry)
+              invoke 'resume'
+              Timetrap::Timer.active_entry('sheet1').should be nil
+            end
+
+            it "should check out of the running entry at another time" do
+              now = Time.at(Time.now - 5 * 60) # 5 minutes ago
+              entry = Timetrap::Timer.active_entry('sheet1')
+              entry.should be_a(Timetrap::Entry)
+              invoke "resume -a '#{now}'"
+              entry.reload.end.to_s.should == now.to_s
+            end
           end
         end
       end
@@ -830,6 +1525,17 @@ END:VCALENDAR
               Timetrap::Timer.current_sheet.should == 'second'
             end
           end
+        end
+      end
+
+      describe '--version' do
+        it 'should print the version number if asked' do
+          begin
+            invoke '--version'
+          rescue SystemExit #Getopt::Declare calls exit after --version is invoked
+          end
+
+          $stdout.string.should include(::Timetrap::VERSION)
         end
       end
     end
@@ -896,6 +1602,27 @@ END:VCALENDAR
       time.to_i.should == e.refresh.end.to_i
     end
 
+    it "should track the last entry that was checked out of" do
+      Timetrap::Timer.start 'some work'
+      e = Timetrap::Timer.active_entry
+      Timetrap::Timer.stop Timetrap::Timer.current_sheet
+      Timetrap::Timer.last_checkout.id.should == e.id
+    end
+
+  end
+
+  describe Timetrap::Helpers do
+    before do
+      @helper = Object.new
+      @helper.extend Timetrap::Helpers
+    end
+    it "should correctly format positive durations" do
+      @helper.format_duration(1234).should == " 0:20:34"
+    end
+
+    it "should correctly format negative durations" do
+      @helper.format_duration(-1234).should == "- 0:20:34"
+    end
   end
 
 
@@ -955,9 +1682,9 @@ END:VCALENDAR
         it "should use round start if the global round attribute is set" do
           with_rounding_on do
             with_stubbed_config('round_in_seconds' => 900) do
-              @time = Chronic.parse("12:55am")
+              @time = Chronic.parse("12:55")
               @entry.start = @time
-              @entry.start.should == Chronic.parse("1am")
+              @entry.start.should == Chronic.parse("1")
             end
           end
         end
@@ -965,18 +1692,18 @@ END:VCALENDAR
         it "should use round start if the global round attribute is set" do
           with_rounding_on do
             with_stubbed_config('round_in_seconds' => 900) do
-              @time = Chronic.parse("12:50am")
+              @time = Chronic.parse("12:50")
               @entry.start = @time
-              @entry.start.should == Chronic.parse("12:45am")
+              @entry.start.should == Chronic.parse("12:45")
             end
           end
         end
 
         it "should have a rounded start" do
           with_stubbed_config('round_in_seconds' => 900) do
-            @time = Chronic.parse("12:50am")
+            @time = Chronic.parse("12:50")
             @entry.start = @time
-            @entry.rounded_start.should == Chronic.parse("12:45am")
+            @entry.rounded_start.should == Chronic.parse("12:45")
           end
         end
 
@@ -999,7 +1726,54 @@ END:VCALENDAR
           @entry.end.should == Chronic.parse("tomorrow 1pm")
         end
       end
+
+      describe "with times specfied like 12:12:12" do
+        it "should assume a <24 hour duration" do
+          @entry.start= Time.at(Time.now - 3600) # 1.hour.ago
+          @entry.end = Time.at(Time.now - 300).strftime("%H:%M:%S") # ambiguous 5.minutes.ago
+
+          # should be about 55 minutes duration.  Allow for second rollover
+          # within this test.
+          (3299..3301).should === @entry.duration
+        end
+
+        it "should not assume negative durations around 12 hour length" do
+          @entry.start= Time.at(Time.now - (15 * 3600)) # 15.hour.ago
+          @entry.end = Time.at(Time.now - 300).strftime("%H:%M:%S") # ambiguous 5.minutes.ago
+
+          (53699..53701).should === @entry.duration
+        end
+
+        it "should assume a start time near the current time" do
+          time = Time.at(Time.now - 300)
+          @entry.start= time.strftime("%H:%M:%S") # ambiguous 5.minutes.ago
+
+          @entry.start.to_i.should == time.to_i
+        end
+      end
     end
 
+  end
+  describe 'bins' do
+    # https://github.com/samg/timetrap/pull/80
+    it 'should include a t bin and an equivalent timetrap bin' do
+      timetrap = File.open(File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 'timetrap')))
+      t = File.open(File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 't')))
+      t.read.should == timetrap.read
+      t.stat.mode.should == timetrap.stat.mode
+    end
+  end
+
+
+  private
+
+  def test_long_text
+<<TEXT
+chatting with bob about upcoming task, district sharing of images, how the
+user settings currently works etc. Discussing the fingerprinting / cache
+busting issue with CKEDITOR, suggesting perhaps looking into forking the
+rubygem and seeing if we can work in our own changes, however hard that might
+be.
+TEXT
   end
 end

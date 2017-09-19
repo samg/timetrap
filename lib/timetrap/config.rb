@@ -22,7 +22,24 @@ module Timetrap
           "#{ENV['HOME']}/.timetrap/formatters"
         ],
         # formatter to use when display is invoked without a --format option
-        'default_formatter' => 'text'
+        'default_formatter' => 'text',
+        # the auto_sheet to use
+        'auto_sheet' => 'dotfiles',
+        # an array of directories to search for user defined auto_sheet classes
+        'auto_sheet_search_paths' => [
+          "#{ENV['HOME']}/.timetrap/auto_sheets"
+        ],
+        # the default command to when you run `t`.  default to printing usage.
+        'default_command' => nil,
+        # only allow one running entry at a time.
+        # automatically check out of any running tasks when checking in.
+        'auto_checkout' => false,
+        # interactively prompt for a note if one isn't passed when checking in.
+        'require_note' => false,
+        # command to launch external editor (false if no external editor used)
+        'note_editor' => false,
+        # set day of the week when determining start of the week.
+        'week_start' => "Monday",
       }
     end
 
