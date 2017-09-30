@@ -113,7 +113,7 @@ Command line flags also have short versions.
     $ # equivalent to the command above
     $ t i -a "5 minutes ago"
 
-You can consult the Chronic gem (http://chronic.rubyforge.org/) for a full
+You can consult the Chronic gem (https://github.com/mojombo/chronic) for a full
 list of parsable time formats, but all of these should work.
 
     $ t out --at "in 30 minutes"
