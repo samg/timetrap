@@ -358,7 +358,7 @@ Commands
   usage: ``t in [--at TIME] [NOTES]``
 
 **kill**
-  Delete a timesheet or an entry.  Entries are referenced using an ``--id``
+  Delete a timesheet or an entry.  Entries are referenced using an ``--ids``
   flag (see display).  Sheets are referenced by name.
 
   usage: ``t kill [--id ID] [TIMESHEET]``
