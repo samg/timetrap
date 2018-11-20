@@ -1499,6 +1499,12 @@ END:VCALENDAR
           $stdout.string.should == " Timesheet  Running     Today       Total Time\n*sheet 1     0:00:00     0:00:00     0:00:00\n"
         end
 
+        it "should note if the user is already on that sheet" do
+          invoke 'sheet sheet 1'
+          invoke 'sheet sheet 1'
+          $stderr.string.should == "Switching to sheet \"sheet 1\"\nAlready on sheet \"sheet 1\"\n"
+        end
+
         describe "using - to switch to the last sheet" do
           it "should warn if there isn't a sheet set" do
             lambda do
