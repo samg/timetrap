@@ -388,7 +388,11 @@ COMMAND is one of:
       end
 
       Timer.current_sheet = sheet
-      warn "Switching to sheet #{sheet.inspect}"
+      if Timer.last_sheet == sheet
+        warn "Already on sheet #{sheet.inspect}"
+      else
+        warn "Switching to sheet #{sheet.inspect}"
+      end
     end
 
     def list
