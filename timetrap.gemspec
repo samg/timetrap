@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Timetrap::VERSION
   spec.authors       = ["Sam Goldstein"]
   spec.email         = ["sgrock@gmail.org"]
-  spec.description   = "Command line time tracker"
   spec.summary       = "Command line time tracker"
+  spec.description   = "Timetrap is a simple command line time tracker written in ruby. It provides an easy to use command line interface for tracking what you spend your time on."
   spec.homepage      = "https://github.com/samg/timetrap"
   spec.license       = "MIT"
 
@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   # More recent versions of icalendar drop support for Ruby 1.8.7
   spec.add_development_dependency "icalendar", "~> 1.3.0"
   spec.add_development_dependency "json"
-  spec.add_dependency "sequel", "~> 4.43.0"
+  spec.add_dependency "sequel", "~> 4.49.0"
   spec.add_dependency "sqlite3", "~> 1.3.3"
 
   spec.add_dependency "chronic", "~> 0.10.2"
