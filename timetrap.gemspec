@@ -18,14 +18,14 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "bundler", "~> 2"
-  spec.add_development_dependency "rake"
+  spec.add_development_dependency "bundler", "~> 2.1"
+  spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.5.0"
-  spec.add_development_dependency "fakefs"
+  spec.add_development_dependency "fakefs", "~> 0.20"
   # More recent versions of icalendar drop support for Ruby 1.8.7
   spec.add_development_dependency "icalendar", "~> 1.3.0"
-  spec.add_development_dependency "json"
-  spec.add_dependency "sequel", "~> 4.49.0"
+  spec.add_development_dependency "json", "~> 2.3"
+  spec.add_dependency "sequel", "~> 5.30.0"
   spec.add_dependency "sqlite3", "~> 1.3.3"
 
   spec.add_dependency "chronic", "~> 0.10.2"
