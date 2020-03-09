@@ -1,7 +1,5 @@
 module Timetrap
   class Entry < Sequel::Model
-    plugin :schema
-
     class << self
     # a class level instance variable that controls whether or not all entries
     # should respond to #start and #end with times rounded to 15 minute
@@ -68,27 +66,10 @@ module Timetrap
     end
 
     private
-    # do a quick pseudo migration.  This should only get executed on the first run
-    set_schema do
-      primary_key :id
-      column :note, String
-      column :start, DateTime
-      column :end, DateTime
-      column :sheet, String
-    end
-    create_table unless table_exists?
+
   end
 
   class Meta < Sequel::Model(:meta)
-    plugin :schema
-
-    set_schema do
-      primary_key :id
-      column :key, String
-      column :value, String
-    end
-    create_table unless table_exists?
-
     def value
       self[:value].to_s
     end

@@ -46,10 +46,9 @@ describe Timetrap do
       :note => 'note'}.merge(atts))
   end
 
-
   before :each do
-    Timetrap::Entry.create_table!
-    Timetrap::Meta.create_table!
+    Timetrap::EntrySchema.create_table!
+    Timetrap::MetaSchema.create_table!
     $stdout = StringIO.new
     $stdin = StringIO.new
     $stderr = StringIO.new
