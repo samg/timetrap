@@ -26,7 +26,7 @@ end
 module Timetrap::StubConfig
   def with_stubbed_config options = {}
     defaults = Timetrap::Config.defaults.dup
-    Timetrap::Config.stub(:[]) do |k|
+    allow(Timetrap::Config).to receive(:[]) do |k|
       defaults.merge(options)[k]
     end
     yield if block_given?
@@ -65,7 +65,7 @@ describe Timetrap do
         it "should invoke --help" do
           with_stubbed_config('default_command' => nil) do
             invoke ''
-            $stdout.string.should include "Usage"
+            expect($stdout.string).to include "Usage"
           end
         end
       end
@@ -74,7 +74,7 @@ describe Timetrap do
         it "should invoke the default command" do
           with_stubbed_config('default_command' => 'n') do
             invoke ''
-            $stderr.string.should include('*default: not running')
+            expect($stderr.string).to include('*default: not running')
           end
         end
 
@@ -83,7 +83,7 @@ describe Timetrap do
             invoke 'in foo bar'
             invoke 'out'
             invoke ''
-            $stdout.string.should include(',"foo bar"')
+            expect($stdout.string).to include(',"foo bar"')
           end
         end
       end
@@ -91,7 +91,7 @@ describe Timetrap do
       describe 'with an invalid command' do
         it "should tell me I'm wrong" do
           invoke 'poo'
-          $stderr.string.should include 'Invalid command: "poo"'
+          expect($stderr.string).to include 'Invalid command: "poo"'
         end
       end
 
@@ -111,9 +111,9 @@ describe Timetrap do
           invoke 'archive --grep [g][r][e][p]'
           Timetrap::Entry.each do |e|
             if e.note == 'grep'
-              e.sheet.should == '_default'
+              expect(e.sheet).to eq '_default'
             else
-              e.sheet.should == 'default'
+              expect(e.sheet).to eq 'default'
             end
           end
         end
@@ -122,7 +122,7 @@ describe Timetrap do
           $stdin.string = "yes\n"
           invoke 'archive'
           Timetrap::Entry.each do |e|
-            e.sheet.should == '_default'
+            expect(e.sheet).to eq '_default'
           end
         end
 
@@ -130,7 +130,7 @@ describe Timetrap do
           invoke "in"
           $stdin.string = "yes\n"
           invoke 'archive'
-          Timetrap::Entry.order(:id).last.sheet.should == 'default'
+          expect(Timetrap::Entry.order(:id).last.sheet).to eq 'default'
         end
       end
 
@@ -140,16 +140,16 @@ describe Timetrap do
             FileUtils.mkdir_p(ENV['HOME'])
             config_file = ENV['HOME'] + '/.timetrap.yml'
             FileUtils.rm(config_file) if File.exist? config_file
-            File.exist?(config_file).should be_falsey
+            expect(File.exist?(config_file)).to be_falsey
             invoke "configure"
-            File.exist?(config_file).should be_truthy
+            expect(File.exist?(config_file)).to be_truthy
           end
         end
 
         it "should describe config file" do
           FakeFS do
             invoke "configure"
-            $stdout.string.should == "Config file is at \"#{ENV['HOME']}/.timetrap.yml\"\n"
+            expect($stdout.string).to eq "Config file is at \"#{ENV['HOME']}/.timetrap.yml\"\n"
           end
         end
       end
@@ -160,23 +160,23 @@ describe Timetrap do
         end
 
         it "should edit the description of the active period" do
-          Timetrap::Timer.active_entry.note.should == 'running entry'
+          expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
           invoke 'edit new description'
-          Timetrap::Timer.active_entry.note.should == 'new description'
+          expect(Timetrap::Timer.active_entry.note).to eq 'new description'
         end
 
         it "should allow you to move an entry to another sheet" do
           invoke 'edit --move blahblah'
-          Timetrap::Timer.active_entry[:sheet].should == 'blahblah'
+          expect(Timetrap::Timer.active_entry[:sheet]).to eq 'blahblah'
           invoke 'edit -m blahblahblah'
-          Timetrap::Timer.active_entry[:sheet].should == 'blahblahblah'
+          expect(Timetrap::Timer.active_entry[:sheet]).to eq 'blahblahblah'
         end
 
         it "should change the current sheet if the current entry's sheet is changed" do
-          Timetrap::Timer.current_sheet.should_not == 'blahblahblah'
+          expect(Timetrap::Timer.current_sheet).not_to eq 'blahblahblah'
           invoke 'edit -m blahblahblah'
-          Timetrap::Timer.active_entry[:sheet].should == 'blahblahblah'
-          Timetrap::Timer.current_sheet.should == 'blahblahblah'
+          expect(Timetrap::Timer.active_entry[:sheet]).to eq 'blahblahblah'
+          expect(Timetrap::Timer.current_sheet).to eq 'blahblahblah'
         end
 
         it "should change the current sheet if a non current entry's sheet is changed" do
@@ -184,30 +184,30 @@ describe Timetrap do
           id = Timetrap::Timer.active_entry[:id]
           invoke 'out'
           invoke "edit -m blahblahblah -i #{id}"
-          Timetrap::Timer.current_sheet.should == sheet
-          Timetrap::Entry[id][:sheet].should == 'blahblahblah'
+          expect(Timetrap::Timer.current_sheet).to eq sheet
+          expect(Timetrap::Entry[id][:sheet]).to eq 'blahblahblah'
         end
 
         it "should allow appending to the description of the active period" do
           with_stubbed_config('append_notes_delimiter' => '//')
-          Timetrap::Timer.active_entry.note.should == 'running entry'
+          expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
           invoke 'edit --append new'
-          Timetrap::Timer.active_entry.note.should == 'running entry//new'
+          expect(Timetrap::Timer.active_entry.note).to eq 'running entry//new'
           invoke 'edit -z more'
-          Timetrap::Timer.active_entry.note.should == 'running entry//new//more'
+          expect(Timetrap::Timer.active_entry.note).to eq 'running entry//new//more'
         end
 
         it "should edit the start time of the active period" do
           invoke 'edit --start "yesterday 10am"'
-          Timetrap::Timer.active_entry.start.should == Chronic.parse("yesterday 10am")
-          Timetrap::Timer.active_entry.note.should == 'running entry'
+          expect(Timetrap::Timer.active_entry.start).to eq Chronic.parse("yesterday 10am")
+          expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
         end
 
         it "should edit the end time of the active period" do
           entry = Timetrap::Timer.active_entry
           invoke 'edit --end "yesterday 10am"'
-          entry.refresh.end.should == Chronic.parse("yesterday 10am")
-          entry.refresh.note.should == 'running entry'
+          expect(entry.refresh.end).to eq Chronic.parse("yesterday 10am")
+          expect(entry.refresh.note).to eq 'running entry'
         end
 
         it "should edit a non running entry based on id" do
@@ -224,14 +224,14 @@ describe Timetrap do
           Timetrap::Timer.start "another entry", nil
 
           invoke "edit --id #{not_running.id} a new description"
-          not_running.refresh.note.should == 'a new description'
+          expect(not_running.refresh.note).to eq 'a new description'
         end
 
         it "should edit the entry last checked out of if none is running" do
           not_running = Timetrap::Timer.active_entry
           Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
           invoke "edit -z 'a new description'"
-          not_running.refresh.note.should include 'a new description'
+          expect(not_running.refresh.note).to include 'a new description'
         end
 
         it "should edit the entry last checked out of if none is running even if the sheet is changed" do
@@ -239,9 +239,9 @@ describe Timetrap do
           Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
           invoke "edit -z 'a new description'"
           invoke "sheet another second sheet"
-          not_running.refresh.note.should include 'a new description'
-          not_running.refresh.sheet.should == 'default'
-          Timetrap::Timer.current_sheet.should == 'another second sheet'
+          expect(not_running.refresh.note).to include 'a new description'
+          expect(not_running.refresh.sheet).to eq 'default'
+          expect(Timetrap::Timer.current_sheet).to eq 'another second sheet'
         end
 
         context "with external editor" do
@@ -252,18 +252,18 @@ describe Timetrap do
           end
 
           it "should open an editor for editing the note" do |example|
-            Timetrap::CLI.stub(:system) do |editor_command|
+            allow(Timetrap::CLI).to receive(:system) do |editor_command|
               path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
               File.write(path[:path], "edited note")
             end
-            Timetrap::Timer.active_entry.note.should == 'running entry'
+            expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
             invoke "edit"
-            Timetrap::Timer.active_entry.note.should == 'edited note'
+            expect(Timetrap::Timer.active_entry.note).to eq 'edited note'
           end
 
           it "should pass existing note to editor" do |example|
             capture = nil
-            Timetrap::CLI.stub(:system) do |editor_command|
+            allow(Timetrap::CLI).to receive(:system) do |editor_command|
               path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
 
               capture = File.read(path[:path])
@@ -285,14 +285,14 @@ describe Timetrap do
 
             Timetrap::Timer.stop(Timetrap::Timer.current_sheet)
 
-            Timetrap::CLI.stub(:system) do |editor_command|
+            allow(Timetrap::CLI).to receive(:system) do |editor_command|
               path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
               File.write(path[:path], "id passed note")
             end
 
             invoke "edit --id #{not_running.id}"
 
-            not_running.refresh.note.should == "id passed note"
+            expect(not_running.refresh.note).to eq "id passed note"
           end
 
           it "should not call the editor if there are arguments other than --id" do
@@ -307,23 +307,23 @@ describe Timetrap do
 
           context "appending" do
             it "should open an editor for editing the note with -z" do |example|
-              Timetrap::CLI.stub(:system) do |editor_command|
+              allow(Timetrap::CLI).to receive(:system) do |editor_command|
                 path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
                 File.write(path[:path], "appended in editor")
               end
-              Timetrap::Timer.active_entry.note.should == 'running entry'
+              expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
               invoke "edit -z"
-              Timetrap::Timer.active_entry.note.should == 'running entry//appended in editor'
+              expect(Timetrap::Timer.active_entry.note).to eq 'running entry//appended in editor'
             end
 
             it "should open a editor for editing the note with --append" do |example|
-              Timetrap::CLI.stub(:system) do |editor_command|
+              allow(Timetrap::CLI).to receive(:system) do |editor_command|
                 path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
                 File.write(path[:path], "appended in editor")
               end
-              Timetrap::Timer.active_entry.note.should == 'running entry'
+              expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
               invoke "edit --append"
-              Timetrap::Timer.active_entry.note.should == 'running entry//appended in editor'
+              expect(Timetrap::Timer.active_entry.note).to eq 'running entry//appended in editor'
             end
           end
         end
@@ -335,7 +335,7 @@ describe Timetrap do
             it 'should use sheet defined in dotfile' do
               Dir.chdir('spec/dotfile') do
                 with_stubbed_config('auto_sheet' => 'dotfiles')
-                Timetrap::Timer.current_sheet.should == 'dotfile-sheet'
+                expect(Timetrap::Timer.current_sheet).to eq 'dotfile-sheet'
               end
             end
           end
@@ -348,7 +348,7 @@ describe Timetrap do
                 'auto_sheet_paths' => {
                 'a sheet' => ['/not/cwd/', Dir.getwd]
               }, 'auto_sheet' => 'yaml_cwd')
-              Timetrap::Timer.current_sheet.should == 'a sheet'
+              expect(Timetrap::Timer.current_sheet).to eq 'a sheet'
             end
           end
 
@@ -358,7 +358,7 @@ describe Timetrap do
                 'auto_sheet_paths' => {'a sheet' => '/'},
                 'auto_sheet' => 'yaml_cwd'
               )
-              Timetrap::Timer.current_sheet.should == 'a sheet'
+              expect(Timetrap::Timer.current_sheet).to eq 'a sheet'
             end
           end
 
@@ -368,7 +368,7 @@ describe Timetrap do
                 'auto_sheet_paths' => {
                   'a sheet' => '/not/the/current/working/directory/'
               },'auto_sheet' => 'yaml_cwd')
-              Timetrap::Timer.current_sheet.should == 'default'
+              expect(Timetrap::Timer.current_sheet).to eq 'default'
             end
           end
 
@@ -378,12 +378,12 @@ describe Timetrap do
                 'auto_sheet_paths' => {
                   'general sheet' => '/', 'more specific sheet' => Dir.getwd
               }, 'auto_sheet' => 'yaml_cwd')
-              Timetrap::Timer.current_sheet.should == 'more specific sheet'
+              expect(Timetrap::Timer.current_sheet).to eq 'more specific sheet'
               with_stubbed_config(
                 'auto_sheet_paths' => {
                   'more specific sheet' => Dir.getwd, 'general sheet' => '/'
                 }, 'auto_sheet' => 'yaml_cwd')
-              Timetrap::Timer.current_sheet.should == 'more specific sheet'
+              expect(Timetrap::Timer.current_sheet).to eq 'more specific sheet'
             end
           end
         end
@@ -393,13 +393,13 @@ describe Timetrap do
             it 'should use sheet defined in dotfile' do
               Dir.chdir('spec/dotfile') do
                 with_stubbed_config('auto_sheet' => 'nested_dotfiles')
-                Timetrap::Timer.current_sheet.should == 'dotfile-sheet'
+                expect(Timetrap::Timer.current_sheet).to eq 'dotfile-sheet'
               end
             end
             it 'should use top-most sheet found in dir heirarchy' do
               Dir.chdir('spec/dotfile/nested') do
                 with_stubbed_config('auto_sheet' => 'nested_dotfiles')
-                Timetrap::Timer.current_sheet.should == 'nested-sheet'
+                expect(Timetrap::Timer.current_sheet).to eq 'nested-sheet'
               end
             end
           end
@@ -408,7 +408,7 @@ describe Timetrap do
             it 'should use sheet defined in ancestor\'s dotfile' do
               Dir.chdir('spec/dotfile/nested/no-sheet') do
                 with_stubbed_config('auto_sheet' => 'nested_dotfiles')
-                Timetrap::Timer.current_sheet.should == 'nested-sheet'
+                expect(Timetrap::Timer.current_sheet).to eq 'nested-sheet'
               end
             end
           end
@@ -417,7 +417,7 @@ describe Timetrap do
 
       describe "backend" do
         it "should open an sqlite console to the db" do
-          Timetrap::CLI.should_receive(:exec).with("sqlite3 #{Timetrap::DB_NAME}")
+          expect(Timetrap::CLI).to receive(:exec).with("sqlite3 #{Timetrap::DB_NAME}")
           invoke 'backend'
         end
       end
@@ -428,7 +428,7 @@ describe Timetrap do
         end
         it "should be deprecated" do
           invoke 'format'
-          $stderr.string.should == <<-WARN
+          expect($stderr.string).to eq <<-WARN
 The "format" command is deprecated in favor of "display". Sorry for the inconvenience.
           WARN
         end
@@ -460,7 +460,7 @@ The "format" command is deprecated in favor of "display". Sorry for the inconven
             )
 
             now = local_time('2008-10-05 20:00:00')
-            Time.stub(:now).and_return now
+            allow(Time).to receive(:now).and_return now
             @desired_output = <<-OUTPUT
 Timesheet: SpecSheet
     Day                Start      End        Duration   Notes
@@ -554,19 +554,19 @@ Timesheet: SheetWithLineBreakNote
           it "should display the current timesheet" do
             Timetrap::Timer.current_sheet = 'SpecSheet'
             invoke 'display'
-            $stdout.string.should == @desired_output
+            expect($stdout.string).to eq @desired_output
           end
 
           it "should display a non current timesheet" do
             Timetrap::Timer.current_sheet = 'another'
             invoke 'display SpecSheet'
-            $stdout.string.should == @desired_output
+            expect($stdout.string).to eq @desired_output
           end
 
           it "should display a non current timesheet based on a partial name match" do
             Timetrap::Timer.current_sheet = 'another'
             invoke 'display S'
-            $stdout.string.should == @desired_output
+            expect($stdout.string).to eq @desired_output
           end
 
           it "should prefer an exact match of a named sheet to a partial match" do
@@ -575,50 +575,50 @@ Timesheet: SheetWithLineBreakNote
               :note => 'entry 5', :start => '2008-10-05 18:00:00'
             )
             invoke 'display Spec'
-            $stdout.string.should include("entry 5")
+            expect($stdout.string).to include("entry 5")
           end
 
           it "should only display entries that are matched by the provided regex" do
             Timetrap::Timer.current_sheet = 'SpecSheet'
             invoke 'display --grep [13]'
-            $stdout.string.should == @desired_output_grepped
+            expect($stdout.string).to eq @desired_output_grepped
           end
 
           it "should display a timesheet with ids" do
             invoke 'display S --ids'
-            $stdout.string.should == @desired_output_with_ids
+            expect($stdout.string).to eq @desired_output_with_ids
           end
 
           it "should properly format a timesheet with long ids" do
             Timetrap::DB["UPDATE entries SET id = 40000 WHERE id = 4"].all
             invoke 'display S --ids'
-            $stdout.string.should == @desired_output_with_long_ids
+            expect($stdout.string).to eq @desired_output_with_long_ids
           end
 
           it "should properly format a timesheet with no ids even if long ids are in the db" do
             Timetrap::DB["UPDATE entries SET id = 40000 WHERE id = 4"].all
             invoke 'display S'
-            $stdout.string.should == @desired_output
+            expect($stdout.string).to eq @desired_output
           end
 
 
           it "should display long notes nicely" do
             Timetrap::Timer.current_sheet = 'LongNoteSheet'
             invoke 'display'
-            $stdout.string.should == @desired_output_for_long_note_sheet
+            expect($stdout.string).to eq @desired_output_for_long_note_sheet
           end
 
           it "should display long notes with linebreaks nicely" do
             Timetrap::Timer.current_sheet = 'SheetWithLineBreakNote'
             invoke 'display'
-            $stdout.string.should == @desired_output_for_note_with_linebreak
+            expect($stdout.string).to eq @desired_output_for_note_with_linebreak
           end
 
           it "should display long notes with ids nicely" do
             Timetrap::DB["UPDATE entries SET id = 60000 WHERE id = 6"].all
             Timetrap::Timer.current_sheet = 'LongNoteSheet'
             invoke 'display --ids'
-            $stdout.string.should == @desired_output_for_long_note_sheet_with_ids
+            expect($stdout.string).to eq @desired_output_for_long_note_sheet_with_ids
           end
 
           it "should not display archived for all timesheets" do
@@ -626,7 +626,7 @@ Timesheet: SheetWithLineBreakNote
             invoke 'archive SpecSheet'
             $stdout.string = ''
             invoke 'display all'
-            $stdout.string.should_not =~ /_SpecSheet/
+            expect($stdout.string).not_to match /_SpecSheet/
           end
 
           it "it should find a user provided formatter class and require it" do
@@ -646,7 +646,7 @@ Timesheet: SheetWithLineBreakNote
               RUBY
             end
             invoke 'd -fbaz'
-            $stdout.string.should == "yeah I did it\n"
+            expect($stdout.string).to eq "yeah I did it\n"
             FileUtils.rm_r dir
           end
 
@@ -656,7 +656,7 @@ Timesheet: SheetWithLineBreakNote
             )
             invoke 'd SpecSheet'
             # check it doesn't error and produces valid looking output
-            $stdout.string.should include('Timesheet: SpecSheet')
+            expect($stdout.string).to include('Timesheet: SpecSheet')
           end
         end
 
@@ -671,7 +671,7 @@ Timesheet: SheetWithLineBreakNote
               'formatter_search_paths' => nil
 
             invoke 'd'
-            $stdout.string.should == Timetrap::Entry.all.map(&:id).join(" ") + "\n"
+            expect($stdout.string).to eq Timetrap::Entry.all.map(&:id).join(" ") + "\n"
           end
         end
 
@@ -684,7 +684,7 @@ Timesheet: SheetWithLineBreakNote
           it "should not export running items" do
             invoke 'in'
             invoke 'display --format ids'
-            $stdout.string.should == Timetrap::Entry.all.map(&:id).join(" ") + "\n"
+            expect($stdout.string).to eq Timetrap::Entry.all.map(&:id).join(" ") + "\n"
           end
 
         end
@@ -698,7 +698,7 @@ Timesheet: SheetWithLineBreakNote
           it "should not export running items" do
             invoke 'in'
             invoke 'display --format csv'
-            $stdout.string.should == <<-EOF
+            expect($stdout.string).to eq <<-EOF
 start,end,note,sheet
 "2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
 "2008-10-05 12:00:00","2008-10-05 14:00:00","note","default"
@@ -707,7 +707,7 @@ start,end,note,sheet
 
           it "should filter events by the passed dates" do
             invoke 'display --format csv --start 2008-10-03 --end 2008-10-03'
-            $stdout.string.should == <<-EOF
+            expect($stdout.string).to eq <<-EOF
 start,end,note,sheet
 "2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
             EOF
@@ -715,7 +715,7 @@ start,end,note,sheet
 
           it "should not filter events by date when none are passed" do
             invoke 'display --format csv'
-            $stdout.string.should == <<-EOF
+            expect($stdout.string).to eq <<-EOF
 start,end,note,sheet
 "2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
 "2008-10-05 12:00:00","2008-10-05 14:00:00","note","default"
@@ -732,7 +732,7 @@ start,end,note,sheet
           it "should export to json not including running items" do
             invoke 'in'
             invoke 'display -f json'
-            JSON.parse($stdout.string).should == JSON.parse(<<-EOF)
+            expect(JSON.parse($stdout.string)).to eq JSON.parse(<<-EOF)
 [{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-03 14:00:00')}\",\"start\":\"#{local_time('2008-10-03 12:00:00')}\",\"note\":\"note\",\"id\":1},{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-05 14:00:00')}\",\"start\":\"#{local_time('2008-10-05 12:00:00')}\",\"note\":\"note\",\"id\":2}]
             EOF
           end
@@ -778,7 +778,7 @@ END:VEVENT
 END:VCALENDAR
             EOF
             desired.each_line do |line|
-              $stdout.string.should =~ /#{line.chomp}/
+              expect($stdout.string).to match /#{line.chomp}/
             end
           end
         end
@@ -786,49 +786,50 @@ END:VCALENDAR
 
       describe "in" do
         it "should start the time for the current timesheet" do
-          lambda do
-            invoke 'in'
-          end.should change(Timetrap::Entry, :count).by(1)
+          expect(
+            lambda do
+              invoke 'in'
+            end).to change(Timetrap::Entry, :count).by(1)
         end
 
         it "should set the note when starting a new entry" do
           invoke 'in working on something'
-          Timetrap::Entry.order_by(:id).last.note.should == 'working on something'
+          expect(Timetrap::Entry.order_by(:id).last.note).to eq 'working on something'
         end
 
         it "should set the start when starting a new entry" do
           @time = Time.now
-          Time.stub(:now).and_return @time
+          allow(Time).to receive(:now).and_return @time
           invoke 'in working on something'
-          Timetrap::Entry.order_by(:id).last.start.to_i.should == @time.to_i
+          expect(Timetrap::Entry.order_by(:id).last.start.to_i).to eq @time.to_i
         end
 
         it "should not start the time if the timetrap is running" do
-          Timetrap::Timer.stub(:running?).and_return true
-          lambda do
+          allow(Timetrap::Timer).to receive(:running?).and_return true
+          expect(lambda do
             invoke 'in'
-          end.should_not change(Timetrap::Entry, :count)
+            end).not_to change(Timetrap::Entry, :count)
         end
 
         it "should allow the sheet to be started at a certain time" do
           invoke 'in work --at "10am 2008-10-03"'
-          Timetrap::Entry.order_by(:id).last.start.should == Time.parse('2008-10-03 10:00')
+          expect(Timetrap::Entry.order_by(:id).last.start).to eq Time.parse('2008-10-03 10:00')
         end
 
         it "should fail with a warning for misformatted cli options it can't parse" do
           now = Time.now
-          Time.stub(:now).and_return now
+          allow(Time).to receive(:now).and_return now
           invoke 'in work --at="18 minutes ago"'
-          Timetrap::Entry.order_by(:id).last.should be_nil
-          $stderr.string.should =~ /\w+/
+          expect(Timetrap::Entry.order_by(:id).last).to be_nil
+          expect($stderr.string).to match /\w+/
         end
 
         it "should fail with a time argurment of total garbage" do
           now = Time.now
-          Time.stub(:now).and_return now
+          allow(Time).to receive(:now).and_return now
           invoke 'in work --at "total garbage"'
-          Timetrap::Entry.order_by(:id).last.should be_nil
-          $stderr.string.should =~ /\w+/
+          expect(Timetrap::Entry.order_by(:id).last).to be_nil
+          expect($stderr.string).to match /\w+/
         end
 
         describe "with require_note config option set" do
@@ -840,21 +841,21 @@ END:VCALENDAR
             it "should prompt for a note if one isn't passed" do
               $stdin.string = "an interactive note\n"
               invoke "in"
-              $stderr.string.should include('enter a note')
-              Timetrap::Timer.active_entry.note.should == "an interactive note"
+              expect($stderr.string).to include('enter a note')
+              expect(Timetrap::Timer.active_entry.note).to eq "an interactive note"
             end
 
             it "should not prompt for a note if one is passed" do
               $stdin.string = "an interactive note\n"
               invoke "in a normal note"
-              Timetrap::Timer.active_entry.note.should == "a normal note"
+              expect(Timetrap::Timer.active_entry.note).to eq "a normal note"
             end
 
             it "should not stop the running entry or prompt" do
               invoke "in a normal note"
               $stdin.string = "an interactive note\n"
               invoke "in"
-              Timetrap::Timer.active_entry.note.should == "a normal note"
+              expect(Timetrap::Timer.active_entry.note).to eq "a normal note"
             end
           end
 
@@ -865,22 +866,22 @@ END:VCALENDAR
             end
 
             it "should open an editor for writing the note" do |example|
-              Timetrap::CLI.stub(:system) do |editor_command|
+              allow(Timetrap::CLI).to receive(:system) do |editor_command|
                 path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
                 File.write(path[:path], "written in editor")
               end
               invoke "in"
-              $stderr.string.should_not include('enter a note')
-              Timetrap::Timer.active_entry.note.should == "written in editor"
+              expect($stderr.string).not_to include('enter a note')
+              expect(Timetrap::Timer.active_entry.note).to eq "written in editor"
             end
 
             it "should preserve linebreaks from editor" do |example|
-              Timetrap::CLI.stub(:system) do |editor_command|
+              allow(Timetrap::CLI).to receive(:system) do |editor_command|
                 path = editor_command.match(/#{note_editor_command} (?<path>.*)/)
                 File.write(path[:path], "line1\nline2")
               end
               invoke "in"
-              Timetrap::Timer.active_entry.note.should == "line1\nline2"
+              expect(Timetrap::Timer.active_entry.note).to eq "line1\nline2"
             end
           end
         end
@@ -891,9 +892,9 @@ END:VCALENDAR
           end
 
           it "should check in normally if nothing else is running" do
-            Timetrap::Timer.should_not be_running #precondition
+            expect(Timetrap::Timer).not_to be_running #precondition
             invoke 'in'
-            Timetrap::Timer.should be_running
+            expect(Timetrap::Timer).to be_running
           end
 
           describe "with a running entry on current sheet" do
@@ -905,12 +906,12 @@ END:VCALENDAR
             it "should check out and back in" do
               entry = Timetrap::Timer.active_entry('sheet1')
               invoke 'in second task'
-              Timetrap::Timer.active_entry('sheet1').note.should == 'second task'
+              expect(Timetrap::Timer.active_entry('sheet1').note).to eq 'second task'
             end
 
             it "should tell me what it's doing" do
               invoke 'in second task'
-              $stderr.string.should include "Checked out"
+              expect($stderr.string).to include "Checked out"
             end
           end
 
@@ -922,25 +923,25 @@ END:VCALENDAR
             end
 
             it "should check out of the running entry" do
-              Timetrap::Timer.active_entry('sheet1').should be_a(Timetrap::Entry)
+              expect(Timetrap::Timer.active_entry('sheet1')).to be_a(Timetrap::Entry)
               invoke 'in second task'
-              Timetrap::Timer.active_entry('sheet1').should be nil
+              expect(Timetrap::Timer.active_entry('sheet1')).to be nil
             end
 
             it "should check out of the running entry at another time" do
               now = Time.at(Time.now - 5 * 60) # 5 minutes ago
               entry = Timetrap::Timer.active_entry('sheet1')
-              entry.should be_a(Timetrap::Entry)
+              expect(entry).to be_a(Timetrap::Entry)
               invoke "in -a '#{now}' second task"
-              entry.reload.end.to_s.should == now.to_s
+              expect(entry.reload.end.to_s).to eq now.to_s
             end
 
             it "should check out of the running entry without having to start a new entry" do
               entry = Timetrap::Timer.active_entry('sheet1')
-              entry.should be_a(Timetrap::Entry)
-              entry.end.should be_nil
+              expect(entry).to be_a(Timetrap::Entry)
+              expect(entry.end).to be_nil
               invoke "out"
-              entry.reload.end.should_not be_nil
+              expect(entry.reload.end).not_to be_nil
             end
           end
         end
@@ -955,8 +956,8 @@ END:VCALENDAR
           )
           create_entry
           invoke 'today'
-          $stdout.string.should include Time.now.strftime('%a %b %d, %Y')
-          $stdout.string.should_not include yesterday.strftime('%a %b %d, %Y')
+          expect($stdout.string).to include Time.now.strftime('%a %b %d, %Y')
+          expect($stdout.string).not_to include yesterday.strftime('%a %b %d, %Y')
         end
       end
 
@@ -969,8 +970,8 @@ END:VCALENDAR
           )
           create_entry
           invoke 'yesterday'
-          $stdout.string.should include yesterday.strftime('%a %b %d, %Y')
-          $stdout.string.should_not include Time.now.strftime('%a %b %d, %Y')
+          expect($stdout.string).to include yesterday.strftime('%a %b %d, %Y')
+          expect($stdout.string).not_to include Time.now.strftime('%a %b %d, %Y')
         end
       end
 
@@ -982,8 +983,8 @@ END:VCALENDAR
           )
           create_entry
           invoke 'week'
-          $stdout.string.should include Time.now.strftime('%a %b %d, %Y')
-          $stdout.string.should_not include 'Feb 01, 2012'
+          expect($stdout.string).to include Time.now.strftime('%a %b %d, %Y')
+          expect($stdout.string).not_to include 'Feb 01, 2012'
         end
 
         describe "with week_start config option set" do
@@ -994,14 +995,14 @@ END:VCALENDAR
 
           #https://github.com/samg/timetrap/issues/161
           it "should work at the end of the month" do
-            Date.should_receive(:today).and_return(Date.new(2017, 7, 30))
+            expect(Date).to receive(:today).and_return(Date.new(2017 , 7, 30))
 
             create_entry(
               :start => Time.local(2017, 7, 29, 1, 2, 3),
               :end => Time.local(2017, 7, 29, 2, 2, 3)
             )
             invoke "week"
-            $stdout.string.should include 'Jul 29, 2017'
+            expect($stdout.string).to include 'Jul 29, 2017'
 
           end
 
@@ -1019,12 +1020,12 @@ END:VCALENDAR
               :end => Time.local(2012, 2, 9, 2, 2, 3)
             )
 
-            Date.should_receive(:today).and_return(Date.new(2012, 2, 9))
+            expect(Date).to receive(:today).and_return(Date.new(2012, 2, 9))
             invoke 'week'
 
-            $stdout.string.should include 'Feb 08, 2012'
-            $stdout.string.should include 'Feb 09, 2012'
-            $stdout.string.should_not include 'Feb 05, 2012'
+            expect($stdout.string).to include 'Feb 08, 2012'
+            expect($stdout.string).to include 'Feb 09, 2012'
+            expect($stdout.string).not_to include 'Feb 05, 2012'
           end
 
           it "should only show entries from today if today is start of week" do
@@ -1041,12 +1042,12 @@ END:VCALENDAR
               :end => Time.local(2012, 2, 7, 2, 2, 3)
             )
 
-            Date.should_receive(:today).and_return(Date.new(2012, 2, 7))
+            expect(Date).to receive(:today).and_return(Date.new(2012, 2, 7))
             invoke 'week'
 
-            $stdout.string.should include 'Feb 07, 2012'
-            $stdout.string.should_not include 'Jan 31, 2012'
-            $stdout.string.should_not include 'Feb 05, 2012'
+            expect($stdout.string).to include 'Feb 07, 2012'
+            expect($stdout.string).not_to include 'Jan 31, 2012'
+            expect($stdout.string).not_to include 'Feb 05, 2012'
           end
 
           it "should not show entries 7 days past start of week" do
@@ -1063,12 +1064,12 @@ END:VCALENDAR
               :end => Time.local(2012, 2, 16, 2, 2, 3)
             )
 
-            Date.should_receive(:today).and_return(Date.new(2012, 2, 7))
+            expect(Date).to receive(:today).and_return(Date.new(2012, 2, 7))
             invoke 'week'
 
-            $stdout.string.should include 'Feb 09, 2012'
-            $stdout.string.should_not include 'Feb 14, 2012'
-            $stdout.string.should_not include 'Feb 16, 2012'
+            expect($stdout.string).to include 'Feb 09, 2012'
+            expect($stdout.string).not_to include 'Feb 14, 2012'
+            expect($stdout.string).not_to include 'Feb 16, 2012'
           end
         end
       end
@@ -1088,13 +1089,13 @@ END:VCALENDAR
             :end => Time.local(2012, 1, 5, 2, 2, 3)
           )
 
-          Date.should_receive(:today).and_return(Date.new(2012, 2, 5))
+          expect(Date).to receive(:today).and_return(Date.new(2012, 2, 5))
           invoke "month"
 
 
-          $stdout.string.should include 'Feb 05, 2012'
-          $stdout.string.should include 'Feb 06, 2012'
-          $stdout.string.should_not include 'Jan'
+          expect($stdout.string).to include 'Feb 05, 2012'
+          expect($stdout.string).to include 'Feb 06, 2012'
+          expect($stdout.string).not_to include 'Jan'
         end
 
         it "should work in December" do
@@ -1103,10 +1104,10 @@ END:VCALENDAR
             :end => Time.local(2012, 12, 5, 2, 2, 3)
           )
 
-          Date.should_receive(:today).and_return(Date.new(2012, 12, 5))
+          expect(Date).to receive(:today).and_return(Date.new(2012, 12, 5))
           invoke "month"
 
-          $stdout.string.should include 'Wed Dec 05, 2012   01:02:03 - 02:02:03'
+          expect($stdout.string).to include 'Wed Dec 05, 2012   01:02:03 - 02:02:03'
         end
       end
 
@@ -1122,41 +1123,41 @@ END:VCALENDAR
         it "should delete a timesheet" do
           create_entry
           entry = create_entry
-          lambda do
+          expect(lambda do
             $stdin.string = "yes\n"
             invoke "kill #{entry.sheet}"
-          end.should change(Timetrap::Entry, :count).by(-2)
+            end).to change(Timetrap::Entry, :count).by(-2)
         end
 
         it "should delete an entry" do
           create_entry
           entry = create_entry
-          lambda do
+          expect(lambda do
             $stdin.string = "yes\n"
             invoke "kill --id #{entry.id}"
-          end.should change(Timetrap::Entry, :count).by(-1)
+            end).to change(Timetrap::Entry, :count).by(-1)
         end
 
         it "should not prompt the user if the --yes flag is passed" do
           create_entry
           entry = create_entry
-          lambda do
+          expect(lambda do
             invoke "kill --id #{entry.id} --yes"
-          end.should change(Timetrap::Entry, :count).by(-1)
+            end).to change(Timetrap::Entry, :count).by(-1)
         end
 
         describe "with a numeric sheet name" do
           before do
             now = local_time("2008-10-05 18:00:00")
-            Time.stub(:now).and_return now
+            allow(Time).to receive(:now).and_return now
             create_entry( :sheet => 1234, :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
           end
 
           it "should kill the sheet" do
-            lambda do
+            expect(lambda do
               invoke 'kill -y 1234'
-            end.should change(Timetrap::Entry, :count).by(-1)
+              end).to change(Timetrap::Entry, :count).by(-1)
           end
         end
       end
@@ -1165,21 +1166,21 @@ END:VCALENDAR
         describe "with no sheets defined" do
           it "should list the default sheet" do
             invoke 'list'
-            $stdout.string.chomp.should == " Timesheet  Running     Today       Total Time\n*default     0:00:00     0:00:00     0:00:00"
+            expect($stdout.string.chomp).to eq " Timesheet  Running     Today       Total Time\n*default     0:00:00     0:00:00     0:00:00"
           end
         end
 
         describe "with a numeric sheet name" do
           before do
             now = local_time("2008-10-05 18:00:00")
-            Time.stub(:now).and_return now
+            allow(Time).to receive(:now).and_return now
             create_entry( :sheet => '1234', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
           end
 
           it "should list the sheet" do
             invoke 'list'
-            $stdout.string.should == " Timesheet  Running     Today       Total Time\n 1234        0:00:00     0:00:00     2:00:00\n*default     0:00:00     0:00:00     0:00:00\n"
+            expect($stdout.string).to eq " Timesheet  Running     Today       Total Time\n 1234        0:00:00     0:00:00     2:00:00\n*default     0:00:00     0:00:00     0:00:00\n"
           end
         end
 
@@ -1190,14 +1191,14 @@ END:VCALENDAR
 
           it "should list the sheet" do
             invoke 'list'
-            $stdout.string.should ==  " Timesheet Running     Today       Total Time\n*1234       0:00:00     0:00:00     0:00:00\n"
+            expect($stdout.string).to eq  " Timesheet Running     Today       Total Time\n*1234       0:00:00     0:00:00     0:00:00\n"
           end
         end
 
         describe "with sheets defined" do
           before :each do
             now = local_time("2008-10-05 18:00:00")
-            Time.stub(:now).and_return now
+            allow(Time).to receive(:now).and_return now
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
                          :end => local_time_cli('2008-10-03 14:00:00'))
             create_entry( :sheet => 'A Longly Named Sheet 2', :start => local_time_cli('2008-10-03 12:00:00'),
@@ -1212,7 +1213,7 @@ END:VCALENDAR
           end
           it "should list available timesheets" do
             invoke 'list'
-            $stdout.string.should == <<-OUTPUT
+            expect($stdout.string).to eq <<-OUTPUT
  Timesheet                 Running     Today       Total Time
 *A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
  Sheet 1                    0:00:00     0:00:00     2:00:00
@@ -1223,7 +1224,7 @@ END:VCALENDAR
             invoke 'sheet Sheet 1'
             $stdout.string = ''
             invoke 'list'
-            $stdout.string.should == <<-OUTPUT
+            expect($stdout.string).to eq <<-OUTPUT
  Timesheet                 Running     Today       Total Time
 -A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
 *Sheet 1                    0:00:00     0:00:00     2:00:00
@@ -1235,7 +1236,7 @@ END:VCALENDAR
             invoke 'sheet Sheet 1'
             $stdout.string = ''
             invoke 'list'
-            $stdout.string.should == <<-OUTPUT
+            expect($stdout.string).to eq <<-OUTPUT
  Timesheet                 Running     Today       Total Time
  A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
 *Sheet 1                    0:00:00     0:00:00     2:00:00
@@ -1246,7 +1247,7 @@ END:VCALENDAR
             invoke 'sheet empty sheet'
             $stdout.string = ''
             invoke 'list'
-            $stdout.string.should == <<-OUTPUT
+            expect($stdout.string).to eq <<-OUTPUT
  Timesheet                 Running     Today       Total Time
 -A Longly Named Sheet 2     4:00:00     6:00:00    10:00:00
 *empty sheet                0:00:00     0:00:00     0:00:00
@@ -1264,7 +1265,7 @@ END:VCALENDAR
         describe "when the current timesheet isn't running" do
           it "should show that it isn't running" do
             invoke 'now'
-            $stderr.string.should == <<-OUTPUT
+            expect($stderr.string).to eq <<-OUTPUT
 *current sheet: not running
             OUTPUT
           end
@@ -1276,12 +1277,12 @@ END:VCALENDAR
             @entry = Timetrap::Timer.active_entry
             @entry.start = Time.at(0)
             @entry.save
-            Time.stub(:now).and_return Time.at(60)
+            allow(Time).to receive(:now).and_return Time.at(60)
           end
 
           it "should show how long the current item is running for" do
             invoke 'now'
-            $stdout.string.should == <<-OUTPUT
+            expect($stdout.string).to eq <<-OUTPUT
 *current sheet: 0:01:00 (a timesheet that is running)
             OUTPUT
           end
@@ -1293,12 +1294,12 @@ END:VCALENDAR
               @entry = Timetrap::Timer.active_entry
               @entry.start = Time.at(0)
               @entry.save
-              Time.stub(:now).and_return Time.at(60)
+              allow(Time).to receive(:now).and_return Time.at(60)
             end
 
             it "should show both entries" do
             invoke 'now'
-            $stdout.string.should == <<-OUTPUT
+            expect($stdout.string).to eq <<-OUTPUT
  current sheet: 0:01:00 (a timesheet that is running)
 *another-sheet: 0:01:00 (also running)
             OUTPUT
@@ -1312,41 +1313,41 @@ END:VCALENDAR
           invoke 'in'
           @active = Timetrap::Timer.active_entry
           @now = Time.now
-          Time.stub(:now).and_return @now
+          allow(Time).to receive(:now).and_return @now
         end
         it "should set the stop for the running entry" do
-          @active.refresh.end.should == nil
+          expect(@active.refresh.end).to eq nil
           invoke 'out'
-          @active.refresh.end.to_i.should == @now.to_i
+          expect(@active.refresh.end.to_i).to eq @now.to_i
         end
 
         it "should not do anything if nothing is running" do
-          lambda do
+          expect(lambda do
             invoke 'out'
             invoke 'out'
-          end.should_not raise_error
+            end).not_to raise_error
         end
 
         it "should allow the sheet to be stopped at a certain time" do
           invoke 'out --at "10am 2008-10-03"'
-          @active.refresh.end.should == Time.parse('2008-10-03 10:00')
+          expect(@active.refresh.end).to eq Time.parse('2008-10-03 10:00')
         end
 
         it "should allow you to check out of a non active sheet" do
           invoke 'sheet SomeOtherSheet'
           invoke 'in'
           @new_active = Timetrap::Timer.active_entry
-          @active.should_not == @new_active
+          expect(@active).not_to eq @new_active
           invoke %'out #{@active.sheet} --at "10am 2008-10-03"'
-          @active.refresh.end.should == Time.parse('2008-10-03 10:00')
-          @new_active.refresh.end.should be_nil
+          expect(@active.refresh.end).to eq Time.parse('2008-10-03 10:00')
+          expect(@new_active.refresh.end).to be_nil
         end
       end
 
       describe "resume" do
         before :each do
           @time = Time.now
-          Time.stub(:now).and_return @time
+          allow(Time).to receive(:now).and_return @time
 
           invoke 'in A previous task that isnt last'
           @previous = Timetrap::Timer.active_entry
@@ -1356,15 +1357,15 @@ END:VCALENDAR
           @last_active = Timetrap::Timer.active_entry
           invoke 'out'
 
-          Timetrap::Timer.active_entry.should be_nil
-          @last_active.should_not be_nil
+          expect(Timetrap::Timer.active_entry).to be_nil
+          expect(@last_active).not_to be_nil
         end
 
         it "should allow to resume the last active entry" do
           invoke 'resume'
 
-          Timetrap::Timer.active_entry.note.should ==(@last_active.note)
-          Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+          expect(Timetrap::Timer.active_entry.note).to eq(@last_active.note)
+          expect(Timetrap::Timer.active_entry.start.to_s).to eq @time.to_s
         end
 
         it "should allow to resume the last entry from the current sheet" do
@@ -1374,28 +1375,28 @@ END:VCALENDAR
           invoke 'sheet -'
           invoke 'resume'
 
-          Timetrap::Timer.active_entry.note.should ==(@last_active.note)
-          Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+          expect(Timetrap::Timer.active_entry.note).to eq(@last_active.note)
+          expect(Timetrap::Timer.active_entry.start.to_s).to eq @time.to_s
         end
 
         it "should allow to resume a specific entry" do
           invoke "resume --id #{@previous.id}"
 
-          Timetrap::Timer.active_entry.note.should ==(@previous.note)
-          Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+          expect(Timetrap::Timer.active_entry.note).to eq(@previous.note)
+          expect(Timetrap::Timer.active_entry.start.to_s).to eq @time.to_s
         end
 
         it "should allow to resume a specific entry with a given time" do
           invoke "resume --id #{@previous.id} --at \"10am 2008-10-03\""
 
-          Timetrap::Timer.active_entry.note.should ==(@previous.note)
-          Timetrap::Timer.active_entry.start.should eql(Time.parse('2008-10-03 10:00'))
+          expect(Timetrap::Timer.active_entry.note).to eq(@previous.note)
+          expect(Timetrap::Timer.active_entry.start).to eql(Time.parse('2008-10-03 10:00'))
         end
 
         it "should allow to resume the activity with a given time" do
           invoke 'resume --at "10am 2008-10-03"'
 
-          Timetrap::Timer.active_entry.start.should eql(Time.parse('2008-10-03 10:00'))
+          expect(Timetrap::Timer.active_entry.start).to eql(Time.parse('2008-10-03 10:00'))
         end
 
         describe "no existing entries" do
@@ -1404,8 +1405,8 @@ END:VCALENDAR
               e.destroy
             end
 
-            Timetrap::Timer.entries(Timetrap::Timer.current_sheet).should be_empty
-            Timetrap::Timer.active_entry.should be_nil
+            expect(Timetrap::Timer.entries(Timetrap::Timer.current_sheet)).to be_empty
+            expect(Timetrap::Timer.active_entry).to be_nil
           end
 
         end
@@ -1414,15 +1415,15 @@ END:VCALENDAR
           before(:each) do
             $stdin.string = "yes\n"
             invoke "archive"
-            Timetrap::Timer.entries(Timetrap::Timer.current_sheet).should be_empty
-            Timetrap::Timer.active_entry.should be_nil
+            expect(Timetrap::Timer.entries(Timetrap::Timer.current_sheet)).to be_empty
+            expect(Timetrap::Timer.active_entry).to be_nil
           end
 
           it "retrieves the note of the most recent archived entry" do
             invoke "resume"
-            Timetrap::Timer.active_entry.should_not be_nil
-            Timetrap::Timer.active_entry.note.should == @last_active.note
-            Timetrap::Timer.active_entry.start.to_s.should == @time.to_s
+            expect(Timetrap::Timer.active_entry).not_to be_nil
+            expect(Timetrap::Timer.active_entry.note).to eq @last_active.note
+            expect(Timetrap::Timer.active_entry.start.to_s).to eq @time.to_s
           end
         end
 
@@ -1432,9 +1433,9 @@ END:VCALENDAR
           end
 
           it "should check in normally if nothing else is running" do
-            Timetrap::Timer.should_not be_running #precondition
+            expect(Timetrap::Timer).not_to be_running #precondition
             invoke 'resume'
-            Timetrap::Timer.should be_running
+            expect(Timetrap::Timer).to be_running
           end
 
           describe "with a running entry on current sheet" do
@@ -1446,7 +1447,7 @@ END:VCALENDAR
             it "should check out and back in" do
               entry = Timetrap::Timer.active_entry('sheet1')
               invoke 'resume second task'
-              Timetrap::Timer.active_entry('sheet1').id.should_not == entry.id
+              expect(Timetrap::Timer.active_entry('sheet1').id).not_to eq entry.id
             end
           end
 
@@ -1462,17 +1463,17 @@ END:VCALENDAR
             end
 
             it "should check out of the running entry" do
-              Timetrap::Timer.active_entry('sheet1').should be_a(Timetrap::Entry)
+              expect(Timetrap::Timer.active_entry('sheet1')).to be_a(Timetrap::Entry)
               invoke 'resume'
-              Timetrap::Timer.active_entry('sheet1').should be nil
+              expect(Timetrap::Timer.active_entry('sheet1')).to be nil
             end
 
             it "should check out of the running entry at another time" do
               now = Time.at(Time.now - 5 * 60) # 5 minutes ago
               entry = Timetrap::Timer.active_entry('sheet1')
-              entry.should be_a(Timetrap::Entry)
+              expect(entry).to be_a(Timetrap::Entry)
               invoke "resume -a '#{now}'"
-              entry.reload.end.to_s.should == now.to_s
+              expect(entry.reload.end.to_s).to eq now.to_s
             end
           end
         end
@@ -1481,42 +1482,42 @@ END:VCALENDAR
       describe "sheet" do
         it "should switch to a new timesheet" do
           invoke 'sheet sheet 1'
-          Timetrap::Timer.current_sheet.should == 'sheet 1'
+          expect(Timetrap::Timer.current_sheet).to eq 'sheet 1'
           invoke 'sheet sheet 2'
-          Timetrap::Timer.current_sheet.should == 'sheet 2'
+          expect(Timetrap::Timer.current_sheet).to eq 'sheet 2'
         end
 
         it "should not switch to an blank timesheet" do
           invoke 'sheet sheet 1'
           invoke 'sheet'
-          Timetrap::Timer.current_sheet.should == 'sheet 1'
+          expect(Timetrap::Timer.current_sheet).to eq 'sheet 1'
         end
 
         it "should list timesheets when there are no arguments" do
           invoke 'sheet sheet 1'
           invoke 'sheet'
-          $stdout.string.should == " Timesheet  Running     Today       Total Time\n*sheet 1     0:00:00     0:00:00     0:00:00\n"
+          expect($stdout.string).to eq " Timesheet  Running     Today       Total Time\n*sheet 1     0:00:00     0:00:00     0:00:00\n"
         end
 
         it "should note if the user is already on that sheet" do
           invoke 'sheet sheet 1'
           invoke 'sheet sheet 1'
-          $stderr.string.should == "Switching to sheet \"sheet 1\"\nAlready on sheet \"sheet 1\"\n"
+          expect($stderr.string).to eq "Switching to sheet \"sheet 1\"\nAlready on sheet \"sheet 1\"\n"
         end
 
         describe "using - to switch to the last sheet" do
           it "should warn if there isn't a sheet set" do
-            lambda do
+            expect(lambda do
               invoke 'sheet -'
-            end.should_not change(Timetrap::Timer, :current_sheet)
-            $stderr.string.should include 'LAST_SHEET is not set'
+              end).not_to change(Timetrap::Timer, :current_sheet)
+              expect($stderr.string).to include 'LAST_SHEET is not set'
           end
 
           it "should switch to the last active sheet" do
             invoke 'sheet second'
-            lambda do
+            expect(lambda do
               invoke 'sheet -'
-            end.should change(Timetrap::Timer, :current_sheet).
+              end).to change(Timetrap::Timer, :current_sheet).
               from('second').to('default')
           end
 
@@ -1525,9 +1526,9 @@ END:VCALENDAR
             invoke 'sheet second'
             5.times do
               invoke 's -'
-              Timetrap::Timer.current_sheet.should == 'first'
+              expect(Timetrap::Timer.current_sheet).to eq 'first'
               invoke 's -'
-              Timetrap::Timer.current_sheet.should == 'second'
+              expect(Timetrap::Timer.current_sheet).to eq 'second'
             end
           end
         end
@@ -1540,7 +1541,7 @@ END:VCALENDAR
           rescue SystemExit #Getopt::Declare calls exit after --version is invoked
           end
 
-          $stdout.string.should include(::Timetrap::VERSION)
+          expect($stdout.string).to include(::Timetrap::VERSION)
         end
       end
     end
@@ -1549,7 +1550,7 @@ END:VCALENDAR
   describe "entries" do
     it "should give the entires for a sheet" do
       e = create_entry :sheet => 'sheet'
-      Timetrap::Timer.entries('sheet').all.should include(e)
+      expect(Timetrap::Timer.entries('sheet').all).to include(e)
     end
 
   end
@@ -1558,26 +1559,26 @@ END:VCALENDAR
     it "should start an new entry" do
       @time = Time.now
       Timetrap::Timer.current_sheet = 'sheet1'
-      lambda do
+      expect(lambda do
         Timetrap::Timer.start 'some work', @time
-      end.should change(Timetrap::Entry, :count).by(1)
-      Timetrap::Entry.order(:id).last.sheet.should == 'sheet1'
-      Timetrap::Entry.order(:id).last.note.should == 'some work'
-      Timetrap::Entry.order(:id).last.start.to_i.should == @time.to_i
-      Timetrap::Entry.order(:id).last.end.should be_nil
+        end).to change(Timetrap::Entry, :count).by(1)
+      expect(Timetrap::Entry.order(:id).last.sheet).to eq 'sheet1'
+      expect(Timetrap::Entry.order(:id).last.note).to eq 'some work'
+      expect(Timetrap::Entry.order(:id).last.start.to_i).to eq @time.to_i
+      expect(Timetrap::Entry.order(:id).last.end).to be_nil
     end
 
     it "should be running if it is started" do
-      Timetrap::Timer.should_not be_running
+      expect(Timetrap::Timer).not_to be_running
       Timetrap::Timer.start 'some work', @time
-      Timetrap::Timer.should be_running
+      expect(Timetrap::Timer).to be_running
     end
 
     it "should raise an error if it is already running" do
-      lambda do
+      expect(lambda do
         Timetrap::Timer.start 'some work', @time
         Timetrap::Timer.start 'some work', @time
-      end.should raise_error(Timetrap::Timer::AlreadyRunning)
+        end).to raise_error(Timetrap::Timer::AlreadyRunning)
     end
   end
 
@@ -1586,16 +1587,16 @@ END:VCALENDAR
       @time = Time.now
       Timetrap::Timer.start 'some work', @time
       entry = Timetrap::Timer.active_entry
-      entry.end.should be_nil
+      expect(entry.end).to be_nil
       Timetrap::Timer.stop Timetrap::Timer.current_sheet, @time
-      entry.refresh.end.to_i.should == @time.to_i
+      expect(entry.refresh.end.to_i).to eq @time.to_i
     end
 
     it "should not be running if it is stopped" do
-      Timetrap::Timer.should_not be_running
+      expect(Timetrap::Timer).not_to be_running
       Timetrap::Timer.start 'some work', @time
       Timetrap::Timer.stop Timetrap::Timer.current_sheet
-      Timetrap::Timer.should_not be_running
+      expect(Timetrap::Timer).not_to be_running
     end
 
     it "should not stop it twice" do
@@ -1604,14 +1605,14 @@ END:VCALENDAR
       Timetrap::Timer.stop Timetrap::Timer.current_sheet
       time = e.refresh.end
       Timetrap::Timer.stop Timetrap::Timer.current_sheet
-      time.to_i.should == e.refresh.end.to_i
+      expect(time.to_i).to eq e.refresh.end.to_i
     end
 
     it "should track the last entry that was checked out of" do
       Timetrap::Timer.start 'some work'
       e = Timetrap::Timer.active_entry
       Timetrap::Timer.stop Timetrap::Timer.current_sheet
-      Timetrap::Timer.last_checkout.id.should == e.id
+      expect(Timetrap::Timer.last_checkout.id).to eq e.id
     end
 
   end
@@ -1622,11 +1623,11 @@ END:VCALENDAR
       @helper.extend Timetrap::Helpers
     end
     it "should correctly format positive durations" do
-      @helper.format_duration(1234).should == " 0:20:34"
+      expect(@helper.format_duration(1234)).to eq " 0:20:34"
     end
 
     it "should correctly format negative durations" do
-      @helper.format_duration(-1234).should == "- 0:20:34"
+      expect(@helper.format_duration(-1234)).to eq "- 0:20:34"
     end
   end
 
@@ -1648,7 +1649,7 @@ END:VCALENDAR
           Timetrap::Entry.create( :sheet => 'SpecSheet',
             :note => 'entry 2', :start => '2008-10-03 16:00:00', :end => '2008-10-03 18:00:00'
           )
-          Timetrap::Entry.sheets.should == %w(another SpecSheet).sort
+          expect(Timetrap::Entry.sheets).to eq %w(another SpecSheet).sort
         end
       end
 
@@ -1656,22 +1657,22 @@ END:VCALENDAR
       describe 'attributes' do
         it "should have a note" do
           @entry.note = "world takeover"
-          @entry.note.should == "world takeover"
+          expect(@entry.note).to eq "world takeover"
         end
 
         it "should have a start" do
           @entry.start = @time
-          @entry.start.to_i.should == @time.to_i
+          expect(@entry.start.to_i).to eq @time.to_i
         end
 
         it "should have a end" do
           @entry.end = @time
-          @entry.end.to_i.should == @time.to_i
+          expect(@entry.end.to_i).to eq @time.to_i
         end
 
         it "should have a sheet" do
           @entry.sheet= 'name'
-          @entry.sheet.should == 'name'
+          expect(@entry.sheet).to eq 'name'
         end
 
         def with_rounding_on
@@ -1689,7 +1690,7 @@ END:VCALENDAR
             with_stubbed_config('round_in_seconds' => 900) do
               @time = Chronic.parse("12:55")
               @entry.start = @time
-              @entry.start.should == Chronic.parse("1")
+              expect(@entry.start).to eq Chronic.parse("1")
             end
           end
         end
@@ -1699,7 +1700,7 @@ END:VCALENDAR
             with_stubbed_config('round_in_seconds' => 900) do
               @time = Chronic.parse("12:50")
               @entry.start = @time
-              @entry.start.should == Chronic.parse("12:45")
+              expect(@entry.start).to eq Chronic.parse("12:45")
             end
           end
         end
@@ -1708,27 +1709,27 @@ END:VCALENDAR
           with_stubbed_config('round_in_seconds' => 900) do
             @time = Chronic.parse("12:50")
             @entry.start = @time
-            @entry.rounded_start.should == Chronic.parse("12:45")
+            expect(@entry.rounded_start).to eq Chronic.parse("12:45")
           end
         end
 
         it "should not round nil times" do
           @entry.start = nil
-          @entry.rounded_start.should be_nil
+          expect(@entry.rounded_start).to be_nil
         end
       end
 
       describe "parsing natural language times" do
         it "should set start time using english" do
           @entry.start = "yesterday 10am"
-          @entry.start.should_not be_nil
-          @entry.start.should == Chronic.parse("yesterday 10am")
+          expect(@entry.start).not_to be_nil
+          expect(@entry.start).to eq Chronic.parse("yesterday 10am")
         end
 
         it "should set end time using english" do
           @entry.end = "tomorrow 1pm"
-          @entry.end.should_not be_nil
-          @entry.end.should == Chronic.parse("tomorrow 1pm")
+          expect(@entry.end).not_to be_nil
+          expect(@entry.end).to eq Chronic.parse("tomorrow 1pm")
         end
       end
 
@@ -1739,21 +1740,21 @@ END:VCALENDAR
 
           # should be about 55 minutes duration.  Allow for second rollover
           # within this test.
-          (3299..3301).should === @entry.duration
+          expect((3299..3301)).to include(@entry.duration)
         end
 
         it "should not assume negative durations around 12 hour length" do
           @entry.start= Time.at(Time.now - (15 * 3600)) # 15.hour.ago
           @entry.end = Time.at(Time.now - 300).strftime("%H:%M:%S") # ambiguous 5.minutes.ago
 
-          (53699..53701).should === @entry.duration
+          expect((53699..53701)).to include(@entry.duration)
         end
 
         it "should assume a start time near the current time" do
           time = Time.at(Time.now - 300)
           @entry.start= time.strftime("%H:%M:%S") # ambiguous 5.minutes.ago
 
-          @entry.start.to_i.should == time.to_i
+          expect(@entry.start.to_i).to eq time.to_i
         end
       end
     end
@@ -1764,8 +1765,8 @@ END:VCALENDAR
     it 'should include a t bin and an equivalent timetrap bin' do
       timetrap = File.open(File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 'timetrap')))
       t = File.open(File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 't')))
-      t.read.should == timetrap.read
-      t.stat.mode.should == timetrap.stat.mode
+      expect(t.read).to eq timetrap.read
+      expect(t.stat.mode).to eq timetrap.stat.mode
     end
   end
 
