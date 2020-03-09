@@ -40,16 +40,16 @@ module Timetrap
 
     def selected_entries
       ee = if (sheet = sheet_name_from_string(unused_args)) == 'all'
-        Timetrap::Entry.filter('sheet not like ? escape "!"', '!_%')
+        Timetrap::Entry.where(Sequel.lit('sheet not like ? escape "!"', '!_%'))
       elsif (sheet = sheet_name_from_string(unused_args)) == 'full'
-       Timetrap::Entry.filter()
+        Timetrap::Entry.where()
       elsif sheet =~ /.+/
-        Timetrap::Entry.filter('sheet = ?', sheet)
+        Timetrap::Entry.where(sheet: sheet)
       else
-        Timetrap::Entry.filter('sheet = ?', Timer.current_sheet)
+        Timetrap::Entry.where(sheet: Timer.current_sheet)
       end
-      ee = ee.filter('start >= ?', Date.parse(Timer.process_time(args['-s']).to_s)) if args['-s']
-      ee = ee.filter('start <= ?', Date.parse(Timer.process_time(args['-e']).to_s) + 1) if args['-e']
+      ee = ee.filter(Sequel.lit('start >= ?', Date.parse(Timer.process_time(args['-s']).to_s))) if args['-s']
+      ee = ee.filter(Sequel.lit('start <= ?', Date.parse(Timer.process_time(args['-e']).to_s) + 1)) if args['-e']
       ee = ee.order(:start)
       if args['-g']
         re = Regexp::new(args['-g'])
