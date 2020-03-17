@@ -22,4 +22,5 @@ module Timetrap
     #{CLI::USAGE}
   EOF
 end
+require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'schema'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'models'))
