@@ -18,9 +18,12 @@ module Timetrap
   DB_NAME = defined?(TEST_MODE) ? nil : Timetrap::Config['database_file']
   # connect to database.  This will create one if it doesn't exist
   DB = Sequel.sqlite DB_NAME
-  CLI.args = Getopt::Declare.new(<<-EOF)
+  # only declare cli options when run as standalone
+  if %w[dev_t t timetrap].include?(File.basename($PROGRAM_NAME)) || defined?(TEST_MODE)
+    CLI.args = Getopt::Declare.new(<<-EOF)
     #{CLI::USAGE}
-  EOF
+    EOF
+  end
 end
 require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'schema'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'timetrap', 'models'))
