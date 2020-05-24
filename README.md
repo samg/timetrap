@@ -13,6 +13,8 @@ To install:
 
 This will place a ``t`` executable in your path.
 
+If you have errors while parsing the documentation, use `--no-document` option when installing the gem, or other option is to `gem install rdoc` before installing the `timetrap`. This is a known issue from [rdoc](https://github.com/ruby/rdoc/commit/5f9603f35d8e520c761015810c005e4a5beb97c3)
+
 ### Basic Usage
 
     $ # get help
