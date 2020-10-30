@@ -498,6 +498,12 @@ Then add this to source the completions:
 source /path/to/timetrap-1.x.y/gem/completions/bash/timetrap-autocomplete.bash
 ```
 
+**Autocompletion note**: If you've updated your `database_file` configuration option (that is, if your `.timetrap.db` file is _not_ located at `~/.timetrap.db`) you'll need to create a symlink, since the autocomplete bash script assumes that the db file is at `~/`. Example:
+
+```bash
+  $ sudo ln -s ~/some/other/path/.timetrap.db ~/.timetrap.db
+```
+
 #### zsh
 
 If it isn't already, add the following to your `.zshrc`:
