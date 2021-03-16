@@ -48,8 +48,8 @@ module Timetrap
       else
         Timetrap::Entry.where(sheet: Timer.current_sheet)
       end
-      ee = ee.filter(Sequel.lit('start >= ?', Date.parse(Timer.process_time(args['-s']).to_s))) if args['-s']
-      ee = ee.filter(Sequel.lit('start <= ?', Date.parse(Timer.process_time(args['-e']).to_s) + 1)) if args['-e']
+      ee = ee.filter(Sequel.lit('start >= ?', format_datetime_sqlite(Timer.process_time(args['-s'])).to_s)) if args['-s']
+      ee = ee.filter(Sequel.lit('start <= ?', format_datetime_sqlite(Timer.process_time(args['-e'])).to_s)) if args['-e']
       ee = ee.order(:start)
       if args['-g']
         re = Regexp::new(args['-g'])
@@ -71,6 +71,11 @@ module Timetrap
     def format_date_if_new time, last_time
       return '' unless time.respond_to?(:strftime)
       same_day?(time, last_time) ? '' : format_date(time)
+    end
+
+    def format_datetime_sqlite time
+      return '' unless time.respond_to?(:strftime)
+      time.strftime('%Y-%m-%d %H:%M:%S')
     end
 
     def same_day? time, other_time
