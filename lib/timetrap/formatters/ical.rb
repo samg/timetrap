@@ -22,21 +22,13 @@ module Timetrap
       end
 
       def initialize entries
-        entries.each do |e|
-          next unless e.end
-          calendar.event do
-
-            # hack around an issue in ical gem in ruby 1.9
-            unless respond_to? :<=>
-              def <=> other
-                dtstart > other.dtstart ? 1 : 0
-              end
-            end
-
-            dtstart DateTime.parse(e.start.to_s)
-            dtend DateTime.parse(e.end.to_s)
-            summary e.note
-            description e.note
+        entries.each do |entry|
+          next unless entry.end
+          calendar.event do |e|
+            e.dtstart = DateTime.parse(entry.start.to_s)
+            e.dtend = DateTime.parse(entry.end.to_s)
+            e.summary = entry.note
+            e.description = entry.note
           end
         end
         calendar.publish
