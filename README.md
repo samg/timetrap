@@ -514,6 +514,7 @@ fpath=(/path/to/timetrap-1.x.y/gem/completions/zsh $fpath)
 ```
 
 #### Notes editing
+
 If you use the note_editor setting, then it is possible to use
 an editor for writing your notes. If you use a non terminal based
 editor (like atom, sublime etc.) then you will need to make timetrap
@@ -523,6 +524,29 @@ flag in git, then it'll be the same flags you'll use.
 As of when this command was added, for atom you would use `atom --wait`
 and for sublime `subl -w`. If you use a console based editor (vim, emacs,
 nano) then it should just work.
+
+Development
+-----------
+
+Get `bundler` in case you don't have it:
+
+    gem install bundler
+
+Set a local path for the project's dependencies:
+
+    bundle config set --local path 'vendor/bundle'
+
+Install timetrap's dependencies:
+
+    bundle install
+
+Now you can run your local timetrap installation:
+
+    bundle exec t
+
+Or run the test suite:
+
+    bundle exec rspec
 
 Special Thanks
 --------------
