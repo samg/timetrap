@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.9.0"
   spec.add_development_dependency "fakefs", "~> 0.20"
   # More recent versions of icalendar drop support for Ruby 1.8.7
-  spec.add_development_dependency "icalendar", "~> 1.3.0"
+  spec.add_development_dependency "icalendar", "~> 2.7"
   spec.add_development_dependency "json", "~> 2.3"
   spec.add_dependency "sequel", "~> 5.30.0"
   spec.add_dependency "sqlite3", "~> 1.4.2"
