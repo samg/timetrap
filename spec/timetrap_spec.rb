@@ -729,7 +729,7 @@ start,end,note,sheet
               :note => %q{"note"}
             )
             invoke 'display --format csv'
-            $stdout.string.should == <<-EOF
+            expect($stdout.string).to eq <<-EOF
 start,end,note,sheet
 "2008-10-03 12:00:00","2008-10-03 14:00:00","note","default"
 "2008-10-05 12:00:00","2008-10-05 14:00:00","note","default"
