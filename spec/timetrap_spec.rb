@@ -1514,9 +1514,17 @@ END:VCALENDAR
         end
 
         it "should note if the user is already on that sheet" do
+          create_entry(sheet: "sheet 1")
           invoke 'sheet sheet 1'
           invoke 'sheet sheet 1'
           expect($stderr.string).to eq "Switching to sheet \"sheet 1\"\nAlready on sheet \"sheet 1\"\n"
+        end
+
+        it "should indicate when switching to a new sheet" do
+          create_entry(sheet: "foo")
+          invoke 'sheet foo'
+          invoke 'sheet bar'
+          expect($stderr.string).to eq "Switching to sheet \"foo\"\nSwitching to sheet \"bar\" (new sheet)\n"
         end
 
         describe "using - to switch to the last sheet" do

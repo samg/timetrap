@@ -390,8 +390,10 @@ COMMAND is one of:
       Timer.current_sheet = sheet
       if Timer.last_sheet == sheet
         warn "Already on sheet #{sheet.inspect}"
-      else
+      elsif Entry.sheets.include?(sheet)
         warn "Switching to sheet #{sheet.inspect}"
+      else
+        warn "Switching to sheet #{sheet.inspect} (new sheet)"
       end
     end
 
