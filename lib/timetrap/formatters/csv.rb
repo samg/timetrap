@@ -4,9 +4,12 @@ module Timetrap
       attr_reader :output
 
       def initialize entries
-        @output = entries.inject("start,end,note,sheet\n") do |out, e|
+        @output = entries.inject(Timetrap::CLI.args['-v'] ? "id,start,end,note,sheet\n" : "start,end,note,sheet\n") do |out, e|
           next(out) unless e.end
-          out << %|"#{e.start.strftime(time_format)}","#{e.end.strftime(time_format)}","#{escape(e.note)}","#{e.sheet}"\n|
+          if Timetrap::CLI.args['-v']
+            out << %|"#{e.id}",|
+          end
+          out << %|"#{e.start.strftime(time_format)}","#{e.end.strftime(time_format)}","#{e.note}","#{e.sheet}"\n|
         end
       end
 
