@@ -33,8 +33,22 @@ module Timetrap::StubConfig
   end
 end
 
+module Timetrap::WithAttributes
+  def with_rounding_on
+    old_round = Timetrap::Entry.round
+    begin
+      Timetrap::Entry.round = true
+      block_return_value = yield
+    ensure
+      Timetrap::Entry.round = old_round
+    end
+  end
+end
+
 describe Timetrap do
   include Timetrap::StubConfig
+  include Timetrap::WithAttributes
+
   before do
     with_stubbed_config
   end
@@ -1695,16 +1709,6 @@ END:VCALENDAR
         it "should have a sheet" do
           @entry.sheet= 'name'
           expect(@entry.sheet).to eq 'name'
-        end
-
-        def with_rounding_on
-          old_val = Timetrap::Entry.round
-          begin
-            Timetrap::Entry.round = true
-            block_return_value = yield
-          ensure
-            Timetrap::Entry.round = old_val
-          end
         end
 
         it "should use round start if the global round attribute is set" do
