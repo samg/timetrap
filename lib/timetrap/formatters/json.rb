@@ -16,7 +16,12 @@ module Timetrap
       def initialize entries
         @output = entries.map do |e|
           next unless e.end
-          e.values
+
+          e.values.inject({}) do |h, (k,v)|
+            h[k] = v
+            h[k] = e.public_send(k) if %i[end start].include?(k)
+            h
+          end
         end.compact.to_json
       end
     end

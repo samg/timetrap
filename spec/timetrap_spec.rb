@@ -754,7 +754,7 @@ start,end,note,sheet
 
         describe 'json' do
           before do
-            create_entry(:start => local_time_cli('2008-10-03 12:00:00'), :end => local_time_cli('2008-10-03 14:00:00'))
+            create_entry(:start => local_time_cli('2008-10-03 12:07:00'), :end => local_time_cli('2008-10-03 14:08:00'))
             create_entry(:start => local_time_cli('2008-10-05 12:00:00'), :end => local_time_cli('2008-10-05 14:00:00'))
           end
 
@@ -762,8 +762,20 @@ start,end,note,sheet
             invoke 'in'
             invoke 'display -f json'
             expect(JSON.parse($stdout.string)).to eq JSON.parse(<<-EOF)
-[{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-03 14:00:00')}\",\"start\":\"#{local_time('2008-10-03 12:00:00')}\",\"note\":\"note\",\"id\":1},{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-05 14:00:00')}\",\"start\":\"#{local_time('2008-10-05 12:00:00')}\",\"note\":\"note\",\"id\":2}]
+[{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-03 14:08:00')}\",\"start\":\"#{local_time('2008-10-03 12:07:00')}\",\"note\":\"note\",\"id\":1},{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-05 14:00:00')}\",\"start\":\"#{local_time('2008-10-05 12:00:00')}\",\"note\":\"note\",\"id\":2}]
             EOF
+          end
+
+          context 'with rounding on' do
+            it 'should export to json with rounded output' do
+              with_rounding_on do
+                # rounds to 900s by default
+                invoke 'display -r -f json'
+                expect(JSON.parse($stdout.string)).to eq JSON.parse(<<~EOF)
+                  [{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-03 14:15:00')}\",\"start\":\"#{local_time('2008-10-03 12:00:00')}\",\"note\":\"note\",\"id\":1},{\"sheet\":\"default\",\"end\":\"#{local_time('2008-10-05 14:00:00')}\",\"start\":\"#{local_time('2008-10-05 12:00:00')}\",\"note\":\"note\",\"id\":2}]
+                EOF
+              end
+            end
           end
         end
 
