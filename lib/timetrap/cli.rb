@@ -71,6 +71,7 @@ COMMAND is one of:
     -z, --append              Append to the current note instead of replacing it
                                 the delimiter between appended notes is
                                 configurable (see configure)
+    -c, --clear               Allow an empty note, can be used to clear existing notes
     -m, --move <sheet>        Move to another sheet
 
   * in - Start the timer for the current timesheet.
@@ -247,14 +248,18 @@ COMMAND is one of:
       end
 
       if Config['note_editor']
-        if args['-z']
+        if args['-c']
+          entry.update :note => ''
+        elsif args['-z']
           note = [entry.note, get_note_from_external_editor].join(Config['append_notes_delimiter'])
           entry.update :note => note
         elsif editing_a_note?
           entry.update :note => get_note_from_external_editor(entry.note)
         end
       else
-        if unused_args =~ /.+/
+        if args['-c']
+          entry.update :note => ''
+        elsif unused_args =~ /.+/
           note = unused_args
           if args['-z']
             note = [entry.note, note].join(Config['append_notes_delimiter'])
