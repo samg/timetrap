@@ -211,6 +211,16 @@ describe Timetrap do
           expect(Timetrap::Timer.active_entry.note).to eq 'running entry//new//more'
         end
 
+        it "should allow clearing the description of the active period" do
+          expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
+          invoke 'edit --clear'
+          expect(Timetrap::Timer.active_entry.note).to eq ''
+          invoke 'edit running entry'
+          expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
+          invoke 'edit -c'
+          expect(Timetrap::Timer.active_entry.note).to eq ''
+        end
+
         it "should edit the start time of the active period" do
           invoke 'edit --start "yesterday 10am"'
           expect(Timetrap::Timer.active_entry.start).to eq Chronic.parse("yesterday 10am")
@@ -338,6 +348,20 @@ describe Timetrap do
               expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
               invoke "edit --append"
               expect(Timetrap::Timer.active_entry.note).to eq 'running entry//appended in editor'
+            end
+          end
+
+          context "clearing" do
+            it "should clear the last entry with -c" do
+              expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
+              invoke "edit -c"
+              expect(Timetrap::Timer.active_entry.note).to eq ''
+            end
+
+            it "should clear the last entry with --clear" do
+              expect(Timetrap::Timer.active_entry.note).to eq 'running entry'
+              invoke "edit --clear"
+              expect(Timetrap::Timer.active_entry.note).to eq ''
             end
           end
         end
