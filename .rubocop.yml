@@ -1,0 +1,19 @@
+require:
+  - standard
+  - rubocop-rspec
+
+inherit_gem:
+  standard: config/base.yml # use the standardrb config file as the base
+
+AllCops:
+  NewCops: enable
+  Exclude: # ignore files in these directories when running the linter
+    - vendor/**/*
+    - lib/Getopt/* # breaks rubocop (ñ non utf-8 character)
+
+RSpec:
+  Enabled: true # enable rubocop-rspec
+RSpec/DescribeClass:
+  Enabled: false # ignore missing comments on classes
+RSpec/ExampleLength:
+  Max: 20 # allow longer specs

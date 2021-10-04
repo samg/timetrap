@@ -1,0 +1,18 @@
+name: rubocop
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    name: Lint with Rubocop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+      - run: gem install rubocop bundler
+      - run: bundle install
+      - run: bundle exec rubocop -A lib/Getopt/Declare.rb
+      - run: bundle exec rubocop -c .rubocop_with_todo.yml
