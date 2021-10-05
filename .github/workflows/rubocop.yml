@@ -14,5 +14,4 @@ jobs:
           ruby-version: '2.7'
       - run: gem install rubocop bundler
       - run: bundle install
-      - run: bundle exec rubocop -A lib/Getopt/Declare.rb
       - run: bundle exec rubocop -c .rubocop_with_todo.yml
