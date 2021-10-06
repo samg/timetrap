@@ -1,9 +1,9 @@
 module Timetrap
   class Entry < Sequel::Model
     class << self
-    # a class level instance variable that controls whether or not all entries
-    # should respond to #start and #end with times rounded to 15 minute
-    # increments.
+      # a class level instance variable that controls whether or not all entries
+      # should respond to #start and #end with times rounded to 15 minute
+      # increments.
       attr_accessor :round
     end
 
@@ -12,11 +12,11 @@ module Timetrap
     end
 
     def start= time
-      self[:start]= Timer.process_time(time)
+      self[:start] = Timer.process_time(time)
     end
 
     def end= time
-      self[:end]= Timer.process_time(time)
+      self[:end] = Timer.process_time(time)
     end
 
     def start
@@ -32,9 +32,10 @@ module Timetrap
     end
 
     def duration
-      @duration ||= self.end_or_now.to_i - self.start.to_i
+      @duration ||= end_or_now.to_i - start.to_i
     end
-    def duration=( nd )
+
+    def duration=(nd)
       @duration = nd.to_i
     end
 
@@ -53,16 +54,16 @@ module Timetrap
     def round time
       return nil unless time
       Time.at(
-        if (r = time.to_i % Timetrap::Config['round_in_seconds']) < 450
+        if (r = time.to_i % Timetrap::Config["round_in_seconds"]) < 450
           time.to_i - r
         else
-          time.to_i + (Timetrap::Config['round_in_seconds'] - r)
+          time.to_i + (Timetrap::Config["round_in_seconds"] - r)
         end
       )
     end
 
     def self.sheets
-      map{|e|e.sheet}.uniq.sort
+      map { |e| e.sheet }.uniq.sort
     end
 
     private

@@ -4,7 +4,7 @@ module Timetrap
       attr_reader :output
 
       def initialize entries
-        @output = entries.map(&:id).join(' ')
+        @output = entries.map(&:id).join(" ")
       end
     end
   end
