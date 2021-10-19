@@ -548,6 +548,15 @@ Or run the test suite:
 
     bundle exec rspec
 
+We do make use of Rubocop with StandardRB rules.
+You can lint the project locally as follows:
+
+    bundle exec rubocop
+
+Or to ignore offences that still need fixing:
+
+    bundle exec rubocop -c .rubocop_with_todo.yml
+
 Special Thanks
 --------------
 
