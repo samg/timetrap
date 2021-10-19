@@ -1,57 +1,8 @@
-TEST_MODE = true
-require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap'))
-require 'rspec'
-require 'fakefs/safe'
-
-RSpec.configure do |config|
-  # as we are stubbing stderr and stdout, if you want to capture
-  # any of your output in tests, simply add :write_stdout_stderr => true
-  # as metadata to the end of your test
-  config.after(:each, write_stdout_stderr: true) do
-    $stderr.rewind
-    $stdout.rewind
-    File.write("stderr.txt", $stderr.read)
-    File.write("stdout.txt", $stdout.read)
-  end
-end
-
-def local_time(str)
-  Timetrap::Timer.process_time(str)
-end
-
-def local_time_cli(str)
-  local_time(str).strftime('%Y-%m-%d %H:%M:%S')
-end
-
-module Timetrap::StubConfig
-  def with_stubbed_config options = {}
-    defaults = Timetrap::Config.defaults.dup
-    allow(Timetrap::Config).to receive(:[]) do |k|
-      defaults.merge(options)[k]
-    end
-    yield if block_given?
-  end
-end
-
-module Timetrap::WithAttributes
-  def with_rounding_on
-    old_round = Timetrap::Entry.round
-    begin
-      Timetrap::Entry.round = true
-      block_return_value = yield
-    ensure
-      Timetrap::Entry.round = old_round
-    end
-  end
-end
-
 describe Timetrap do
-  include Timetrap::StubConfig
-  include Timetrap::WithAttributes
-
   before do
     with_stubbed_config
   end
+
   def create_entry atts = {}
     Timetrap::Entry.create({
       :sheet => 'default',
@@ -1706,7 +1657,6 @@ END:VCALENDAR
 
   describe Timetrap::Entry do
 
-    include Timetrap::StubConfig
     describe "with an instance" do
       before do
         @time = Time.now
