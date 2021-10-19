@@ -1,13 +1,3 @@
-module Timetrap::StubConfig
-  def with_stubbed_config options = {}
-    defaults = Timetrap::Config.defaults.dup
-    allow(Timetrap::Config).to receive(:[]) do |k|
-      defaults.merge(options)[k]
-    end
-    yield if block_given?
-  end
-end
-
 module Timetrap::WithAttributes
   def with_rounding_on
     old_round = Timetrap::Entry.round
@@ -21,7 +11,6 @@ module Timetrap::WithAttributes
 end
 
 describe Timetrap do
-  include Timetrap::StubConfig
   include Timetrap::WithAttributes
 
   before do
@@ -1681,7 +1670,6 @@ END:VCALENDAR
 
   describe Timetrap::Entry do
 
-    include Timetrap::StubConfig
     describe "with an instance" do
       before do
         @time = Time.now
