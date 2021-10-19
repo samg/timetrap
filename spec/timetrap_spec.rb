@@ -1,4 +1,3 @@
-require 'rspec'
 require 'fakefs/safe'
 
 RSpec.configure do |config|
