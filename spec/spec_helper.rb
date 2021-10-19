@@ -24,4 +24,14 @@ RSpec.configure do |config|
   # Specify order for spec to be run in
   # TODO: make sure all specs pass when set to :rand
   # config.order = :rand
+
+  # We are stubbing stderr and stdout, if you want to capture
+  # any of your output in tests, simply add :write_stdout_stderr => true
+  # as metadata to the end of your test
+  config.after(:each, write_stdout_stderr: true) do
+    $stderr.rewind
+    $stdout.rewind
+    File.write("stderr.txt", $stderr.read)
+    File.write("stdout.txt", $stdout.read)
+  end
 end
