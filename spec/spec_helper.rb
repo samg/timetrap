@@ -1,3 +1,6 @@
+# Constants
+TEST_MODE = true
+
 RSpec.configure do |config|
   # Use color in STDOUT
   config.color = true
