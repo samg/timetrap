@@ -18,7 +18,7 @@ RSpec.configure do |config|
   config.tty = true
 
   # Display 10 slowest tests after a test run
-  config.profile_examples = true
+  config.profile_examples = false
 
   # Use the specified formatter
   # :documentation, :progress, :html, :json, CustomFormatterClass
