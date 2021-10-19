@@ -1,6 +1,10 @@
 # Constants
 TEST_MODE = true
 
+# timetrap
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap'))
+
+# Config
 RSpec.configure do |config|
   # Use color in STDOUT
   config.color = true
