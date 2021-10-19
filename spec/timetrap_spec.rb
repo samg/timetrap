@@ -1,5 +1,3 @@
-require 'fakefs/safe'
-
 RSpec.configure do |config|
   # as we are stubbing stderr and stdout, if you want to capture
   # any of your output in tests, simply add :write_stdout_stderr => true
