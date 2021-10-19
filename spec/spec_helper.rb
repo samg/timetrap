@@ -4,6 +4,9 @@ TEST_MODE = true
 # Vendors
 require 'fakefs/safe'
 
+# Load support files from the spec/support directory
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].sort.each { |f| require f }
+
 # timetrap
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'timetrap'))
 
