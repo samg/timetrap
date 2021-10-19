@@ -1,21 +1,8 @@
-module Timetrap::WithAttributes
-  def with_rounding_on
-    old_round = Timetrap::Entry.round
-    begin
-      Timetrap::Entry.round = true
-      block_return_value = yield
-    ensure
-      Timetrap::Entry.round = old_round
-    end
-  end
-end
-
 describe Timetrap do
-  include Timetrap::WithAttributes
-
   before do
     with_stubbed_config
   end
+
   def create_entry atts = {}
     Timetrap::Entry.create({
       :sheet => 'default',
