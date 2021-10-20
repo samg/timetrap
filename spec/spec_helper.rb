@@ -1,9 +1,6 @@
 # Constants
 TEST_MODE = true
 
-# Vendors
-require 'fakefs/safe'
-
 # Load support files from the spec/support directory
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].sort.each { |f| require f }
 
@@ -22,7 +19,7 @@ RSpec.configure do |config|
 
   # Use the specified formatter
   # :documentation, :progress, :html, :json, CustomFormatterClass
-  config.formatter = :progress
+  config.formatter = :documentation
 
   # Specify order for spec to be run in
   # TODO: make sure all specs pass when set to :rand
