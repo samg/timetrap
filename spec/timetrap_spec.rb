@@ -3,14 +3,6 @@ describe Timetrap do
     with_stubbed_config
   end
 
-  def create_entry atts = {}
-    Timetrap::Entry.create({
-      :sheet => 'default',
-      :start => Time.now,
-      :end => Time.now,
-      :note => 'note'}.merge(atts))
-  end
-
   before :each do
     Timetrap::EntrySchema.create_table!
     Timetrap::MetaSchema.create_table!
