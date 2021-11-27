@@ -989,6 +989,19 @@ END:VCALENDAR
           expect($stdout.string).not_to include Time.now.strftime('%a %b %d, %Y')
         end
       end
+      describe "tomorrow" do
+        it "should only show entries for tomorrow" do
+          tomorrow = Time.now + (24 * 60 * 60)
+          create_entry(
+            :start => tomorrow,
+            :end => tomorrow
+           )
+          create_entry
+          invoke 'tomorrow'
+          expect($stdout.string).to include tomorrow.strftime('%a %b %d, %Y')
+          expect($stdout.string).not_to include Time.now.strftime('%a %b %d, %Y')
+        end
+      end
 
       describe "week" do
         it "should only show entries from this week" do
