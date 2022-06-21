@@ -329,7 +329,8 @@ COMMAND is one of:
     def out
       if Config['auto_checkout']
         stopped = Timer.stop_all(args['-a']).each do |checked_out_of|
-          warn "Checked out of sheet #{checked_out_of.sheet.inspect}."
+          note = Timer.last_checkout.note
+          warn "Checked out of entry #{note.inspect} in sheet #{checked_out_of.sheet.inspect}."
         end
         if stopped.empty?
           warn "No running entries to stop."
@@ -337,7 +338,8 @@ COMMAND is one of:
       else
         sheet = sheet_name_from_string(unused_args)
         if Timer.stop sheet, args['-a']
-          warn "Checked out of sheet #{sheet.inspect}."
+          note = Timer.last_checkout.note
+          warn "Checked out of entry #{note.inspect} in sheet #{sheet.inspect}."
         else
           warn "No running entry on sheet #{sheet.inspect}."
         end

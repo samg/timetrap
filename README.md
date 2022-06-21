@@ -66,7 +66,7 @@ If you make a mistake use the `edit` command.
 You check out with the `out` command.
 
     $ t out
-    Checked out of sheet "coding"
+    Checked out of entry "document timetrap" in sheet "coding"
 
 Running `edit` when you're checked out will edit the last entry you checked out
 of.
