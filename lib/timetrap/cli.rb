@@ -460,6 +460,13 @@ COMMAND is one of:
       args['-e'] = yesterday
       display
     end
+      
+    def tomorrow
+      tomorrow = (Date.today + 1).to_s
+      args['-s'] = tomorrow
+      args['-e'] = tomorrow
+      display
+    end
 
     def week
       d = Chronic.parse( args['-s'] || Date.today )
