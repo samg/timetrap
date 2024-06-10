@@ -12,6 +12,5 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '2.7'
-      - run: gem install rspec bundler
       - run: bundle install
       - run: rspec spec
