@@ -13,7 +13,7 @@ To install:
 
 This will place a ``t`` executable in your path.
 
-***UPDATE***: The current gem release seems to be having issues installing and the gem ownership on RubyGems.org is currently in the process of being transferred.  Meanwhile, here is how to build the latest master from source:
+If you would like to build the latest master from source:
 
     $ git clone https://github.com/samg/timetrap
     $ cd timetrap
