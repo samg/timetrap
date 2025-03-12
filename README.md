@@ -562,7 +562,7 @@ The initial version of Timetrap was heavily inspired by Trevor Caira's
 Timebook, a small python utility.
 
 Original Timebook available at:
-http://bitbucket.org/trevor/timebook/src/
+https://github.com/trevorc/timebook
 
 Bugs and Feature Requests
 --------
